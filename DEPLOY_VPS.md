@@ -12,12 +12,14 @@ Este é o guia completo para subir o aplicativo **Deriva PWA** em uma VPS (Ubunt
 ---
 
 ## 1. Configurar o DuckDNS (DNS Dinâmico)
-Antes de mexer na VPS, garanta que o subdomínio já existe:
+Antes de mexer na VPS, garanta que os subdomínios já existem:
 1. Acesse [DuckDNS.org](https://www.duckdns.org/) e faça login.
-2. Crie um subdomínio (ex: `deriva-pwa`).
-3. Aponte o IP do domínio criado para o IP da VPS (`69.62.93.200`).
+2. Crie dois subdomínios:
+   - `derivalove` (para o App/PWA principal)
+   - `comprarderiva` (para a Landing Page pública)
+3. Aponte o IP de **ambos** os domínios para o IP da VPS (`69.62.93.200`).
 4. Aguarde a propagação (geralmente poucos minutos).
-5. Para testar: no seu computador, rode no terminal: `ping SEU_SUBDOMINIO.duckdns.org` (se responder o IP da VPS, está ok).
+5. Para testar, no seu terminal, rode `nslookup derivalove.duckdns.org` e `nslookup comprarderiva.duckdns.org`. Ambos devem retornar o IP da VPS.
 
 ---
 
@@ -146,12 +148,11 @@ systemctl reload nginx
 ---
 
 ## 10. SSL com Certbot (HTTPS Ativo)
-Rode o certbot indicando ao Nginx qual domínio tratar:
-*(Troque pelo seu domínio final no DuckDNS!)*
+Rode o certbot indicando ao Nginx os dois domínios que ele deve proteger:
 ```bash
-certbot --nginx -d SEU_SUBDOMINIO.duckdns.org
+certbot --nginx -d derivalove.duckdns.org -d comprarderiva.duckdns.org
 ```
-O Certbot pedirá um e-mail de contato e concordância com os termos. Ele injetará os certificados SSL automaticamente no `/etc/nginx/sites-available/deriva-pwa` e fará reload.
+O Certbot pedirá um e-mail de contato e concordância com os termos. Ele injetará os certificados SSL automaticamente no `/etc/nginx/sites-available/deriva-pwa` para ambos os domínios e fará reload.
 
 Teste se a auto-renovação de 90 dias funciona sem problemas:
 ```bash

@@ -34,7 +34,7 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
           const urlData = await urlRes.json();
           if (urlData.url) src = urlData.url;
         }
-      } catch (err) {
+      } catch {
         // Fallback para original
       }
 

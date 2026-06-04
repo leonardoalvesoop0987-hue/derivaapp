@@ -7,6 +7,11 @@ const key = new TextEncoder().encode(secretKey);
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  const host = request.headers.get("host") || "";
+
+  if (path === "/" && host.includes("comprarderiva.duckdns.org")) {
+    return NextResponse.rewrite(new URL("/lp", request.url));
+  }
 
   const isProtectedRoute = path.startsWith("/app");
   const isAdminRoute = path.startsWith("/admin");
@@ -37,5 +42,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/admin/:path*"],
+  matcher: ["/", "/app/:path*", "/admin/:path*"],
 };

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "type deve ser VIDEO ou MUSIC" }, { status: 400 });
     }
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       type: type as "VIDEO" | "MUSIC",
       is_active: true,
       ...(type === "VIDEO" && category ? { video_category: category } : {}),

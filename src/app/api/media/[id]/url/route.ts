@@ -3,15 +3,16 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { r2Client, getSignedMediaUrl } from "@/lib/r2";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
+    const { id } = await params;
     const asset = await prisma.mediaAsset.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!asset || !asset.is_active) {

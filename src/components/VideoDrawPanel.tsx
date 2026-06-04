@@ -34,7 +34,7 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     }).catch(() => { /* non-blocking */ });
     setCurrent(v);
 
-    let src = v.public_url || `/uploads/${v.storage_key}`;
+    const src = v.public_url || `/uploads/${v.storage_key}`;
     setVideoUrl(src);
     
     fetch(`/api/media/${v.id}/url`)
