@@ -1,7 +1,15 @@
 import { PrismaClient, CardCategory, CardIntensity, ReceiverRule } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { config } from 'dotenv';
 
-const prisma = new PrismaClient();
+config();
 
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
 const cards = [
   {
     "position": 1,
