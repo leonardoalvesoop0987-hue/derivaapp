@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { LpContent } from "./LpContent";
 
 export const metadata: Metadata = {
-  title: "Deriva — Deck sensual para casais",
+  title: "Deriva — App e deck sensual para casais",
   description:
-    "Um deck físico para casais adultos que querem sair da rotina com uma experiência guiada, progressiva e mais íntima.",
+    "Uma experiência guiada para casais adultos que querem sair da rotina com cartas, sorteios inteligentes, música, progressão e versão física em casa.",
   openGraph: {
-    title: "Deriva — Deck sensual para casais",
+    title: "Deriva — App e deck sensual para casais",
     description:
-      "Um deck físico para casais adultos que querem sair da rotina com uma experiência guiada, progressiva e mais íntima.",
+      "Uma experiência guiada para casais adultos que querem sair da rotina com cartas, sorteios inteligentes, música, progressão e versão física em casa.",
     type: "website",
   },
 };
