@@ -69,7 +69,7 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
       const { card: updated } = await res.json();
       onSave(updated);
       setIsEditing(false);
-    } catch (err) {
+    } catch (_err) {
       alert("Erro ao salvar a carta. Verifique os logs.");
     } finally {
       setLoading(false);
