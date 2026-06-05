@@ -17,6 +17,8 @@ import { FaqSection } from "@/components/lp/FaqSection";
 import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
 
+import { FounderAuthoritySection } from "@/components/lp/FounderAuthoritySection";
+
 export function LpContent() {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,6 +40,7 @@ export function LpContent() {
       <IdealMomentsSection />
       <MediaAndMusicSection />
       <RelationshipSection />
+      <FounderAuthoritySection />
       <TestimonialsSection />
       <FaqSection />
       <OfferSection onBuyClick={handleBuyClick} isLoading={isLoading} />
