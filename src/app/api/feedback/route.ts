@@ -6,7 +6,7 @@ import { z } from "zod";
 const feedbackSchema = z.object({
   sessionId: z.string(),
   cardId: z.string(),
-  feedbackType: z.enum(["FAVORITE", "REPEAT", "LATER", "NEVER_AGAIN"]),
+  feedbackType: z.enum(["FAVORITE", "NEUTRAL", "NEVER_AGAIN"]),
 });
 
 export async function POST(req: Request) {
