@@ -23,7 +23,11 @@ export async function middleware(request: NextRequest) {
   const session = request.cookies.get("session")?.value;
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    if (isAdminRoute) {
+      loginUrl.searchParams.set("next", path);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 
   try {
@@ -32,12 +36,16 @@ export async function middleware(request: NextRequest) {
     });
 
     if (isAdminRoute && !payload.isAdmin) {
-      return NextResponse.redirect(new URL("/app", request.url));
+      return NextResponse.rewrite(new URL("/acesso-restrito", request.url));
     }
 
     return NextResponse.next();
   } catch {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    if (isAdminRoute) {
+      loginUrl.searchParams.set("next", path);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 }
 
