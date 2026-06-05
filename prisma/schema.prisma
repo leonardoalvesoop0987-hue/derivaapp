@@ -65,11 +65,23 @@ enum MediaType {
 
 enum VideoCategory {
   LESBICO
-  ORAL_MULHER
   FFM
   MMF
-  FACE_FM
-  OUTRO
+  MF
+}
+
+enum VideoContentType {
+  ORAL_ONLY
+  PENETRATION_ONLY
+  COMPLETE
+}
+
+enum MediaProcessingStatus {
+  UPLOADED
+  PROCESSING
+  READY
+  ERROR
+  DISABLED
 }
 
 enum MusicMood {
@@ -235,22 +247,27 @@ model UserCardPreference {
 }
 
 model MediaAsset {
-  id               String         @id @default(cuid())
+  id               String                 @id @default(cuid())
   type             MediaType
   video_category   VideoCategory?
+  content_type     VideoContentType?
+  visual_tags      String[]
   music_mood       MusicMood?
+  processing_status MediaProcessingStatus @default(READY)
   storage_key      String
+  hls_master_key   String?
+  thumbnail_key    String?
   bucket           String?
   public_url       String?
   mime_type        String
   size_bytes       Int
   duration_seconds Int?
-  weight           Int            @default(1)
-  is_active        Boolean        @default(true)
+  weight           Int                    @default(1)
+  is_active        Boolean                @default(true)
   internal_label   String?
   original_filename String?
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+  created_at       DateTime               @default(now())
+  updated_at       DateTime               @updatedAt
 
   session_videos   SessionVideoOption[]
 

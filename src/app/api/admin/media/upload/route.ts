@@ -55,8 +55,11 @@ export async function POST(req: Request) {
         size_bytes: file.size,
         internal_label: internal_label ?? sanitizedName,
         original_filename: file.name,
-        video_category: type === "VIDEO" ? (video_category ?? "OUTRO") as "LESBICO" | "ORAL_MULHER" | "FFM" | "MMF" | "FACE_FM" | "OUTRO" : null,
-        music_mood: type === "MUSIC" ? (music_mood ?? "SENSUAL") as "RELAXANTE" | "SENSUAL" | "INTENSA" : null,
+        video_category: type === "VIDEO" && video_category ? video_category as any : null,
+        content_type: type === "VIDEO" && formData.get("content_type") ? formData.get("content_type") as any : null,
+        visual_tags: formData.get("visual_tags") ? JSON.parse(formData.get("visual_tags") as string) : [],
+        music_mood: type === "MUSIC" ? (music_mood ?? "SENSUAL") as any : null,
+        processing_status: type === "VIDEO" ? "UPLOADED" : "READY",
       },
     });
 
