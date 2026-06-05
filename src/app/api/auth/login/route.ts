@@ -5,17 +5,24 @@ import { loginUser } from "@/lib/session";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  login: z.string().min(1, "Campo obrigatório"),
   password: z.string(),
 });
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password } = loginSchema.parse(body);
+    const { login, password } = loginSchema.parse(body);
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    const loginLower = login.toLowerCase();
+
+    // Check if it's an email format to do fallback
+    const isEmail = loginLower.includes("@");
+
+    const user = await prisma.user.findFirst({
+      where: isEmail
+        ? { email: loginLower }
+        : { username: loginLower },
     });
 
     if (!user) {

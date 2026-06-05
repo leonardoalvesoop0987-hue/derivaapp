@@ -13,7 +13,7 @@ const prisma = new PrismaClient({ adapter });
 const cardTags: Record<string, CardTag[]> = {
   "deriva-v1-card-001": ["MASSAGEM", "TOQUE", "FOCO_CASAL"],
   "deriva-v1-card-002": ["TOQUE", "PROVOCACAO", "FOCO_CASAL"],
-  "deriva-v1-card-003": ["TOQUE", "BOCA", "FOCO_CASAL"], // Boca -> BEIJO or ORAL
+  "deriva-v1-card-003": ["TOQUE", "BEIJO", "FOCO_CASAL"], // Boca -> BEIJO or ORAL
   "deriva-v1-card-004": ["PROIBICAO", "PROVOCACAO", "FOCO_CASAL"],
   "deriva-v1-card-005": ["ROLEPLAY", "MASSAGEM", "TOQUE"],
   "deriva-v1-card-006": ["RESPIRO", "TOQUE", "BEIJO", "OLHAR"],

@@ -1,0 +1,86 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
+import Link from "next/link";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+export default function AdminAlinhamentoDetailPage({ params }: { params: Promise<{ coupleId: string }> }) {
+  const { coupleId } = use(params);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/admin/alignment/${coupleId}`)
+      .then(r => r.json())
+      .then(d => {
+        setData(d);
+        setLoading(false);
+      })
+      .catch(console.error);
+  }, [coupleId]);
+
+  if (loading) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Carregando...</div>;
+  if (!data || !data.couple) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Não encontrado.</div>;
+
+  const womanResponses = data.responses.filter((r: any) => r.role === "WOMAN");
+  const manResponses = data.responses.filter((r: any) => r.role === "MAN");
+
+  const renderResponse = (resp: any) => (
+    <div key={resp.id} className="bg-[var(--color-background-secondary)] p-6 rounded-xl border border-[var(--color-border)] mb-6">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-[var(--color-border)]">
+        <div>
+          <span className="text-lg font-medium text-white mr-3">
+            {resp.role === "WOMAN" ? "Pessoa Feminina" : "Pessoa Masculina"}
+          </span>
+          <span className="text-sm bg-[var(--color-copper)]/20 text-[var(--color-copper)] px-2 py-1 rounded">Versão {resp.version}</span>
+        </div>
+        <div className="text-sm text-[var(--color-text-secondary)]">
+          {resp.completed_at ? format(new Date(resp.completed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : "-"}
+        </div>
+      </div>
+      
+      <div className="space-y-6">
+        {resp.answers.answers.map((a: any, i: number) => (
+          <div key={i}>
+            <div className="text-sm text-[var(--color-text-secondary)] mb-1 font-medium">{a.questionId} - {a.question}</div>
+            <div className="text-base text-white bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)]">
+              {Array.isArray(a.answer) ? a.answer.join(", ") : 
+               (typeof a.answer === "object" ? JSON.stringify(a.answer) : String(a.answer || "Nenhuma resposta"))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Link href="/admin/alinhamentos" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">
+          &larr; Voltar
+        </Link>
+        <h1 className="text-2xl font-light tracking-wide text-white">Respostas da Conta: {data.couple.username}</h1>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Respostas Femininas</h2>
+          {womanResponses.length === 0 ? (
+            <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+          ) : (
+            womanResponses.map(renderResponse)
+          )}
+        </div>
+        <div>
+          <h2 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Respostas Masculinas</h2>
+          {manResponses.length === 0 ? (
+            <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+          ) : (
+            manResponses.map(renderResponse)
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

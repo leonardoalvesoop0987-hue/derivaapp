@@ -28,7 +28,7 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const [hlsInstance, setHlsInstance] = useState<Hls | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   const selectVideo = useCallback((v: VideoAsset) => {
     void fetch("/api/session/video-select", {
@@ -96,9 +96,8 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     const video = videoRef.current;
     
     // Cleanup previous hls
-    let currentHls = hlsInstance;
-    if (currentHls) {
-      currentHls.destroy();
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
     }
 
     if (videoUrl.includes(".m3u8") && Hls.isSupported()) {
@@ -111,8 +110,7 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(() => {});
       });
-      setHlsInstance(hls);
-      currentHls = hls;
+      hlsRef.current = hls;
     } else if (video.canPlayType("application/vnd.apple.mpegurl") || videoUrl.includes(".mp4")) {
       // Safari or direct MP4
       video.src = videoUrl;
@@ -122,11 +120,11 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     }
 
     return () => {
-      if (currentHls) {
-        currentHls.destroy();
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
       }
     };
-  }, [videoUrl]); // Removed hlsInstance from dependency logic to avoid loops
+  }, [videoUrl]);
 
   const toggleMute = () => {
     if (videoRef.current) {

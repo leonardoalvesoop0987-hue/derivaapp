@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function ConfiguracoesPage() {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto">
@@ -7,8 +9,19 @@ export default function ConfiguracoesPage() {
 
       <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
         <h3 className="font-medium text-sm text-[var(--color-text-secondary)] uppercase tracking-wide">Conta</h3>
-        <div className="space-y-2 text-sm">
+        <div className="space-y-4 text-sm">
           <p className="text-[var(--color-text-secondary)]">Sessões são salvas localmente e sincronizadas ao banco.</p>
+          <div className="pt-2 border-t border-[var(--color-border)]">
+            <Link 
+              href="/app/alinhamento" 
+              className="text-[var(--color-copper)] hover:text-white transition-colors block"
+            >
+              Responder formulário privado novamente
+            </Link>
+            <p className="text-xs text-[var(--color-text-secondary)] mt-2 leading-relaxed">
+              Você pode responder novamente a qualquer momento. A nova resposta não apaga as anteriores; ela cria uma nova versão para acompanhamento administrativo.
+            </p>
+          </div>
         </div>
       </div>
 
