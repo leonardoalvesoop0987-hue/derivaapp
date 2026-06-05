@@ -135,3 +135,132 @@ export async function getNextCard(input: NextCardInput) {
 
   return weightedCandidates[weightedCandidates.length - 1].card;
 }
+
+export type GeneratedSessionCard = {
+  card_id: string;
+  position: number;
+  metadata_json: string;
+};
+
+export async function generateSessionSequence(input: Omit<NextCardInput, "currentPosition" | "shownCardIds">): Promise<GeneratedSessionCard[]> {
+  const sequence: GeneratedSessionCard[] = [];
+  const shownCardIds: string[] = [];
+
+  for (let pos = 0; pos < input.targetCardCount; pos++) {
+    const card = await getNextCard({
+      ...input,
+      currentPosition: pos,
+      shownCardIds,
+    });
+
+    if (!card) break;
+
+    shownCardIds.push(card.id);
+
+    // Build metadata (Receiver and humanized text)
+    const metadata = buildCardMetadata(card, pos);
+
+    sequence.push({
+      card_id: card.id,
+      position: pos,
+      metadata_json: JSON.stringify(metadata),
+    });
+  }
+
+  return sequence;
+}
+
+export function buildCardMetadata(card: any, position: number) {
+  // Resolve receiver rule (ANY -> MAN or WOMAN randomly)
+  let receiver = card.receiver_rule;
+  if (receiver === "ANY") {
+    receiver = Math.random() > 0.5 ? "MAN" : "WOMAN";
+  }
+
+  // Generate provocative front text
+  const fronts = {
+    AZUL: [
+      "Aquecendo os motores...",
+      "Hora de criar conexão.",
+      "Sem pressa, o clima tá só começando.",
+      "Olha bem no olho agora."
+    ],
+    DERIVA: [
+      "Deixa rolar...",
+      "O clima tá subindo.",
+      "Sinta o momento.",
+      "Sem pensar muito, só aproveita."
+    ],
+    ROSA: [
+      "Toque com intenção.",
+      "Agora o corpo fala.",
+      "Explorando novos caminhos.",
+      "Sente a pele."
+    ],
+    ROXO: [
+      "Inspiração para vocês.",
+      "Deixa a mente viajar.",
+      "Assista e aprenda...",
+      "O clima acabou de esquentar mais."
+    ],
+    VERMELHO: [
+      "O bicho vai pegar.",
+      "Sem limites agora.",
+      "Entrega total.",
+      "Aqui a brincadeira fica séria."
+    ],
+    PRETO: [
+      "Surpresa selvagem.",
+      "Intensidade máxima.",
+      "Vocês aguentam?",
+      "Passando dos limites."
+    ]
+  };
+
+  const categoryFronts = fronts[card.category as keyof typeof fronts] || fronts.DERIVA;
+  const front_text = categoryFronts[Math.floor(Math.random() * categoryFronts.length)];
+
+  // Humanize the body text
+  let rendered_body = card.body || "";
+  
+  // Replace generic roles
+  if (receiver === "MAN") {
+    rendered_body = rendered_body
+      .replace(/quem conduz/gi, "ela")
+      .replace(/quem recebe/gi, "ele")
+      .replace(/A mulher/gi, "Ela")
+      .replace(/a mulher/gi, "ela")
+      .replace(/O homem/gi, "Ele")
+      .replace(/o homem/gi, "ele")
+      .replace(/A outra pessoa/gi, "Ele")
+      .replace(/a outra pessoa/gi, "ele")
+      .replace(/a pessoa/gi, "ele");
+  } else if (receiver === "WOMAN") {
+    rendered_body = rendered_body
+      .replace(/quem conduz/gi, "ele")
+      .replace(/quem recebe/gi, "ela")
+      .replace(/A mulher/gi, "Ela")
+      .replace(/a mulher/gi, "ela")
+      .replace(/O homem/gi, "Ele")
+      .replace(/o homem/gi, "ele")
+      .replace(/A outra pessoa/gi, "Ela")
+      .replace(/a outra pessoa/gi, "ela")
+      .replace(/a pessoa/gi, "ela");
+  } else {
+    // NONE or fallback
+    rendered_body = rendered_body
+      .replace(/quem conduz/gi, "você")
+      .replace(/quem recebe/gi, "seu parceiro(a)")
+      .replace(/a outra pessoa/gi, "a outra pessoa");
+  }
+
+  // Remove mechanical text
+  rendered_body = rendered_body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
+
+  return {
+    front_text,
+    rendered_body,
+    original_receiver: receiver,
+    current_receiver: receiver, // Can be flipped later
+  };
+}

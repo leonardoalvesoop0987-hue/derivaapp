@@ -14,7 +14,6 @@ export default function NovaSessaoPage() {
   const [mode, setMode] = useState("PADRAO");
   const [length, setLength] = useState("MEDIA");
   const [maxIntensity, setMaxIntensity] = useState("PICO");
-  const [videosEnabled, setVideosEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
 
   useEffect(() => {
@@ -49,7 +48,6 @@ export default function NovaSessaoPage() {
           mode,
           length,
           maxIntensity,
-          videosEnabled,
           musicEnabled
         }),
       });
@@ -180,19 +178,6 @@ export default function NovaSessaoPage() {
 
         {/* Extras */}
         <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-border)] shadow-sm space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium text-sm text-white">Adicionar vídeos (Cartas Roxas)</div>
-              <div className="text-xs text-[var(--color-text-secondary)] mt-1">Exibe trechos de vídeo adulto caso sorteie uma carta roxa</div>
-            </div>
-            <button 
-              onClick={() => setVideosEnabled(!videosEnabled)}
-              className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ml-4 ${videosEnabled ? 'bg-[var(--color-copper)]' : 'bg-[var(--color-background-primary)]'}`}
-            >
-              <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${videosEnabled ? 'translate-x-7' : 'translate-x-1'}`} />
-            </button>
-          </div>
-          
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium text-sm text-white">Música ambiente</div>

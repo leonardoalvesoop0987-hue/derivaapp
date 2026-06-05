@@ -46,6 +46,7 @@ enum SessionStatus {
 }
 
 enum SessionCardStatus {
+  QUEUED
   SHOWN
   COMPLETED
   SKIPPED

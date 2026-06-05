@@ -24,9 +24,18 @@ export async function POST(req: Request) {
 
     if (action === "INVERT" && currentCardState) {
       if (session.inversions_used >= 2) return NextResponse.json({ error: "Limite de inversões atingido" }, { status: 400 });
+      
+      let meta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
+      
       currentCardState = await prisma.sessionCard.update({
         where: { id: currentCardState.id },
-        data: { was_inverted: !currentCardState.was_inverted }
+        data: { 
+          was_inverted: !currentCardState.was_inverted,
+          metadata_json: JSON.stringify({
+             ...meta,
+             current_receiver: meta.current_receiver === "MAN" ? "WOMAN" : meta.current_receiver === "WOMAN" ? "MAN" : "ANY"
+          })
+        }
       });
       await prisma.session.update({
         where: { id: sessionId },
@@ -45,8 +54,37 @@ export async function POST(req: Request) {
       });
       await prisma.session.update({
         where: { id: sessionId },
-        data: { skips_used: { increment: 1 } }
+        data: { skips_used: { increment: 1 }, target_card_count: { increment: 1 } } // Increment target so we play one more
       });
+
+      // Draw a new substitute card and queue it at the end
+      const lastCard = session.cards[session.cards.length - 1];
+      const nextPos = lastCard ? lastCard.position + 1 : session.current_position + 1;
+      
+      const { generateSessionSequence } = await import("@/lib/deriva/session-engine");
+      const substitute = await generateSessionSequence({
+        userId: session.user_id,
+        sessionId: session.id,
+        deckId: session.deck_id,
+        mode: session.mode,
+        length: session.length,
+        maxIntensity: session.max_intensity,
+        videosEnabled: true,
+        targetCardCount: 1, // Draw just 1
+      });
+
+      if (substitute.length > 0) {
+        await prisma.sessionCard.create({
+          data: {
+            session_id: sessionId,
+            card_id: substitute[0].card_id,
+            position: nextPos,
+            status: "QUEUED",
+            metadata_json: substitute[0].metadata_json,
+          }
+        });
+      }
+
     } else if (action === "NEXT" && currentCardState) {
       await prisma.sessionCard.update({
         where: { id: currentCardState.id },
@@ -58,35 +96,28 @@ export async function POST(req: Request) {
       });
     }
 
-    // Check if session is over
-    if (action === "NEXT" || action === "SKIP") {
-      const isCompleted = session.completed_card_count + 1 >= session.target_card_count;
-      if (isCompleted) {
-        await prisma.session.update({
-          where: { id: sessionId },
-          data: { status: "COMPLETED", ended_at: new Date() }
-        });
-        return NextResponse.json({ completed: true });
-      }
+    // Refresh session to get updated counts and newly inserted cards
+    const updatedSessionData = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { cards: true }
+    });
+
+    const isCompleted = updatedSessionData!.completed_card_count >= updatedSessionData!.target_card_count;
+    if (isCompleted && action !== "INVERT") {
+      await prisma.session.update({
+        where: { id: sessionId },
+        data: { status: "COMPLETED", ended_at: new Date() }
+      });
+      return NextResponse.json({ completed: true });
     }
 
     const nextPosition = currentCardState ? session.current_position + 1 : 0;
     
-    // Get next card
-    const nextCard = await getNextCard({
-      userId: session.user_id,
-      sessionId: session.id,
-      deckId: session.deck_id,
-      mode: session.mode,
-      length: session.length,
-      maxIntensity: session.max_intensity,
-      videosEnabled: session.videos_enabled,
-      shownCardIds: session.cards.map(c => c.card_id),
-      currentPosition: nextPosition,
-      targetCardCount: session.target_card_count
-    });
+    // Get next QUEUED card
+    let nextSessionCard = updatedSessionData!.cards.find(c => c.position === nextPosition && c.status === "QUEUED");
 
-    if (!nextCard) {
+    if (!nextSessionCard) {
+      // Fallback if queue is empty
       await prisma.session.update({
         where: { id: sessionId },
         data: { status: "COMPLETED", ended_at: new Date() }
@@ -94,24 +125,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ completed: true, reason: "Sem cartas disponíveis" });
     }
 
-    const newSessionCard = await prisma.sessionCard.create({
-      data: {
-        session_id: sessionId,
-        card_id: nextCard.id,
-        position: nextPosition,
-        status: "SHOWN"
-      }
+    // Mark as SHOWN
+    nextSessionCard = await prisma.sessionCard.update({
+      where: { id: nextSessionCard.id },
+      data: { status: "SHOWN", shown_at: new Date() }
     });
+
+    const nextCard = await prisma.card.findUnique({ where: { id: nextSessionCard.card_id } });
 
     const updatedSession = await prisma.session.update({
       where: { id: sessionId },
       data: { 
         current_position: nextPosition,
-        last_card_id: nextCard.id
+        last_card_id: nextCard!.id
       }
     });
 
-    return NextResponse.json({ card: nextCard, state: newSessionCard, session: updatedSession });
+    return NextResponse.json({ card: nextCard, state: nextSessionCard, session: updatedSession });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

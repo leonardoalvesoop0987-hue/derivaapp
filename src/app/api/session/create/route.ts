@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { SessionMode, SessionLength, CardIntensity } from "@prisma/client";
+import { generateSessionSequence } from "@/lib/deriva/session-engine";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
     if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { mode, length, maxIntensity, videosEnabled, musicEnabled } = body;
+    const { mode, length, maxIntensity, musicEnabled } = body;
 
     // Get default deck
     const deck = await prisma.deck.findFirst({
@@ -32,12 +33,42 @@ export async function POST(req: Request) {
         length: length as SessionLength,
         status: "ACTIVE",
         max_intensity: maxIntensity as CardIntensity,
-        videos_enabled: videosEnabled,
+        videos_enabled: true, // videos always enabled now
         music_enabled: musicEnabled,
         target_card_count: targetCardCount,
         current_position: 0,
       }
     });
+
+    // Generate sequence
+    const sequence = await generateSessionSequence({
+      userId: userSession.userId,
+      sessionId: session.id,
+      deckId: deck.id,
+      mode: session.mode,
+      length: session.length,
+      maxIntensity: session.max_intensity,
+      videosEnabled: true,
+      targetCardCount: session.target_card_count,
+    });
+
+    if (sequence.length > 0) {
+      // Create session cards with QUEUED status (except first one which is SHOWN)
+      await prisma.sessionCard.createMany({
+        data: sequence.map((seq, index) => ({
+          session_id: session.id,
+          card_id: seq.card_id,
+          position: seq.position,
+          status: index === 0 ? "SHOWN" : "QUEUED",
+          metadata_json: seq.metadata_json,
+        }))
+      });
+
+      await prisma.session.update({
+        where: { id: session.id },
+        data: { last_card_id: sequence[0].card_id }
+      });
+    }
 
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {

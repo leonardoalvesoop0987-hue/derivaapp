@@ -51,12 +51,14 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const [session, setSession] = useState<SessionType | null>(null);
   const [completed, setCompleted] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
 
   const fetchNext = useCallback(async (action: string) => {
     setLoading(true);
     setShowVideo(false);
+    setIsFlipped(false);
     try {
       const res = await fetch("/api/session/next", {
         method: "POST",
@@ -100,17 +102,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   }
 
   function renderCardBody(body: string) {
-    // Remove mechanical text
     return body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
-  }
-
-  function getReceiverText(rule: string | null | undefined, wasInverted: boolean) {
-    if (!rule || rule === "NONE" || rule === "ANY") return null;
-    let target = rule;
-    if (wasInverted) {
-      target = rule === "MAN" ? "WOMAN" : "MAN";
-    }
-    return target === "MAN" ? "Agora é com você, gato." : "Agora é com ela.";
   }
 
   if (loading && !card) {
@@ -148,7 +140,8 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
   const bgStyle = CATEGORY_STYLES[card.category] ?? CATEGORY_STYLES["PRETO"];
   const progress = ((session.current_position + 1) / session.target_card_count) * 100;
-  const receiverText = getReceiverText(card.receiver_rule, state.was_inverted);
+  
+  const meta = state.metadata_json ? JSON.parse(state.metadata_json) : {};
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-8rem)]">
@@ -198,41 +191,68 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative perspective-[1000px]">
         <AnimatePresence mode="wait">
           <motion.div
-            key={card.id + (state.was_inverted ? "-inv" : "")}
-            initial={{ rotateY: 90, opacity: 0, scale: 0.9 }}
-            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
-            exit={{ rotateY: -90, opacity: 0, scale: 0.9 }}
+            key={state.id}
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className={`w-full min-h-[400px] flex flex-col p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} border backdrop-blur-md shadow-2xl relative overflow-hidden`}
+            className="w-full relative perspective-[1000px] flex-1 flex flex-col justify-center"
           >
-            {/* Glossy reflection effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
-            
-            <div className="flex items-center justify-between mb-8 z-10">
-              <span className="text-sm font-medium uppercase tracking-widest opacity-80">
-                {CATEGORY_NAMES[card.category] || card.category}
-              </span>
-              <span className="text-base" title={card.intensity}>
-                {INTENSITY_FIRE[card.intensity] || "🔥"}
-              </span>
-            </div>
-
-            <div className="flex-1 flex flex-col justify-center z-10">
-              <h2 className="text-2xl font-medium mb-4 leading-snug drop-shadow-md">
-                {card.title}
-              </h2>
-              <div className="text-base opacity-90 leading-relaxed whitespace-pre-wrap font-light">
-                {renderCardBody(card.body)}
+            <motion.div
+              animate={{ rotateY: isFlipped ? 180 : 0 }}
+              transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+              className="w-full min-h-[400px] relative cursor-pointer"
+              style={{ transformStyle: 'preserve-3d' }}
+              onClick={() => !isFlipped && setIsFlipped(true)}
+            >
+              {/* FRONT (Capa) */}
+              <div 
+                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl border border-white/10`}
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                 <span className="text-lg opacity-80 mb-4 tracking-widest uppercase font-medium">
+                   {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-xl">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
+                 </span>
+                 <p className="text-2xl font-light leading-snug drop-shadow-md">
+                   {meta.front_text || "O clima vai subir."}
+                 </p>
+                 <p className="absolute bottom-8 text-sm opacity-50 uppercase tracking-widest animate-pulse">Toque para virar</p>
               </div>
-            </div>
 
-            {receiverText && (
-              <div className="mt-8 pt-4 border-t border-white/10 z-10 text-center">
-                <span className="text-sm font-medium tracking-wide text-[var(--color-copper)] drop-shadow-md">
-                  {receiverText}
-                </span>
+              {/* BACK (Verso) */}
+              <div 
+                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl border border-white/10`}
+                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+              >
+                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
+                 
+                 <div className="flex items-center justify-between mb-8 z-10">
+                   <span className="text-sm font-medium uppercase tracking-widest opacity-80">
+                     {CATEGORY_NAMES[card.category] || card.category}
+                   </span>
+                   <span className="text-base" title={card.intensity}>
+                     {INTENSITY_FIRE[card.intensity] || "🔥"}
+                   </span>
+                 </div>
+
+                 <div className="flex-1 flex flex-col justify-center z-10">
+                   <h2 className="text-2xl font-medium mb-4 leading-snug drop-shadow-md">
+                     {card.title}
+                   </h2>
+                   <div className="text-base opacity-90 leading-relaxed whitespace-pre-wrap font-light">
+                     {meta.rendered_body || renderCardBody(card.body)}
+                   </div>
+                 </div>
+
+                 {meta.current_receiver && meta.current_receiver !== "NONE" && meta.current_receiver !== "ANY" && (
+                   <div className="mt-8 pt-4 border-t border-white/10 z-10 text-center">
+                     <span className="text-sm font-medium tracking-wide text-[var(--color-copper)] drop-shadow-md">
+                       {meta.current_receiver === "MAN" ? "Agora é com você, gato." : "Agora é com ela."}
+                     </span>
+                   </div>
+                 )}
               </div>
-            )}
+            </motion.div>
           </motion.div>
         </AnimatePresence>
 
@@ -258,8 +278,8 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         {card.is_invertible && session.inversions_used < 2 && (
           <button
             onClick={() => fetchNext("INVERT")}
-            disabled={loading}
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10 backdrop-blur-md"
+            disabled={loading || !isFlipped}
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-colors border backdrop-blur-md ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
             title={`Inverter (${2 - session.inversions_used} restantes)`}
           >
             <Repeat className="w-5 h-5 text-[var(--color-copper)]" />
@@ -277,8 +297,8 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         {session.skips_used < 2 && (
           <button
             onClick={() => fetchNext("SKIP")}
-            disabled={loading}
-            className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10 backdrop-blur-md"
+            disabled={loading || !isFlipped}
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-colors border backdrop-blur-md ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
             title={`Pular (${2 - session.skips_used} restantes)`}
           >
             <SkipForward className="w-5 h-5 text-white/70" />
@@ -287,8 +307,8 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
         <button
           onClick={() => fetchNext("NEXT")}
-          disabled={loading}
-          className="flex flex-col items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-wine)] to-[var(--color-red-deep)] hover:scale-105 transition-transform shadow-[0_0_30px_rgba(153,27,27,0.4)]"
+          disabled={loading || !isFlipped}
+          className={`flex flex-col items-center justify-center w-20 h-20 rounded-full transition-transform ${isFlipped ? "bg-gradient-to-br from-[var(--color-wine)] to-[var(--color-red-deep)] hover:scale-105 shadow-[0_0_30px_rgba(153,27,27,0.4)]" : "bg-white/10 opacity-50 cursor-not-allowed"}`}
           title="Próxima"
         >
           <Check className="w-8 h-8 text-white" />

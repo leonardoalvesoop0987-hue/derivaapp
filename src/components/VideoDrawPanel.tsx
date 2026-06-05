@@ -45,8 +45,11 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
       .catch(() => {});
   }, [cardId, sessionId]);
 
+  const [empty, setEmpty] = useState(false);
+
   const drawVideo = useCallback(async () => {
     setLoading(true);
+    setEmpty(false);
     try {
       const excludeIds = draws.map((d) => d.id).join(",");
       const res = await fetch(`/api/media?type=VIDEO${excludeIds ? `&exclude=${excludeIds}` : ""}`);
@@ -54,7 +57,7 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
 
       if (!data.asset) {
         // No video available
-        onContinue();
+        setEmpty(true);
         return;
       }
 
@@ -77,6 +80,22 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
       return;
     }
     drawVideo();
+  }
+
+  if (empty) {
+    return (
+      <div className="flex flex-col items-center gap-6 py-8">
+        <p className="text-[var(--color-text-secondary)] text-center text-sm italic">
+          Nenhum vídeo adulto foi configurado ainda para esta categoria.
+        </p>
+        <button
+          onClick={onContinue}
+          className="w-full max-w-[200px] py-3 bg-[var(--color-wine)] text-white rounded-xl hover:bg-[var(--color-red-deep)] transition-colors font-medium shadow-lg"
+        >
+          Continuar
+        </button>
+      </div>
+    );
   }
 
   if (!current && drawCount === 0) {
