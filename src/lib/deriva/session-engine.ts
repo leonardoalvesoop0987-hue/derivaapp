@@ -46,13 +46,15 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
 
   let availableCards: Card[] = [];
 
-  if (deck.type === "COUPLE_CUSTOM") {
+  if (deck.type === "COUPLE_CUSTOM" || deck.type === "CUSTOM") {
     const deckCards = await prisma.deckCard.findMany({
       where: { deck_id: input.deckId, is_active: true },
       include: { card: true }
     });
-    availableCards = deckCards.map(dc => dc.card).filter(c => c.is_active && !input.shownCardIds.includes(c.id));
+    // In custom decks, the card must be available for custom selection
+    availableCards = deckCards.map(dc => dc.card).filter(c => c.is_active && c.is_available_in_custom_selection && !input.shownCardIds.includes(c.id));
   } else {
+    // For System or Official decks
     availableCards = await prisma.card.findMany({
       where: {
         deck_id: input.deckId,
@@ -60,6 +62,10 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
         id: { notIn: input.shownCardIds },
       },
     });
+
+    if (deck.is_default) {
+      availableCards = availableCards.filter(c => c.is_available_in_default);
+    }
   }
 
   // Filter based on unlocks
@@ -95,7 +101,7 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
 
   // Hard constraints based on mode
   if (input.mode === "ESTREIA") {
-    availableCards = availableCards.filter(c => c.intensity === "LEVE" || c.intensity === "QUENTE");
+    availableCards = availableCards.filter(c => (c.intensity === "LEVE" || c.intensity === "QUENTE") && c.is_available_in_estreia);
   } else if (input.mode === "COM_PREFERENCIAS") {
     if (experienceType === "SEM_VIDEO") availableCards = availableCards.filter(c => !c.requires_video);
     if (experienceType === "MAIS_ORAL") availableCards = availableCards.filter(c => c.primary_tag !== "PENETRACAO");

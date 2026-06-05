@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getAuthUser(req);
-  if (!user?.is_admin) {
+  const session = await getSession();
+  if (!session || !session.isAdmin) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 

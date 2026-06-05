@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
-import { womanQuestions, manQuestions, Question } from "@/lib/deriva/alignment-questions";
+import { useRouter, useSearchParams } from "next/navigation";
+import { womanQuestions, manQuestions, darkWomanQuestions, darkManQuestions, Question } from "@/lib/deriva/alignment-questions";
 
 export default function AlinhamentoFormPage({ params }: { params: Promise<{ participantId: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get("type") || "standard";
+  const formType = typeParam === "dark" ? "DARK_ALIGNMENT" : "STANDARD_ALIGNMENT";
+
   const { participantId } = use(params);
 
   const [loading, setLoading] = useState(true);
@@ -33,7 +37,13 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
   if (loading) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Carregando...</div>;
   if (!role) return null;
 
-  const questions = role === "WOMAN" ? womanQuestions : manQuestions;
+  let questions: Question[] = [];
+  if (role === "WOMAN") {
+    questions = formType === "DARK_ALIGNMENT" ? darkWomanQuestions : womanQuestions;
+  } else {
+    questions = formType === "DARK_ALIGNMENT" ? darkManQuestions : manQuestions;
+  }
+
   const q = questions[currentStep];
 
   const handleNext = () => {
@@ -58,7 +68,7 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
       const res = await fetch("/api/alignment/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ participantId, answers: answersPayload }),
+        body: JSON.stringify({ participantId, answers: answersPayload, formType }),
       });
       if (res.ok) setFinished(true);
       else alert("Erro ao salvar respostas.");

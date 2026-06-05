@@ -84,28 +84,44 @@ export default function ConfiguracoesPage() {
         ) : (
           <div className="space-y-4 pt-2">
             {unlocks.map((u) => (
-              <div key={u.key} className="flex items-center justify-between p-4 bg-[var(--color-background-secondary)] rounded-xl border border-[var(--color-border)]">
-                <div className="pr-4">
-                  <div className="font-medium flex items-center gap-2">
-                    {u.is_enabled ? <Unlock size={16} className="text-[var(--color-copper)]" /> : <Lock size={16} className="text-[var(--color-text-secondary)]" />}
-                    {u.title}
+              <div key={u.key} className="flex flex-col p-4 bg-[var(--color-background-secondary)] rounded-xl border border-[var(--color-border)]">
+                <div className="flex items-center justify-between">
+                  <div className="pr-4">
+                    <div className="font-medium flex items-center gap-2">
+                      {u.is_enabled ? <Unlock size={16} className="text-[var(--color-copper)]" /> : <Lock size={16} className="text-[var(--color-text-secondary)]" />}
+                      {u.title}
+                    </div>
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed">
+                      {u.description}
+                    </div>
                   </div>
-                  <div className="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed">
-                    {u.description}
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleUnlock(u.key, u.is_enabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                    u.is_enabled ? "bg-[var(--color-copper)]" : "bg-[var(--color-background-secondary)] border border-[var(--color-border)]"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      u.is_enabled ? "translate-x-6" : "translate-x-1"
+                  <button
+                    onClick={() => toggleUnlock(u.key, u.is_enabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                      u.is_enabled ? "bg-[var(--color-copper)]" : "bg-[var(--color-background-secondary)] border border-[var(--color-border)]"
                     }`}
-                  />
-                </button>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        u.is_enabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {u.is_enabled && u.key === "DARK_THIRD_IMAGINATION" && (
+                  <div className="mt-4 pt-4 border-t border-[var(--color-border)] text-sm space-y-3">
+                    <p className="text-[var(--color-text-secondary)]">
+                      Antes de usar esse conteúdo, recomendamos que os dois respondam o Alinhamento avançado.
+                    </p>
+                    <Link
+                      href="/app/alinhamento"
+                      className="inline-block text-[var(--color-copper)] hover:text-white transition-colors"
+                    >
+                      Responder alinhamento avançado →
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
           </div>

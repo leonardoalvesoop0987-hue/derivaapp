@@ -2,21 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { AdminDeckModal, AdminDeck } from "@/components/AdminDeckModal";
 
-type Deck = {
-  id: string;
-  name: string;
-  slug: string | null;
-  type: string;
-  is_active: boolean;
-  requires_couple_unlock: boolean;
-  unlock_group_key: string | null;
+type Deck = AdminDeck & {
   _count: { cards: number };
 };
 
 export default function AdminDecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDeck, setSelectedDeck] = useState<AdminDeck | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/decks")
@@ -74,9 +69,9 @@ export default function AdminDecksPage() {
 
             <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--color-border)]">
               <span className="text-xs text-[var(--color-text-secondary)]">
-                {deck._count.cards} cartas
+                {deck._count?.cards || 0} cartas
               </span>
-              <button className="text-xs text-[var(--color-copper)] hover:underline" onClick={() => alert("Editar em breve.")}>
+              <button className="text-xs text-[var(--color-copper)] hover:underline" onClick={() => setSelectedDeck(deck as AdminDeck)}>
                 Editar
               </button>
             </div>
@@ -88,6 +83,17 @@ export default function AdminDecksPage() {
           </div>
         )}
       </div>
+
+      {selectedDeck && (
+        <AdminDeckModal
+          deck={selectedDeck}
+          isOpen={true}
+          onClose={() => setSelectedDeck(null)}
+          onSave={(updatedDeck) => {
+            setDecks(decks.map((d) => (d.id === updatedDeck.id ? updatedDeck : d)));
+          }}
+        />
+      )}
     </div>
   );
 }

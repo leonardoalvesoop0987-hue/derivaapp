@@ -10,15 +10,31 @@ export async function POST(req: Request) {
     if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { mode, length, maxIntensity, musicEnabled, preferencesJson } = body;
+    const { mode, length, maxIntensity, musicEnabled, preferencesJson, deckId } = body;
 
-    // Get default deck
-    const deck = await prisma.deck.findFirst({
-      where: { is_default: true, type: 'SYSTEM' }
-    });
+    let deck;
+    if (deckId) {
+      deck = await prisma.deck.findUnique({ where: { id: deckId } });
+      if (!deck) return NextResponse.json({ error: "Deck não encontrado" }, { status: 404 });
 
-    if (!deck) {
-      return NextResponse.json({ error: "Nenhum deck padrão encontrado" }, { status: 500 });
+      if (deck.requires_couple_unlock && deck.unlock_group_key) {
+        const unlock = await prisma.coupleUnlock.findUnique({
+          where: {
+            user_id_unlock_group_key: {
+              user_id: userSession.userId,
+              unlock_group_key: deck.unlock_group_key
+            }
+          }
+        });
+        if (!unlock || !unlock.is_enabled) {
+          return NextResponse.json({ error: "Deck bloqueado. Desbloqueie nas configurações." }, { status: 403 });
+        }
+      }
+    } else {
+      deck = await prisma.deck.findFirst({
+        where: { is_default: true, type: 'SYSTEM' }
+      });
+      if (!deck) return NextResponse.json({ error: "Nenhum deck padrão encontrado" }, { status: 500 });
     }
 
     let targetCardCount = 10;

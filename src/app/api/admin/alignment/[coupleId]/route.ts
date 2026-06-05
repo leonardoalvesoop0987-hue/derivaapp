@@ -32,6 +32,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ coupleId
       responses: responses.map(r => ({
         id: r.id,
         role: r.participant_role,
+        form_type: r.form_type,
         version: r.version,
         completed_at: r.completed_at,
         answers: JSON.parse(r.answers_json),

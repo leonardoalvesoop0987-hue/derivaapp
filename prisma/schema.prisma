@@ -468,6 +468,7 @@ model PrivateAlignmentResponse {
   user_id           String
   participant_id    String
   participant_role  ParticipantRole
+  form_type         String          @default("STANDARD_ALIGNMENT")
   version           Int
   questions_version String
   answers_json      String

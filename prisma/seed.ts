@@ -698,6 +698,37 @@ async function main() {
         stage: (card as Record<string, unknown>).stage,
         erotic_function: (card as Record<string, unknown>).erotic_function,
         progression_role: (card as Record<string, unknown>).progression_role,
+        requires_couple_unlock: card.system_key === "deriva-v1-card-041" ? true : false,
+        unlock_group_key: card.system_key === "deriva-v1-card-041" ? "DARK_THIRD_IMAGINATION" : null,
+      }
+    });
+  }
+
+  // Ensure Unlock Group exists
+  let darkGroup = await prisma.unlockGroup.findUnique({ where: { key: 'DARK_THIRD_IMAGINATION' } });
+  if (!darkGroup) {
+    darkGroup = await prisma.unlockGroup.create({
+      data: {
+        key: 'DARK_THIRD_IMAGINATION',
+        title: 'Tons mais escuros',
+        description: 'Fantasias com terceiros invisíveis, ciúme consentido e papéis avançados.',
+        is_active: true,
+      }
+    });
+  }
+
+  // Ensure Dark Deck exists
+  let darkDeck = await prisma.deck.findUnique({ where: { system_key: 'deriva-dark-v1' } });
+  if (!darkDeck) {
+    darkDeck = await prisma.deck.create({
+      data: {
+        system_key: 'deriva-dark-v1',
+        name: 'Tons mais escuros',
+        description: 'Um deck focado exclusivamente em ciúme consentido, imaginação com terceiros e papéis intensos.',
+        type: 'OFFICIAL',
+        is_default: false,
+        requires_couple_unlock: true,
+        unlock_group_key: 'DARK_THIRD_IMAGINATION',
       }
     });
   }

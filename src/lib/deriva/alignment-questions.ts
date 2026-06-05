@@ -9,7 +9,8 @@ export interface Question {
   audience: "WOMAN" | "MAN";
 }
 
-export const alignmentQuestionsVersion = "2026-06-v1";
+export const alignmentQuestionsVersion = "2026-06-standard-v1";
+export const darkAlignmentQuestionsVersion = "2026-06-dark-v1";
 
 export const womanQuestions: Question[] = [
   {
@@ -183,42 +184,28 @@ export const womanQuestions: Question[] = [
     id: "w15",
     audience: "WOMAN",
     type: "single_choice",
-    text: "Sobre imaginar situações durante o sexo, o que parece aceitável para você?",
+    text: "Você prefere que fantasias e simulações fiquem apenas entre vocês dois ou aceitaria conhecer uma área avançada separada?",
     options: [
-      { value: "A", label: "Apenas fantasias sem terceiros." },
-      { value: "B", label: "Fantasias com terceiros fictícios, sem nomes reais." },
-      { value: "C", label: "Imaginação livre, desde que ninguém precise revelar nada." },
-      { value: "D", label: "Não gosto de envolver esse tipo de imaginação." }
+      { value: "A", label: "Prefiro apenas fantasias entre nós dois." },
+      { value: "B", label: "Tenho curiosidade sobre uma área avançada, mas com muito cuidado." },
+      { value: "C", label: "Talvez, só depois de entender melhor." },
+      { value: "D", label: "Não quero esse tipo de conteúdo avançado." }
     ]
   },
   {
     id: "w16",
     audience: "WOMAN",
-    type: "single_choice",
-    text: "Você já imaginou alguma situação diferente durante o sexo, mesmo sem intenção de viver isso na realidade?",
-    options: [
-      { value: "A", label: "Sim, com outra mulher." },
-      { value: "B", label: "Sim, com outro homem." },
-      { value: "C", label: "Sim, com mais de uma pessoa na fantasia." },
-      { value: "D", label: "Sim, mas prefiro não classificar." },
-      { value: "E", label: "Não, nunca imaginei." }
-    ],
-    note: "Imaginar algo não significa querer fazer na vida real."
-  },
-  {
-    id: "w17",
-    audience: "WOMAN",
     type: "multi_choice",
-    text: "O que seria inaceitável para você em fantasias ou simulações?",
+    text: "O que seria inaceitável para você em qualquer fantasia, simulação ou carta?",
     options: [
-      { value: "A", label: "Pessoas conhecidas do casal." },
+      { value: "A", label: "Pessoas reais conhecidas." },
       { value: "B", label: "Amigos ou amigas." },
       { value: "C", label: "Colegas de trabalho, academia ou estudo." },
       { value: "D", label: "Ex-relacionamentos." },
       { value: "E", label: "Parentes ou qualquer coisa ligada a família." },
-      { value: "F", label: "Situações com humilhação pesada." },
-      { value: "G", label: "Situações de violência, coerção ou medo real." },
-      { value: "H", label: "Prefiro não envolver terceiros nem fictícios." }
+      { value: "F", label: "Humilhação pesada." },
+      { value: "G", label: "Violência, coerção ou medo real." },
+      { value: "H", label: "Qualquer assunto que envolva terceiros, mesmo fictícios." }
     ]
   },
   {
@@ -572,28 +559,28 @@ export const manQuestions: Question[] = [
     id: "m14",
     audience: "MAN",
     type: "single_choice",
-    text: "Sobre fantasias, o que parece aceitável para você?",
+    text: "Você prefere que fantasias e simulações fiquem apenas entre vocês dois ou aceitaria conhecer uma área avançada separada?",
     options: [
-      { value: "A", label: "Apenas fantasias sem terceiros." },
-      { value: "B", label: "Terceiros fictícios, sem nomes reais." },
-      { value: "C", label: "Imaginação livre, sem revelar detalhes." },
-      { value: "D", label: "Não gosto desse tipo de fantasia." }
+      { value: "A", label: "Prefiro apenas fantasias entre nós dois." },
+      { value: "B", label: "Tenho curiosidade sobre uma área avançada, mas com muito cuidado." },
+      { value: "C", label: "Talvez, só depois de entender melhor." },
+      { value: "D", label: "Não quero esse tipo de conteúdo avançado." }
     ]
   },
   {
     id: "m15",
     audience: "MAN",
     type: "multi_choice",
-    text: "O que seria inaceitável para você em fantasias ou simulações?",
+    text: "O que seria inaceitável para você em qualquer fantasia, simulação ou carta?",
     options: [
-      { value: "A", label: "Pessoas conhecidas do casal." },
+      { value: "A", label: "Pessoas reais conhecidas." },
       { value: "B", label: "Amigos ou amigas." },
       { value: "C", label: "Colegas de trabalho, academia ou estudo." },
       { value: "D", label: "Ex-relacionamentos." },
       { value: "E", label: "Parentes ou qualquer coisa ligada a família." },
       { value: "F", label: "Humilhação pesada." },
       { value: "G", label: "Violência, coerção ou medo real." },
-      { value: "H", label: "Prefiro não envolver terceiros nem fictícios." }
+      { value: "H", label: "Qualquer assunto que envolva terceiros, mesmo fictícios." }
     ]
   },
   {
@@ -783,6 +770,298 @@ export const manQuestions: Question[] = [
       { value: "D", label: "Ter mais iniciativa." },
       { value: "E", label: "Me soltar mais." },
       { value: "F", label: "Não sei ainda." }
+    ]
+  }
+];
+
+export const darkWomanQuestions: Question[] = [
+  {
+    id: "dw01",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Como você se sente com a ideia de fantasias apenas imaginárias envolvendo terceiros fictícios?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com muito cuidado." },
+      { value: "C", label: "Acho desconfortável, mas posso refletir." },
+      { value: "D", label: "Não quero esse tipo de fantasia." }
+    ]
+  },
+  {
+    id: "dw02",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Para você, existe diferença entre imaginar algo e desejar que aconteça na vida real?",
+    options: [
+      { value: "A", label: "Sim, são coisas totalmente diferentes." },
+      { value: "B", label: "Sim, mas ainda pode me causar ciúme." },
+      { value: "C", label: "Não tenho certeza." },
+      { value: "D", label: "Para mim, imaginar já seria desconfortável demais." }
+    ]
+  },
+  {
+    id: "dw03",
+    audience: "WOMAN",
+    type: "multi_choice",
+    text: "Quais limites devem ser respeitados em qualquer fantasia com terceiros?",
+    options: [
+      { value: "A", label: "Nada com pessoas reais conhecidas." },
+      { value: "B", label: "Nada com amigos ou amigas." },
+      { value: "C", label: "Nada com colegas de trabalho, academia ou estudo." },
+      { value: "D", label: "Nada com ex-relacionamentos." },
+      { value: "E", label: "Nada com parentes ou família." },
+      { value: "F", label: "Nada com humilhação pesada." },
+      { value: "G", label: "Nada que pareça convite real." },
+      { value: "H", label: "Nada que precise ser contado com nomes." }
+    ]
+  },
+  {
+    id: "dw04",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Você aceitaria cartas com terceira pessoa totalmente fictícia, sem nome real e sem rosto definido?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez, dependendo do tom." },
+      { value: "C", label: "Só se for muito leve." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dw05",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Você aceitaria uma fantasia de 'terceiro invisível', em que tudo fica apenas na narração e na imaginação?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez." },
+      { value: "C", label: "Só se for leve e sem detalhes demais." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dw06",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Provocações de ciúme consentido poderiam excitar você ou te deixariam desconfortável?",
+    options: [
+      { value: "A", label: "Poderiam me excitar." },
+      { value: "B", label: "Talvez, se forem leves." },
+      { value: "C", label: "Acho perigoso para mim." },
+      { value: "D", label: "Não quero esse tipo de provocação." }
+    ]
+  },
+  {
+    id: "dw07",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Você aceitaria uma 'confissão fictícia' dentro do jogo, sabendo que é encenação?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez, se ficar claro que é brincadeira." },
+      { value: "C", label: "Só se for bem leve." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dw08",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Fantasia de ver ou imaginar seu parceiro com outra pessoa, sem humilhação forte e sem intenção real, parece aceitável para você?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com limites." },
+      { value: "C", label: "Acho que me causaria ciúme." },
+      { value: "D", label: "Não aceito." }
+    ]
+  },
+  {
+    id: "dw09",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Fantasia de seu parceiro imaginar você com outra pessoa, sem intenção real, parece aceitável para você?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com limites." },
+      { value: "C", label: "Acho que me deixaria insegura." },
+      { value: "D", label: "Não aceito." }
+    ]
+  },
+  {
+    id: "dw10",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Você aceitaria cartas que usem apenas palavras e imaginação, sem qualquer ação real com terceiros?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez." },
+      { value: "C", label: "Só se forem leves." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dw11",
+    audience: "WOMAN",
+    type: "text",
+    text: "Qual é o limite mais importante para você nesse tipo de conteúdo?",
+    note: "Prefiro não responder agora."
+  },
+  {
+    id: "dw12",
+    audience: "WOMAN",
+    type: "single_choice",
+    text: "Depois de responder isso, você se sente mais confortável ou menos confortável com a ideia de desbloquear Tons mais escuros?",
+    options: [
+      { value: "A", label: "Mais confortável." },
+      { value: "B", label: "Igual." },
+      { value: "C", label: "Menos confortável." },
+      { value: "D", label: "Prefiro não desbloquear." }
+    ]
+  }
+];
+
+export const darkManQuestions: Question[] = [
+  {
+    id: "dm01",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Como você se sente com a ideia de fantasias apenas imaginárias envolvendo terceiros fictícios?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com muito cuidado." },
+      { value: "C", label: "Acho desconfortável, mas posso refletir." },
+      { value: "D", label: "Não quero esse tipo de fantasia." }
+    ]
+  },
+  {
+    id: "dm02",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Para você, existe diferença entre imaginar algo e desejar que aconteça na vida real?",
+    options: [
+      { value: "A", label: "Sim, são coisas totalmente diferentes." },
+      { value: "B", label: "Sim, mas ainda pode causar ciúme." },
+      { value: "C", label: "Não tenho certeza." },
+      { value: "D", label: "Para mim, imaginar já seria desconfortável demais." }
+    ]
+  },
+  {
+    id: "dm03",
+    audience: "MAN",
+    type: "multi_choice",
+    text: "Quais limites devem ser respeitados em qualquer fantasia com terceiros?",
+    options: [
+      { value: "A", label: "Nada com pessoas reais conhecidas." },
+      { value: "B", label: "Nada com amigos ou amigas." },
+      { value: "C", label: "Nada com colegas de trabalho, academia ou estudo." },
+      { value: "D", label: "Nada com ex-relacionamentos." },
+      { value: "E", label: "Nada com parentes ou família." },
+      { value: "F", label: "Nada com humilhação pesada." },
+      { value: "G", label: "Nada que pareça convite real." },
+      { value: "H", label: "Nada que precise ser contado com nomes." }
+    ]
+  },
+  {
+    id: "dm04",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Você aceitaria cartas com terceira pessoa totalmente fictícia, sem nome real e sem rosto definido?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez, dependendo do tom." },
+      { value: "C", label: "Só se for muito leve." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dm05",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Você aceitaria uma fantasia de 'terceiro invisível', em que tudo fica apenas na narração e na imaginação?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez." },
+      { value: "C", label: "Só se for leve e sem detalhes demais." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dm06",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Provocações de ciúme consentido poderiam excitar você ou te deixariam desconfortável?",
+    options: [
+      { value: "A", label: "Poderiam me excitar." },
+      { value: "B", label: "Talvez, se forem leves." },
+      { value: "C", label: "Acho perigoso para mim." },
+      { value: "D", label: "Não quero esse tipo de provocação." }
+    ]
+  },
+  {
+    id: "dm07",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Você aceitaria uma 'confissão fictícia' dentro do jogo, sabendo que é encenação?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez, se ficar claro que é brincadeira." },
+      { value: "C", label: "Só se for bem leve." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dm08",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Fantasia de imaginar sua parceira com outra pessoa, sem humilhação forte e sem intenção real, parece aceitável para você?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com limites." },
+      { value: "C", label: "Acho que me causaria ciúme." },
+      { value: "D", label: "Não aceito." }
+    ]
+  },
+  {
+    id: "dm09",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Fantasia de sua parceira imaginar você com outra pessoa, sem intenção real, parece aceitável para você?",
+    options: [
+      { value: "A", label: "Tenho curiosidade." },
+      { value: "B", label: "Talvez, mas com limites." },
+      { value: "C", label: "Acho que me deixaria inseguro." },
+      { value: "D", label: "Não aceito." }
+    ]
+  },
+  {
+    id: "dm10",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Você aceitaria cartas que usem apenas palavras e imaginação, sem qualquer ação real com terceiros?",
+    options: [
+      { value: "A", label: "Sim." },
+      { value: "B", label: "Talvez." },
+      { value: "C", label: "Só se forem leves." },
+      { value: "D", label: "Não." }
+    ]
+  },
+  {
+    id: "dm11",
+    audience: "MAN",
+    type: "text",
+    text: "Qual é o limite mais importante para você nesse tipo de conteúdo?",
+    note: "Prefiro não responder agora."
+  },
+  {
+    id: "dm12",
+    audience: "MAN",
+    type: "single_choice",
+    text: "Depois de responder isso, você se sente mais confortável ou menos confortável com a ideia de desbloquear Tons mais escuros?",
+    options: [
+      { value: "A", label: "Mais confortável." },
+      { value: "B", label: "Igual." },
+      { value: "C", label: "Menos confortável." },
+      { value: "D", label: "Prefiro não desbloquear." }
     ]
   }
 ];

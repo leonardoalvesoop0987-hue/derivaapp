@@ -23,8 +23,10 @@ export default function AdminAlinhamentoDetailPage({ params }: { params: Promise
   if (loading) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Carregando...</div>;
   if (!data || !data.couple) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Não encontrado.</div>;
 
-  const womanResponses = data.responses.filter((r: unknown) => r.role === "WOMAN");
-  const manResponses = data.responses.filter((r: unknown) => r.role === "MAN");
+  const standardWomanResponses = data.responses.filter((r: unknown) => r.role === "WOMAN" && r.form_type === "STANDARD_ALIGNMENT");
+  const standardManResponses = data.responses.filter((r: unknown) => r.role === "MAN" && r.form_type === "STANDARD_ALIGNMENT");
+  const darkWomanResponses = data.responses.filter((r: unknown) => r.role === "WOMAN" && r.form_type === "DARK_ALIGNMENT");
+  const darkManResponses = data.responses.filter((r: unknown) => r.role === "MAN" && r.form_type === "DARK_ALIGNMENT");
 
   const renderResponse = (resp: unknown) => (
     <div key={resp.id} className="bg-[var(--color-background-secondary)] p-6 rounded-xl border border-[var(--color-border)] mb-6">
@@ -55,7 +57,7 @@ export default function AdminAlinhamentoDetailPage({ params }: { params: Promise
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       <div className="flex items-center gap-4">
         <Link href="/admin/alinhamentos" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">
           &larr; Voltar
@@ -63,22 +65,47 @@ export default function AdminAlinhamentoDetailPage({ params }: { params: Promise
         <h1 className="text-2xl font-light tracking-wide text-white">Respostas da Conta: {data.couple.username}</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Respostas Femininas</h2>
-          {womanResponses.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
-          ) : (
-            womanResponses.map(renderResponse)
-          )}
+      <div className="space-y-8">
+        <h2 className="text-2xl font-medium text-white border-b border-[var(--color-border)] pb-2">Alinhamento Padrão</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Feminino</h3>
+            {standardWomanResponses.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+            ) : (
+              standardWomanResponses.map(renderResponse)
+            )}
+          </div>
+          <div>
+            <h3 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Masculino</h3>
+            {standardManResponses.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+            ) : (
+              standardManResponses.map(renderResponse)
+            )}
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-medium mb-6 text-[var(--color-copper)] border-b border-[var(--color-copper)]/30 pb-2">Respostas Masculinas</h2>
-          {manResponses.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
-          ) : (
-            manResponses.map(renderResponse)
-          )}
+      </div>
+
+      <div className="space-y-8">
+        <h2 className="text-2xl font-medium text-[var(--color-wine)] border-b border-[var(--color-border)] pb-2">Tons Mais Escuros (Avançado)</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-xl font-medium mb-6 text-[var(--color-wine)]/80 border-b border-[var(--color-wine)]/30 pb-2">Feminino</h3>
+            {darkWomanResponses.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+            ) : (
+              darkWomanResponses.map(renderResponse)
+            )}
+          </div>
+          <div>
+            <h3 className="text-xl font-medium mb-6 text-[var(--color-wine)]/80 border-b border-[var(--color-wine)]/30 pb-2">Masculino</h3>
+            {darkManResponses.length === 0 ? (
+              <p className="text-sm text-[var(--color-text-secondary)]">Nenhuma resposta registrada.</p>
+            ) : (
+              darkManResponses.map(renderResponse)
+            )}
+          </div>
         </div>
       </div>
     </div>

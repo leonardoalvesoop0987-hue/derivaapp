@@ -14,8 +14,8 @@ export async function GET() {
       include: {
         responses: {
           orderBy: { version: 'desc' },
-          take: 1,
           select: {
+            form_type: true,
             version: true,
             completed_at: true,
           }
@@ -23,14 +23,37 @@ export async function GET() {
       }
     });
 
+    const darkUnlock = await prisma.coupleUnlock.findUnique({
+      where: {
+        user_id_unlock_group_key: {
+          user_id: session.userId,
+          unlock_group_key: "DARK_THIRD_IMAGINATION"
+        }
+      }
+    });
+    
+    const isDarkUnlocked = !!darkUnlock?.is_enabled;
+
     return NextResponse.json({
-      participants: participants.map(p => ({
-        id: p.id,
-        name: p.name,
-        role: p.role,
-        has_responded: p.responses.length > 0,
-        last_version: p.responses[0]?.version || 0,
-      }))
+      is_dark_unlocked: isDarkUnlocked,
+      participants: participants.map(p => {
+        const standardResponse = p.responses.find(r => r.form_type === "STANDARD_ALIGNMENT");
+        const darkResponse = p.responses.find(r => r.form_type === "DARK_ALIGNMENT");
+        
+        return {
+          id: p.id,
+          name: p.name,
+          role: p.role,
+          standard: {
+            has_responded: !!standardResponse,
+            last_version: standardResponse?.version || 0,
+          },
+          dark: {
+            has_responded: !!darkResponse,
+            last_version: darkResponse?.version || 0,
+          }
+        };
+      })
     });
   } catch (error) {
     console.error(error);

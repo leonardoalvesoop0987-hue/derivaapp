@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { alignmentQuestionsVersion } from "@/lib/deriva/alignment-questions";
+import { alignmentQuestionsVersion, darkAlignmentQuestionsVersion } from "@/lib/deriva/alignment-questions";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { participantId, answers } = body;
+    const { participantId, answers, formType = "STANDARD_ALIGNMENT" } = body;
 
     if (!participantId || !answers) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
@@ -26,18 +26,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Participante inválido" }, { status: 403 });
     }
 
-    // Get current version
+    // Get current version for this specific form type
     const lastResponse = await prisma.privateAlignmentResponse.findFirst({
-      where: { participant_id: participant.id },
+      where: { 
+        participant_id: participant.id,
+        form_type: formType
+      },
       orderBy: { version: 'desc' },
     });
 
     const newVersion = (lastResponse?.version || 0) + 1;
+    
+    const isDark = formType === "DARK_ALIGNMENT";
+    const questionsVer = isDark ? darkAlignmentQuestionsVersion : alignmentQuestionsVersion;
 
     const answersJson = JSON.stringify({
-      form: "private_alignment",
-      audience: participant.role,
-      questionsVersion: alignmentQuestionsVersion,
+      formType: formType,
+      unlockGroup: isDark ? "DARK_THIRD_IMAGINATION" : undefined,
+      audience: participant.role.toLowerCase(),
+      questionsVersion: questionsVer,
       submittedAt: new Date().toISOString(),
       answers,
     });
@@ -47,8 +54,9 @@ export async function POST(req: Request) {
         user_id: session.userId,
         participant_id: participant.id,
         participant_role: participant.role,
+        form_type: formType,
         version: newVersion,
-        questions_version: alignmentQuestionsVersion,
+        questions_version: questionsVer,
         answers_json: answersJson,
         completed_at: new Date(),
       }
