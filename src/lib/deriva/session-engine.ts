@@ -221,7 +221,7 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
   const front_text = categoryFronts[Math.floor(Math.random() * categoryFronts.length)];
 
   // Humanize the body text
-  let rendered_body = card.body || "";
+  let rendered_body = (card.body as string) || "";
   
   // Replace generic roles
   if (receiver === "MAN") {
