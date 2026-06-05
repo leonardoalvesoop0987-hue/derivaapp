@@ -21,7 +21,7 @@ export function RelationshipSection() {
           <h2 className="text-3xl font-bold mb-6 text-text-primary">Para casais que buscam ainda mais intensidade.</h2>
           <p className="text-text-secondary text-lg leading-relaxed max-w-2xl mx-auto">
             O Deriva foi feito para casais fortes, que já escolheram estar juntos e querem elevar o nível do desejo, da intimidade e da presença.
-            A rotina é natural, mas a chama sempre pode ser intensificada. Descubram juntos novas formas de provocar, sentir e se conectar com confiança e entrega total.
+            Descubram juntos novas formas de provocar, sentir e se conectar com confiança e entrega total, criando noites que vocês vão querer repetir.
           </p>
         </motion.div>
       </div>

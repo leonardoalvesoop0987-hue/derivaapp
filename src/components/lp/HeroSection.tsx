@@ -5,9 +5,10 @@ import { ChevronRight } from "lucide-react";
 
 interface HeroSectionProps {
   onBuyClick: () => void;
+  isLoading?: boolean;
 }
 
-export function HeroSection({ onBuyClick }: HeroSectionProps) {
+export function HeroSection({ onBuyClick, isLoading = false }: HeroSectionProps) {
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -31,9 +32,17 @@ export function HeroSection({ onBuyClick }: HeroSectionProps) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button 
             onClick={onBuyClick}
-            className="w-full sm:w-auto bg-red-deep hover:bg-wine text-text-primary font-medium px-8 py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-red-deep/25"
+            disabled={isLoading}
+            className="w-full sm:w-auto bg-red-deep hover:bg-wine text-text-primary font-medium px-8 py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-red-deep/25 relative disabled:opacity-80 disabled:cursor-not-allowed"
           >
-            Quero o Deriva por R$ 19,90 <ChevronRight size={18} />
+            {isLoading ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin my-1" />
+            ) : (
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] line-through opacity-70 leading-tight">De R$ 199,00</span>
+                <span className="font-bold leading-tight flex items-center gap-1">No Mês dos Namorados por R$ 19,90 <ChevronRight size={18} /></span>
+              </div>
+            )}
           </button>
           <a 
             href="/app"

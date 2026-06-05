@@ -16,7 +16,7 @@ export function TestimonialsSection() {
       location: "Belo Horizonte/MG, 2024"
     },
     {
-      text: "Eu achei que seria só brincadeira, mas ajudou muito a tirar a gente do automático. Não era falta de amor, era falta de novidade. Fez uma diferença enorme na nossa conexão.",
+      text: "Eu achei que seria só brincadeira, mas a experiência foi além do que imaginávamos. Fez uma diferença enorme na forma como a gente se entrega, revelando um lado do outro que não conhecíamos.",
       author: "Renata",
       location: "Curitiba/PR, 2025"
     },

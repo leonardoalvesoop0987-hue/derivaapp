@@ -26,7 +26,7 @@ export function WhyItWorksSection() {
           {[
             { icon: <Sparkles className="text-copper" size={28} />, title: "Criação do Clima", desc: "Começamos devagar. Reduzimos a pressão de 'inventar algo novo' guiando vocês com leveza." },
             { icon: <ArrowUpRight className="text-copper" size={28} />, title: "Construção do Desejo", desc: "Intercalamos momentos de respiro e provocação, aumentando a expectativa de forma natural." },
-            { icon: <Maximize2 className="text-copper" size={28} />, title: "Surpresa sem Pressão", desc: "Tudo foi pensado para casais que já têm intimidade, mas que querem sair do automático com segurança." }
+            { icon: <Maximize2 className="text-copper" size={28} />, title: "Surpresa sem Pressão", desc: "Tudo foi pensado para casais que já têm intimidade, mas que querem explorar novas camadas da relação com segurança." }
           ].map((b, i) => (
             <motion.div 
               key={i}

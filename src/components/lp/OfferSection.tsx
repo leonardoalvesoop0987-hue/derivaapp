@@ -5,9 +5,10 @@ import { ChevronRight } from "lucide-react";
 
 interface OfferSectionProps {
   onBuyClick: () => void;
+  isLoading?: boolean;
 }
 
-export function OfferSection({ onBuyClick }: OfferSectionProps) {
+export function OfferSection({ onBuyClick, isLoading = false }: OfferSectionProps) {
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -48,9 +49,16 @@ export function OfferSection({ onBuyClick }: OfferSectionProps) {
               <span className="text-xs text-text-secondary block mb-6">Pagamento único e vitalício</span>
               <button 
                 onClick={onBuyClick}
-                className="w-full md:w-auto bg-red-deep hover:bg-wine text-text-primary font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 shadow-lg shadow-red-deep/20 flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-red-deep hover:bg-wine text-text-primary font-bold text-lg py-5 rounded-xl transition-all duration-300 shadow-xl shadow-red-deep/20 mb-4 disabled:opacity-80 disabled:cursor-not-allowed flex items-center justify-center min-h-[64px]"
               >
-                Quero começar com o Deriva <ChevronRight size={20} />
+                {isLoading ? (
+                  <div className="w-6 h-6 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                ) : (
+                  <>
+                    Quero começar com o Deriva <ChevronRight size={20} />
+                  </>
+                )}
               </button>
             </div>
           </div>

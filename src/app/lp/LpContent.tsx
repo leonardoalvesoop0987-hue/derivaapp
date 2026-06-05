@@ -18,36 +18,21 @@ import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
 
 export function LpContent() {
-  const [showToast, setShowToast] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBuyClick = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 4000);
+    setIsLoading(true);
   };
 
   return (
     <div className="relative overflow-x-hidden">
       {/* Global Sales Toast */}
-      <AnimatePresence>
-        {showToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-copper/30 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 w-[90%] max-w-md"
-          >
-            <div className="w-2 h-2 rounded-full bg-copper animate-pulse shrink-0" />
-            <p className="text-sm font-medium text-text-primary">
-              Compra online em ativação. Em breve você poderá finalizar o pedido por aqui.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Removed Toast */}
 
-      <HeroSection onBuyClick={handleBuyClick} />
+      <HeroSection onBuyClick={handleBuyClick} isLoading={isLoading} />
       <WhyItWorksSection />
       <ForHerForHimSection />
-      <AppAndPhysicalSection onBuyClick={handleBuyClick} />
+      <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={isLoading} />
       <DeckStructureSection />
       <SmartRandomSection />
       <IdealMomentsSection />
@@ -55,7 +40,7 @@ export function LpContent() {
       <RelationshipSection />
       <TestimonialsSection />
       <FaqSection />
-      <OfferSection onBuyClick={handleBuyClick} />
+      <OfferSection onBuyClick={handleBuyClick} isLoading={isLoading} />
       <LpFooter />
     </div>
   );

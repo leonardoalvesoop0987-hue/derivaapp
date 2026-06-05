@@ -5,9 +5,10 @@ import { Smartphone, Package, ChevronRight } from "lucide-react";
 
 interface AppAndPhysicalSectionProps {
   onBuyClick: () => void;
+  isLoading?: boolean;
 }
 
-export function AppAndPhysicalSection({ onBuyClick }: AppAndPhysicalSectionProps) {
+export function AppAndPhysicalSection({ onBuyClick, isLoading = false }: AppAndPhysicalSectionProps) {
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -85,9 +86,17 @@ export function AppAndPhysicalSection({ onBuyClick }: AppAndPhysicalSectionProps
         <div className="mt-16 text-center">
           <button 
             onClick={onBuyClick}
-            className="bg-transparent border border-copper hover:bg-copper/10 text-copper font-medium px-8 py-3 rounded-full transition-all duration-300 inline-flex items-center justify-center gap-2"
+            disabled={isLoading}
+            className="bg-transparent border border-copper hover:bg-copper/10 text-copper font-medium px-8 py-3 rounded-full transition-all duration-300 inline-flex items-center justify-center gap-2 relative disabled:opacity-80 disabled:cursor-not-allowed"
           >
-            Garantir os dois por R$ 19,90 <ChevronRight size={18} />
+            {isLoading ? (
+              <div className="w-5 h-5 rounded-full border-2 border-copper/30 border-t-copper animate-spin my-1" />
+            ) : (
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] line-through opacity-70 leading-tight">De R$ 199,00</span>
+                <span className="font-bold leading-tight flex items-center gap-1">Garantir no Mês dos Namorados por R$ 19,90 <ChevronRight size={18} /></span>
+              </div>
+            )}
           </button>
         </div>
       </div>

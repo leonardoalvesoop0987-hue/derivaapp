@@ -57,12 +57,12 @@ export function FaqSection() {
       a: "O app possui integração com um sistema de áudio interno e contínuo. As músicas variam de relaxantes a intensas para criar a trilha sonora perfeita sem sair da tela."
     },
     {
-      q: "É para casal em crise?",
-      a: "Não é uma terapia para casais em crise ou para salvar relacionamentos. É uma ferramenta de prazer para casais que já escolheram estar juntos e querem apenas combater a rotina e melhorar a intimidade."
+      q: "O Deriva é indicado para qual tipo de casal?",
+      a: "É uma ferramenta de prazer para casais que já têm uma ótima conexão e querem elevar o nível da intimidade, testar limites com segurança e explorar o desejo mútuo de forma guiada."
     },
     {
-      q: "Serve para casamento longo?",
-      a: "Sim, especialmente para eles. A rotina é natural, e o Deriva devolve a faísca e a novidade para quem já conhece perfeitamente as manias do parceiro, sem parecer forçado."
+      q: "Serve para casamentos longos?",
+      a: "Sim, especialmente para eles. O Deriva traz dinâmicas intensas e provocações que valorizam o fato de vocês já se conhecerem perfeitamente, proporcionando noites imprevisíveis e memoráveis."
     },
     {
       q: "A entrega é discreta?",

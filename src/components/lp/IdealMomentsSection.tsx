@@ -14,7 +14,7 @@ export function IdealMomentsSection() {
     { icon: <Coffee size={24} />, text: "Num fim de semana sem pressa ou horários" },
     { icon: <Plane size={24} />, text: "Em uma viagem para criar novas memórias" },
     { icon: <CalendarHeart size={24} />, text: "Aniversário de namoro ou casamento" },
-    { icon: <Moon size={24} />, text: "Quando a rotina ficou previsível demais" }
+    { icon: <Moon size={24} />, text: "Quando quiserem testar limites com segurança" }
   ];
 
   return (
@@ -23,7 +23,7 @@ export function IdealMomentsSection() {
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Quando usar o Deriva?</h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            O Deriva não é para ser usado todo dia. Ele foi feito para noites específicas onde a vontade é sair da rotina, mas a criatividade (ou a energia) está baixa. Funciona melhor quando vocês têm tempo, privacidade e vontade de sair do automático.
+            O Deriva não é para ser usado todo dia. Ele foi feito para noites específicas onde a intenção é elevar a conexão ao máximo de forma guiada e fluida. Funciona melhor quando vocês têm tempo, privacidade e vontade de explorar novos desejos juntos.
           </p>
         </motion.div>
 

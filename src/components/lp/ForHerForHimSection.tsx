@@ -23,7 +23,7 @@ export function ForHerForHimSection() {
       "Participar de uma experiência mais intensa",
     ],
     casal: [
-      "Quebrar a rotina com novidade segura",
+      "Descobrir novos desejos com segurança",
       "Criar uma memória difícil de esquecer",
       "Melhorar a intimidade e a presença",
       "Fortalecer uma relação já firme",
