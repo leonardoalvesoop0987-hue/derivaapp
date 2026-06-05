@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale";
 
 export default function AdminAlinhamentoDetailPage({ params }: { params: Promise<{ coupleId: string }> }) {
   const { coupleId } = use(params);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,10 +23,10 @@ export default function AdminAlinhamentoDetailPage({ params }: { params: Promise
   if (loading) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Carregando...</div>;
   if (!data || !data.couple) return <div className="p-8 text-center text-[var(--color-text-secondary)]">Não encontrado.</div>;
 
-  const womanResponses = data.responses.filter((r: any) => r.role === "WOMAN");
-  const manResponses = data.responses.filter((r: any) => r.role === "MAN");
+  const womanResponses = data.responses.filter((r: unknown) => r.role === "WOMAN");
+  const manResponses = data.responses.filter((r: unknown) => r.role === "MAN");
 
-  const renderResponse = (resp: any) => (
+  const renderResponse = (resp: unknown) => (
     <div key={resp.id} className="bg-[var(--color-background-secondary)] p-6 rounded-xl border border-[var(--color-border)] mb-6">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-[var(--color-border)]">
         <div>
@@ -41,7 +41,7 @@ export default function AdminAlinhamentoDetailPage({ params }: { params: Promise
       </div>
       
       <div className="space-y-6">
-        {resp.answers.answers.map((a: any, i: number) => (
+        {resp.answers.answers.map((a: unknown, i: number) => (
           <div key={i}>
             <div className="text-sm text-[var(--color-text-secondary)] mb-1 font-medium">{a.questionId} - {a.question}</div>
             <div className="text-base text-white bg-[var(--color-card)] p-3 rounded-lg border border-[var(--color-border)]">

@@ -37,34 +37,91 @@ enum SessionMode {
 
 enum CardTag {
   MASSAGEM
-  TOQUE
+  TOQUE_LEVE
+  TOQUE_INTIMO
   BEIJO
   RESPIRO
+  CONEXAO
   COMANDO_DELA
   COMANDO_DELE
   CONTROLE_DELA
   CONTROLE_DELE
-  ORAL
-  MAOS
-  PENETRACAO
-  SEM_PENETRACAO
-  VIDEO
-  MUSICA
-  ROLEPLAY
-  FANTASIA
-  TERCEIRO_IMAGINARIO
-  PROIBICAO
-  OLHAR
-  FALA
-  DIRTY_TALK
-  DOMINANCIA_LEVE
-  SUBMISSAO_LEVE
   FOCO_NELA
   FOCO_NELE
   FOCO_CASAL
-  COPIAR_ENERGIA
+  ORAL_NELA
+  ORAL_NELE
+  MAOS_NELA
+  MAOS_NELE
+  PENETRACAO
+  SEM_PENETRACAO
+  VIDEO
+  FANTASIA
+  ROLEPLAY
   PROVOCACAO
-  ENCERRAMENTO
+  PROIBICAO
+  DIRTY_TALK
+  IMAGINACAO
+  TERCEIRO_IMAGINARIO
+  COPIAR_ENERGIA
+  DOMINANCIA_LEVE
+  SUBMISSAO_LEVE
+  PICO
+  FECHAMENTO
+}
+
+enum SessionStage {
+  OPENING
+  WARMUP
+  TEASING
+  BUILDUP
+  INTENSE
+  PEAK
+  COOLDOWN
+  CLOSING
+}
+
+enum EroticFunction {
+  PREPARO
+  PROVOCACAO
+  PRAZER_NELA
+  PRAZER_NELE
+  PRAZER_CASAL
+  TRANSICAO
+  RESPIRO
+  FANTASIA
+  VIDEO_ESTIMULO
+  PICO
+  FECHAMENTO
+}
+
+enum BodyFocus {
+  GERAL
+  BOCA
+  MAOS
+  CORPO
+  GENITAL
+  PENETRACAO
+  MENTAL
+  VISUAL
+}
+
+enum RecipientFocus {
+  ELA
+  ELE
+  CASAL
+  SORTEADO
+}
+
+enum ProgressionRole {
+  ABRIR
+  AQUECER
+  PROVOCAR
+  INTENSIFICAR
+  SUSTENTAR
+  PICO
+  RESPIRAR
+  FECHAR
 }
 
 enum SessionLength {
@@ -189,7 +246,24 @@ model Card {
   requires_video Boolean       @default(false)
   receiver_rule  ReceiverRule?
   metadata_json  String?
-  tags           CardTag[]     @default([])
+  
+  // Classificação Avançada
+  primary_tag                CardTag?
+  secondary_tags             CardTag[]        @default([])
+  stage                      SessionStage?
+  erotic_function            EroticFunction?
+  body_focus                 BodyFocus?
+  recipient_focus            RecipientFocus?
+  progression_role           ProgressionRole?
+  cooldown_allowed           Boolean          @default(false)
+  closing_allowed            Boolean          @default(false)
+  can_follow_heavy           Boolean          @default(false)
+  requires_transition_before Boolean          @default(false)
+  avoid_near_repetition      Boolean          @default(true)
+  should_not_follow_tags     CardTag[]        @default([])
+  should_not_precede_tags    CardTag[]        @default([])
+  
+  tags           CardTag[]     @default([]) // Maintain legacy for now to avoid breaking changes immediately
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
 

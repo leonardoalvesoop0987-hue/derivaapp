@@ -5,10 +5,14 @@ import { config } from 'dotenv';
 
 config();
 
-const connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DATABASE_URL || '';
+
+if (connectionString.startsWith('prisma+postgres://localhost')) {
+  connectionString = 'postgres://postgres:postgres@localhost:51214/template1?sslmode=disable';
+}
+
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
-
 const prisma = new PrismaClient({ adapter });
 const cards = [
   {
@@ -20,6 +24,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "TOQUE_LEVE",
+    "stage": "OPENING",
+    "erotic_function": "PREPARO",
+    "progression_role": "ABRIR",
     "body": "A sessão começa com uma escolha sorteada:\n\n1. massagem livre no corpo inteiro;\n2. massagem como profissional e cliente;\n3. massagem profissional com pequenos deslizes provocantes.\n\nQuem recebe apenas relaxa e guia o ritmo com poucas palavras."
   },
   {
@@ -31,6 +39,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "TOQUE_LEVE",
+    "stage": "OPENING",
+    "erotic_function": "PREPARO",
+    "progression_role": "ABRIR",
     "body": "Quem conduz deve tocar o corpo inteiro da outra pessoa lentamente, sem ir direto às partes íntimas.\n\nA intenção é acordar o corpo antes de aumentar a intensidade.\n\nTempo sugerido: até 5 minutos."
   },
   {
@@ -42,6 +54,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "TOQUE_INTIMO",
+    "stage": "WARMUP",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "AQUECER",
     "body": "Quem recebe escolhe três partes do corpo para receber atenção.\n\nQuem conduz deve alternar mãos, boca e respiração, sem pressa."
   },
   {
@@ -53,6 +69,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PROIBICAO",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "Durante esta carta, quem conduz pode beijar, encostar e provocar, mas não pode ir direto para o ato principal.\n\nQuem recebe pode pedir mais intensidade, mas o limite da carta é manter o desejo crescendo.\n\nTempo máximo: 4 minutos."
   },
   {
@@ -64,6 +84,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "ROLEPLAY",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "Sorteiem quem será profissional e quem será cliente.\n\nA cena deve começar como uma massagem séria, mas aos poucos o toque passa a ficar mais íntimo e ambíguo.\n\nNada precisa ser exagerado. O clima está no deslize."
   },
   {
@@ -75,6 +99,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "CONEXAO",
+    "stage": "WARMUP",
+    "erotic_function": "PREPARO",
+    "progression_role": "AQUECER",
     "body": "Por alguns minutos, ninguém explica nada.\n\nSó toque, respiração, beijo e olhar.\n\nQuem conduz deve perceber o corpo da outra pessoa sem perguntar demais."
   },
   {
@@ -86,6 +114,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "RESPIRO",
+    "stage": "COOLDOWN",
+    "erotic_function": "RESPIRO",
+    "progression_role": "RESPIRAR",
     "body": "Pausa breve.\n\nTomem um gole, se aproximem e fiquem alguns segundos apenas se olhando.\n\nDepois, quem quiser pode dizer uma frase curta sobre o que está com vontade de fazer."
   },
   {
@@ -97,6 +129,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "BEIJO",
+    "stage": "WARMUP",
+    "erotic_function": "PREPARO",
+    "progression_role": "AQUECER",
     "body": "Comecem com beijo na boca.\n\nDepois, o beijo deve descer lentamente pelo pescoço, colo, barriga ou costas, sem pressa.\n\nTempo sugerido: até 3 minutos."
   },
   {
@@ -108,6 +144,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "DIRTY_TALK",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "Cada um deve dizer uma frase curta começando com:\n\n“Agora eu queria…”\n\nNão precisa explicar demais.\n\nA frase deve provocar, não virar conversa longa."
   },
   {
@@ -119,6 +159,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PROIBICAO",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "Quem recebeu a carta escolhe uma regra temporária para a próxima carta:\n\n- sem usar as mãos;\n- sem beijo na boca;\n- sem tirar a roupa que ainda resta;\n- sem tocar nas partes íntimas até o final da próxima carta.\n\nA regra deve provocar, não travar o jogo."
   },
   {
@@ -130,6 +174,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "RESPIRO",
+    "stage": "COOLDOWN",
+    "erotic_function": "RESPIRO",
+    "progression_role": "RESPIRAR",
     "body": "Fiquem bem próximos, com o corpo encostado, sem pressa para avançar.\n\nQuem quiser pode guiar a mão da outra pessoa para onde deseja receber carinho."
   },
   {
@@ -141,6 +189,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PROVOCACAO",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "Quem pulou alguma carta nesta sessão deve receber uma provocação leve agora.\n\nA outra pessoa escolhe entre:\n\n1. beijo demorado;\n2. toque por cima da roupa;\n3. frase safada no ouvido;\n4. ficar sem tocar por 1 minuto enquanto apenas olha.\n\nSe ninguém pulou carta, sorteiem uma das quatro opções mesmo assim."
   },
   {
@@ -152,6 +204,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "COMANDO_DELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "A mulher recebe atenção íntima com boca, mãos ou ambos.\n\nEla pode guiar ritmo, pressão e posição, sem precisar justificar.\n\nTempo máximo: 6 minutos."
   },
   {
@@ -163,6 +219,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "CONTROLE_DELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "A mulher escolhe a posição em que quer receber prazer.\n\nQuem conduz deve obedecer ao ritmo dela e só mudar se ela permitir."
   },
   {
@@ -174,6 +234,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "ORAL_NELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "Quem conduz deve alternar prazer oral e pausas curtas de provocação.\n\nA pausa serve para aumentar a vontade, não para quebrar o clima.\n\nTempo máximo: 5 minutos."
   },
   {
@@ -185,6 +249,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "CONTROLE_DELA",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_CASAL",
+    "progression_role": "SUSTENTAR",
     "body": "A mulher fica no controle do ritmo.\n\nPode usar beijo, mãos, quadril, voz ou silêncio.\n\nA outra pessoa deve acompanhar sem tentar dominar a cena."
   },
   {
@@ -196,6 +264,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "FOCO_NELA",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "SUSTENTAR",
     "body": "Durante esta carta, o foco é exclusivamente o prazer dela.\n\nSem cobrança de chegar ao orgasmo.\n\nA meta é aumentar excitação, resposta do corpo e entrega.\n\nTempo máximo: 7 minutos."
   },
   {
@@ -207,6 +279,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "COMANDO_DELA",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "A mulher deve guiar com frases simples:\n\n- “mais devagar”;\n- “continua”;\n- “mais forte”;\n- “aí”;\n- “não muda”.\n\nQuem conduz deve seguir sem discutir."
   },
   {
@@ -218,6 +294,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "DOMINANCIA_LEVE",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "A mulher posiciona as mãos da outra pessoa onde quiser.\n\nA outra pessoa só pode mudar o toque se ela permitir.\n\nTempo sugerido: até 4 minutos."
   },
   {
@@ -229,6 +309,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "CONTROLE_DELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "A mulher escolhe a ordem:\n\n1. beijo;\n2. mãos;\n3. oral;\n4. posição de controle.\n\nA carta termina quando ela decidir avançar ou trocar de categoria."
   },
   {
@@ -240,6 +324,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "DIRTY_TALK",
+    "stage": "TEASING",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "PROVOCAR",
     "body": "A mulher completa a frase:\n\n“Hoje eu quero que você…”\n\nEla pode ser direta, vaga ou apenas apontar com o corpo.\n\nQuem ouve deve executar dentro do limite combinado."
   },
   {
@@ -251,6 +339,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": true,
     "receiver_rule": "WOMAN",
+    "primary_tag": "VIDEO",
+    "stage": "INTENSE",
+    "erotic_function": "VIDEO_ESTIMULO",
+    "progression_role": "SUSTENTAR",
     "body": "Sorteie um vídeo conforme a regra do deck.\n\nA mulher assiste enquanto recebe oral, mãos, vibrador ou masturbação.\n\nDistribuição recomendada do vídeo:\n\n- 70% lésbico;\n- 20% FFM;\n- 10% MMF.\n\nEla pode pedir para trocar até o limite de pulos de vídeo."
   },
   {
@@ -262,6 +354,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": true,
     "receiver_rule": "MAN",
+    "primary_tag": "VIDEO",
+    "stage": "INTENSE",
+    "erotic_function": "VIDEO_ESTIMULO",
+    "progression_role": "SUSTENTAR",
     "body": "Sorteie um vídeo conforme a regra do deck.\n\nO homem assiste enquanto recebe oral, mãos ou masturbação.\n\nDistribuição recomendada do vídeo:\n\n- 70% FFM;\n- 10% face FM;\n- 20% lésbico."
   },
   {
@@ -273,6 +369,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "ANY",
+    "primary_tag": "FOCO_NELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "Sem vídeo nesta carta.\n\nQuem receber deve apenas relaxar e guiar o ritmo.\n\nQuem conduz deve usar boca e mãos, alternando intensidade.\n\nO receptor pode inverter o destino da carta."
   },
   {
@@ -284,6 +384,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": true,
     "receiver_rule": "ANY",
+    "primary_tag": "VIDEO",
+    "stage": "INTENSE",
+    "erotic_function": "VIDEO_ESTIMULO",
+    "progression_role": "SUSTENTAR",
     "body": "O sistema sorteia até 3 vídeos.\n\nO casal pode pular os dois primeiros e, no terceiro, escolher entre os sorteados.\n\nQuem recebe assiste.\n\nQuem conduz executa com mãos, boca ou vibrador."
   },
   {
@@ -295,6 +399,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": true,
     "receiver_rule": "ANY",
+    "primary_tag": "COPIAR_ENERGIA",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_CASAL",
+    "progression_role": "SUSTENTAR",
     "body": "Sorteiem um vídeo curto.\n\nA regra não é copiar a cena inteira, mas copiar a energia: ritmo, provocação, posição do corpo ou atitude.\n\nNão usar esta carta durante penetração."
   },
   {
@@ -306,6 +414,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "ANY",
+    "primary_tag": "PROVOCACAO",
+    "stage": "INTENSE",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "SUSTENTAR",
     "body": "Quem conduz começa oral ou masturbação, mas deve interromper brevemente sempre que quem recebe parecer perto demais do pico.\n\nA pausa deve ser provocante, com beijo, olhar ou frase curta.\n\nTempo máximo: 6 minutos."
   },
   {
@@ -317,6 +429,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "ANY",
+    "primary_tag": "COMANDO_DELA",
+    "stage": "BUILDUP",
+    "erotic_function": "PRAZER_NELA",
+    "progression_role": "INTENSIFICAR",
     "body": "Quem recebe escolhe:\n\n1. oral;\n2. mãos;\n3. vibrador;\n4. combinação livre.\n\nQuem conduz não escolhe a técnica, apenas executa e ajusta."
   },
   {
@@ -328,6 +444,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PENETRACAO",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_CASAL",
+    "progression_role": "INTENSIFICAR",
     "body": "Comecem em ritmo lento.\n\nA cada minuto, aumentem um pouco a intensidade.\n\nQuem recebe pode dizer “fica” para manter o ritmo atual."
   },
   {
@@ -339,6 +459,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "CONTROLE_DELA",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_CASAL",
+    "progression_role": "SUSTENTAR",
     "body": "A mulher escolhe a posição e o ritmo inicial.\n\nA outra pessoa só pode assumir mais controle se ela permitir."
   },
   {
@@ -350,6 +474,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PENETRACAO",
+    "stage": "PEAK",
+    "erotic_function": "PICO",
+    "progression_role": "PICO",
     "body": "A intensidade pode subir, mas deve continuar responsiva.\n\nQuem conduz precisa observar respiração, corpo e reação.\n\nNada de ignorar sinais."
   },
   {
@@ -361,6 +489,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PENETRACAO",
+    "stage": "INTENSE",
+    "erotic_function": "PRAZER_CASAL",
+    "progression_role": "SUSTENTAR",
     "body": "Escolham uma posição.\n\nDurante até 3 minutos, não podem trocar.\n\nO desafio é variar ritmo, beijo, mãos e pressão sem mudar a base."
   },
   {
@@ -372,6 +504,10 @@ const cards = [
     "is_invertible": true,
     "requires_video": false,
     "receiver_rule": "WOMAN",
+    "primary_tag": "FECHAMENTO",
+    "stage": "PEAK",
+    "erotic_function": "PICO",
+    "progression_role": "FECHAR",
     "body": "A mulher decide se esta carta será:\n\n1. mais lenta;\n2. mais forte;\n3. com pausa provocante;\n4. com troca de posição;\n5. com encerramento suave.\n\nA decisão dela guia o restante da carta."
   },
   {
@@ -383,6 +519,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "SEM_PENETRACAO",
+    "stage": "INTENSE",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "SUSTENTAR",
     "body": "Durante esta carta, não pode haver penetração.\n\nSó boca, mãos, corpo, beijo, atrito e provocação.\n\nA graça é aumentar a vontade sem entregar tudo imediatamente.\n\nTempo máximo: 5 minutos."
   },
   {
@@ -394,6 +534,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PICO",
+    "stage": "PEAK",
+    "erotic_function": "PICO",
+    "progression_role": "PICO",
     "body": "Esta carta só vale se ambos quiserem subir a intensidade.\n\nPode envolver posição mais forte, fantasia corporal ou prática previamente aceita pelo casal.\n\nSe qualquer um hesitar, transforme esta carta em Deriva."
   },
   {
@@ -405,6 +549,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "ROLEPLAY",
+    "stage": "INTENSE",
+    "erotic_function": "FANTASIA",
+    "progression_role": "SUSTENTAR",
     "body": "Sorteiem personagem e situação.\n\nAmbos devem entrar na cena sem exagerar.\n\nSugestões possíveis:\n\n- massagista e cliente;\n- enfermeira e paciente adulto;\n- dois estranhos em hotel;\n- policial e suspeita adulta;\n- amantes se encontrando escondido;\n- professora/professor e aluno adulto;\n- personagem livre escolhido pelo sistema."
   },
   {
@@ -416,6 +564,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "IMAGINACAO",
+    "stage": "PEAK",
+    "erotic_function": "FANTASIA",
+    "progression_role": "PICO",
     "body": "Uma pessoa pode imaginar outra pessoa ou não imaginar ninguém.\n\nNão precisa revelar nada.\n\nA outra pessoa deve apenas seguir a cena como se existisse um segredo no ar.\n\nRegra: ninguém pergunta quem foi, nem depois."
   },
   {
@@ -427,6 +579,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "DOMINANCIA_LEVE",
+    "stage": "INTENSE",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "INTENSIFICAR",
     "body": "Quem recebeu a carta deve sussurrar uma ordem curta.\n\nQuem ouve deve cumprir dentro dos limites combinados.\n\nA ordem deve ser direta, mas não precisa ser extrema."
   },
   {
@@ -438,6 +594,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "ROLEPLAY",
+    "stage": "INTENSE",
+    "erotic_function": "FANTASIA",
+    "progression_role": "SUSTENTAR",
     "body": "Vocês são dois adultos que acabaram dividindo o mesmo quarto por acaso.\n\nA atração já está óbvia, mas ninguém quer admitir primeiro.\n\nA cena começa com provocação verbal e aproximação lenta."
   },
   {
@@ -449,6 +609,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "ROLEPLAY",
+    "stage": "INTENSE",
+    "erotic_function": "FANTASIA",
+    "progression_role": "SUSTENTAR",
     "body": "Sorteiem quem será o profissional e quem será o cliente.\n\nA cena começa formal, mas o toque passa do limite de propósito.\n\nQuem recebe decide até onde o deslize continua."
   },
   {
@@ -460,6 +624,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "TERCEIRO_IMAGINARIO",
+    "stage": "PEAK",
+    "erotic_function": "FANTASIA",
+    "progression_role": "PICO",
     "body": "Imaginem uma terceira pessoa adulta apenas como presença na fantasia.\n\nNinguém precisa dizer rosto, nome ou identidade.\n\nA cena deve focar no casal e na sensação de estar sendo observado ou desejado.\n\nNão vale citar ex."
   },
   {
@@ -471,6 +639,10 @@ const cards = [
     "is_invertible": false,
     "requires_video": false,
     "receiver_rule": "NONE",
+    "primary_tag": "PROIBICAO",
+    "stage": "INTENSE",
+    "erotic_function": "PROVOCACAO",
+    "progression_role": "SUSTENTAR",
     "body": "Durante a próxima carta, uma regra deve ser obedecida:\n\n1. não pode pedir;\n2. não pode tocar com as mãos;\n3. não pode beijar a boca;\n4. não pode mudar de posição;\n5. não pode acelerar.\n\nSorteiem uma opção.\n\nA regra dura apenas uma carta."
   }
 ];
@@ -505,6 +677,11 @@ async function main() {
         is_invertible: card.is_invertible,
         requires_video: card.requires_video,
         receiver_rule: card.receiver_rule as ReceiverRule,
+        // Fallback or explicit set
+        primary_tag: (card as Record<string, unknown>).primary_tag,
+        stage: (card as Record<string, unknown>).stage,
+        erotic_function: (card as Record<string, unknown>).erotic_function,
+        progression_role: (card as Record<string, unknown>).progression_role,
       },
       create: {
         deck_id: deck.id,
@@ -517,6 +694,10 @@ async function main() {
         is_invertible: card.is_invertible,
         requires_video: card.requires_video,
         receiver_rule: card.receiver_rule as ReceiverRule,
+        primary_tag: (card as Record<string, unknown>).primary_tag,
+        stage: (card as Record<string, unknown>).stage,
+        erotic_function: (card as Record<string, unknown>).erotic_function,
+        progression_role: (card as Record<string, unknown>).progression_role,
       }
     });
   }

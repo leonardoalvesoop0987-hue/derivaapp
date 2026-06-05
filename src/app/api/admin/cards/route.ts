@@ -14,6 +14,20 @@ const patchSchema = z.object({
   is_invertible: z.boolean().optional(),
   requires_video: z.boolean().optional(),
   receiver_rule: z.enum(["NONE","WOMAN","MAN","ANY"]).optional(),
+  primary_tag: z.string().nullable().optional(),
+  secondary_tags: z.array(z.string()).optional(),
+  stage: z.string().nullable().optional(),
+  erotic_function: z.string().nullable().optional(),
+  body_focus: z.string().nullable().optional(),
+  recipient_focus: z.string().nullable().optional(),
+  progression_role: z.string().nullable().optional(),
+  cooldown_allowed: z.boolean().optional(),
+  closing_allowed: z.boolean().optional(),
+  can_follow_heavy: z.boolean().optional(),
+  requires_transition_before: z.boolean().optional(),
+  avoid_near_repetition: z.boolean().optional(),
+  should_not_follow_tags: z.array(z.string()).optional(),
+  should_not_precede_tags: z.array(z.string()).optional(),
 });
 
 export async function GET() {

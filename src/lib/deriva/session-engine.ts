@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { CardIntensity, SessionMode, SessionLength } from "@prisma/client";
+import type { CardIntensity, SessionMode, SessionLength, SessionStage, Card } from "@prisma/client";
 
 const INTENSITY_WEIGHTS: Record<CardIntensity, number> = {
   LEVE: 1,
@@ -22,8 +22,25 @@ type NextCardInput = {
   preferencesJson?: string | null;
 };
 
-export async function getNextCard(input: NextCardInput) {
-  // 1. Fetch cards not shown yet, respecting is_active
+export type GeneratedSessionCard = {
+  card_id: string;
+  position: number;
+  metadata_json: string;
+};
+
+function getExpectedStages(position: number, totalCount: number): SessionStage[] {
+  const progress = position / Math.max(1, totalCount - 1); // 0.0 to 1.0
+  if (progress < 0.15) return ["OPENING"];
+  if (progress < 0.3) return ["WARMUP", "OPENING"];
+  if (progress < 0.45) return ["TEASING", "WARMUP"];
+  if (progress < 0.6) return ["BUILDUP", "TEASING"];
+  if (progress < 0.8) return ["INTENSE", "BUILDUP"];
+  if (progress < 0.9) return ["PEAK", "INTENSE"];
+  if (progress < 0.95) return ["COOLDOWN", "PEAK"];
+  return ["CLOSING", "COOLDOWN"];
+}
+
+async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise<Card | null> {
   let availableCards = await prisma.card.findMany({
     where: {
       deck_id: input.deckId,
@@ -32,188 +49,120 @@ export async function getNextCard(input: NextCardInput) {
     },
   });
 
-  // 2. Fetch user preferences to filter removed cards and apply weights
   const preferences = await prisma.userCardPreference.findMany({
     where: { user_id: input.userId, card_id: { in: availableCards.map((c) => c.id) } },
   });
   const prefMap = new Map(preferences.map((p) => [p.card_id, p]));
 
-  // Remove cards marked as is_removed by user
-  availableCards = availableCards.filter((c) => {
-    const pref = prefMap.get(c.id);
-    return !pref?.is_removed;
-  });
+  availableCards = availableCards.filter((c) => !prefMap.get(c.id)?.is_removed);
 
-  // 3. Filter out videos if disabled
   if (!input.videosEnabled) {
     availableCards = availableCards.filter((c) => !c.requires_video);
   }
 
-  // 4. Mode and preferences restrictions
   let experienceType = "COMPLETA";
   let kinkLevel = "NORMAL";
-
   if (input.mode === "COM_PREFERENCIAS" && input.preferencesJson) {
-     try {
-        const prefs = JSON.parse(input.preferencesJson);
-        experienceType = prefs.experienceType || "COMPLETA";
-        kinkLevel = prefs.kinkLevel || "NORMAL";
-     } catch(e) {}
+    try {
+      const prefs = JSON.parse(input.preferencesJson);
+      experienceType = prefs.experienceType || "COMPLETA";
+      kinkLevel = prefs.kinkLevel || "NORMAL";
+    } catch(e) {}
   }
 
+  // Hard constraints based on mode
   if (input.mode === "ESTREIA") {
-    availableCards = availableCards.filter(
-      (c) => c.intensity === "LEVE" || c.intensity === "QUENTE"
-    );
+    availableCards = availableCards.filter(c => c.intensity === "LEVE" || c.intensity === "QUENTE");
   } else if (input.mode === "COM_PREFERENCIAS") {
-    if (experienceType === "SEM_VIDEO") {
-       availableCards = availableCards.filter(c => !c.requires_video && !c.tags.includes("VIDEO"));
-    } else if (experienceType === "MAIS_ORAL") {
-       // Filter out penetration if they want focus on oral
-       availableCards = availableCards.filter(c => !c.tags.includes("PENETRACAO"));
-    } else if (experienceType === "MAIS_PENETRACAO") {
-       // Nothing filtered, just let weights handle it, or filter out non-penetration pico cards
-    }
-
-    if (kinkLevel === "DESATIVADO") {
-       availableCards = availableCards.filter(c => c.category !== "PRETO");
-    }
+    if (experienceType === "SEM_VIDEO") availableCards = availableCards.filter(c => !c.requires_video);
+    if (experienceType === "MAIS_ORAL") availableCards = availableCards.filter(c => c.primary_tag !== "PENETRACAO");
+    if (kinkLevel === "DESATIVADO") availableCards = availableCards.filter(c => c.category !== "PRETO");
   }
 
-  // 5. Max intensity restriction
+  // Intensity cap
   const maxAllowedWeight = INTENSITY_WEIGHTS[input.maxIntensity];
-  availableCards = availableCards.filter(
-    (c) => INTENSITY_WEIGHTS[c.intensity] <= maxAllowedWeight
-  );
+  availableCards = availableCards.filter(c => INTENSITY_WEIGHTS[c.intensity] <= maxAllowedWeight);
 
-  // 6. Position-based category rules
-  let allowedCategories: string[] = Object.keys(INTENSITY_WEIGHTS).length > 0 
-    ? ["AZUL", "DERIVA", "ROSA", "ROXO", "VERMELHO", "PRETO"]
-    : [];
-  let maxPosIntensityWeight = maxAllowedWeight;
+  if (availableCards.length === 0) return null;
 
-  const isFirstCard = input.currentPosition === 0;
-  const isSecondCard = input.currentPosition === 1;
-  const isBeforeHalf = input.currentPosition < input.targetCardCount / 2;
-  const isLastCard = input.currentPosition >= input.targetCardCount - 1;
+  const expectedStages = getExpectedStages(input.currentPosition, input.targetCardCount);
+  const lastCard = sequenceSoFar.length > 0 ? sequenceSoFar[sequenceSoFar.length - 1] : null;
 
-  if (isFirstCard) {
-    allowedCategories = ["AZUL"];
-  } else if (isSecondCard) {
-    allowedCategories = ["AZUL", "DERIVA"];
-  } else if (isLastCard) {
-    allowedCategories = ["DERIVA"];
-  } else if (input.currentPosition >= 3 && input.currentPosition % 4 === 0) {
-    allowedCategories = ["DERIVA"];
-  }
-
-  if (isBeforeHalf && !isFirstCard) {
-    maxPosIntensityWeight = Math.min(maxPosIntensityWeight, INTENSITY_WEIGHTS["INTENSO"]);
-  }
-
-  // 7. Apply category + intensity constraints
-  let filtered = availableCards.filter(
-    (c) =>
-      allowedCategories.includes(c.category) &&
-      INTENSITY_WEIGHTS[c.intensity] <= maxPosIntensityWeight
-  );
-
-  // Fallback 1: relax category, keep intensity
-  if (filtered.length === 0) {
-    filtered = availableCards.filter(
-      (c) => INTENSITY_WEIGHTS[c.intensity] <= maxPosIntensityWeight
-    );
-  }
-
-  // Fallback 2: relax intensity too, but never above global max
-  if (filtered.length === 0) {
-    filtered = availableCards.filter(
-      (c) => INTENSITY_WEIGHTS[c.intensity] <= maxAllowedWeight
-    );
-  }
-
-  // Fallback 3: null → caller handles graceful end
-  if (filtered.length === 0) return null;
-
-  // 8. Apply weights based on user preferences and tags
-  const recentCards = await prisma.card.findMany({
-    where: { id: { in: input.shownCardIds.slice(-3) } }
-  });
-  
-  const lastCardTags = recentCards.length > 0 ? recentCards[recentCards.length - 1].tags : [];
-  const secondLastCardTags = recentCards.length > 1 ? recentCards[recentCards.length - 2].tags : [];
-
-  const weightedCandidates: { card: typeof filtered[0]; weight: number }[] = filtered.map((card) => {
-    const pref = prefMap.get(card.id);
-    let weight = 1.0;
-
-    if (pref) {
-      if (pref.is_favorite) weight += 2.0;           // Favoritas ganham peso
-      if (pref.skip_count > 0) weight -= Math.min(pref.skip_count * 0.5, 0.9); // Puladas perdem peso
-    }
-
-    // Penalize same primary tag as the immediate last card
-    const cardPrimaryTag = card.tags.length > 0 ? card.tags[0] : null;
-    const lastPrimaryTag = lastCardTags.length > 0 ? lastCardTags[0] : null;
+  const scoredCards = availableCards.map(candidate => {
+    let score = 100;
     
-    if (cardPrimaryTag && cardPrimaryTag === lastPrimaryTag) {
-       weight *= 0.2; // -80% weight
+    // Stage matching
+    if (expectedStages[0] === candidate.stage) score += 50;
+    else if (expectedStages[1] === candidate.stage) score += 20;
+    else score -= 30; // Penalize off-stage cards
+
+    // Repetition avoidance
+    if (lastCard) {
+      if (candidate.primary_tag === lastCard.primary_tag && candidate.primary_tag !== null) score -= 80;
+      if (candidate.erotic_function === lastCard.erotic_function && candidate.erotic_function !== null) score -= 40;
+      if (candidate.progression_role === lastCard.progression_role && candidate.progression_role !== null) score -= 30;
+      if (candidate.receiver_rule === lastCard.receiver_rule && candidate.receiver_rule !== "NONE" && candidate.receiver_rule !== "ANY") score -= 20;
     }
 
-    // Penalize if it shares any tag with the last card
-    if (card.tags.some(t => lastCardTags.includes(t))) {
-       weight *= 0.6; // -40% weight
+    // Preferences
+    const pref = prefMap.get(candidate.id);
+    if (pref) {
+      if (pref.is_favorite) score += 40;
+      if (pref.skip_count > 0) score -= Math.min(pref.skip_count * 15, 60);
     }
 
-    // Penalize if the category is the same as the last TWO cards (prevent 3 in a row)
-    const recentCategories = recentCards.slice(-2).map(c => c.category);
-    if (recentCategories.length === 2 && recentCategories[0] === card.category && recentCategories[1] === card.category) {
-       weight *= 0.5; // -50% weight
-    }
-
-    // Ensure weight is always positive
-    weight = Math.max(weight, 0.05);
-    return { card, weight };
+    return { card: candidate, score };
   });
 
-  // 9. Weighted random selection
-  const totalWeight = weightedCandidates.reduce((sum, { weight }) => sum + weight, 0);
-  let random = Math.random() * totalWeight;
-  for (const { card, weight } of weightedCandidates) {
-    random -= weight;
+  // Filter out negative scores unless it's empty
+  let candidates = scoredCards.filter(c => c.score > 0);
+  if (candidates.length === 0) {
+    candidates = scoredCards;
+  }
+
+  // Softmax-like weighted random
+  const totalScore = candidates.reduce((sum, c) => sum + c.score, 0);
+  let random = Math.random() * totalScore;
+  for (const { card, score } of candidates) {
+    random -= score;
     if (random <= 0) return card;
   }
 
-  return weightedCandidates[weightedCandidates.length - 1].card;
+  return candidates[candidates.length - 1].card;
 }
-
-export type GeneratedSessionCard = {
-  card_id: string;
-  position: number;
-  metadata_json: string;
-};
 
 export async function generateSessionSequence(input: NextCardInput & { preferencesJson?: string | null }): Promise<GeneratedSessionCard[]> {
   const sequence: GeneratedSessionCard[] = [];
   const shownCardIds: string[] = [...(input.shownCardIds || [])];
+  const sequenceSoFar: Card[] = [];
 
   for (let pos = 0; pos < input.targetCardCount; pos++) {
+    // If it's a SKIP generation, pos should be input.currentPosition
+    // But this function is used to generate either the full sequence or just 1 card.
+    // If targetCardCount is 1 (like when skipping), we need to ensure getExpectedStages gets the RIGHT position out of the full session length.
+    // For SKIP, currentPosition is passed as the parameter, but we want to know what the target position is relative to session.target_card_count!
+    // Wait, let's fix the API of this.
+    // Actually, we can use input.currentPosition directly for the stage if targetCardCount === 1.
+    const actualPos = input.targetCardCount === 1 ? input.currentPosition : pos;
+    const actualTargetCount = input.targetCardCount === 1 ? (input as Record<string, unknown>).fullTargetCardCount || 10 : input.targetCardCount;
+
     const card = await getNextCard({
       ...input,
-      currentPosition: pos,
+      currentPosition: actualPos,
+      targetCardCount: actualTargetCount,
       shownCardIds,
-    });
+    }, sequenceSoFar);
 
     if (!card) break;
 
     shownCardIds.push(card.id);
+    sequenceSoFar.push(card);
 
-    // Build metadata (Receiver and humanized text)
-    const metadata = buildCardMetadata(card, pos);
+    const metadata = buildCardMetadata(card);
 
     sequence.push({
       card_id: card.id,
-      position: pos,
+      position: actualPos,
       metadata_json: JSON.stringify(metadata),
     });
   }
@@ -221,60 +170,26 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
   return sequence;
 }
 
-export function buildCardMetadata(card: Record<string, unknown>, position: number) {
-  // Resolve receiver rule (ANY -> MAN or WOMAN randomly)
+export function buildCardMetadata(card: Record<string, unknown>) {
   let receiver = card.receiver_rule;
   if (receiver === "ANY") {
     receiver = Math.random() > 0.5 ? "MAN" : "WOMAN";
   }
 
-  // Generate provocative front text
   const fronts = {
-    AZUL: [
-      "Aquecendo os motores...",
-      "Hora de criar conexão.",
-      "Sem pressa, o clima tá só começando.",
-      "Olha bem no olho agora."
-    ],
-    DERIVA: [
-      "Deixa rolar...",
-      "O clima tá subindo.",
-      "Sinta o momento.",
-      "Sem pensar muito, só aproveita."
-    ],
-    ROSA: [
-      "Toque com intenção.",
-      "Agora o corpo fala.",
-      "Explorando novos caminhos.",
-      "Sente a pele."
-    ],
-    ROXO: [
-      "Inspiração para vocês.",
-      "Deixa a mente viajar.",
-      "Assista e aprenda...",
-      "O clima acabou de esquentar mais."
-    ],
-    VERMELHO: [
-      "O bicho vai pegar.",
-      "Sem limites agora.",
-      "Entrega total.",
-      "Aqui a brincadeira fica séria."
-    ],
-    PRETO: [
-      "Surpresa selvagem.",
-      "Intensidade máxima.",
-      "Vocês aguentam?",
-      "Passando dos limites."
-    ]
+    AZUL: ["Aquecendo os motores...", "Hora de criar conexão.", "Sem pressa, o clima tá só começando.", "Olha bem no olho agora."],
+    DERIVA: ["Deixa rolar...", "O clima tá subindo.", "Sinta o momento.", "Sem pensar muito, só aproveita."],
+    ROSA: ["Toque com intenção.", "Agora o corpo fala.", "Explorando novos caminhos.", "Sente a pele."],
+    ROXO: ["Inspiração para vocês.", "Deixa a mente viajar.", "Assista e aprenda...", "O clima acabou de esquentar mais."],
+    VERMELHO: ["O bicho vai pegar.", "Sem limites agora.", "Entrega total.", "Aqui a brincadeira fica séria."],
+    PRETO: ["Surpresa selvagem.", "Intensidade máxima.", "Vocês aguentam?", "Passando dos limites."]
   };
 
   const categoryFronts = fronts[card.category as keyof typeof fronts] || fronts.DERIVA;
   const front_text = categoryFronts[Math.floor(Math.random() * categoryFronts.length)];
 
-  // Humanize the body text
   let rendered_body = (card.body as string) || "";
   
-  // Replace generic roles with warmer tone
   if (receiver === "MAN") {
     rendered_body = rendered_body
       .replace(/quem conduz/gi, "ela")
@@ -284,8 +199,7 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
       .replace(/O homem/gi, "Ele")
       .replace(/o homem/gi, "ele")
       .replace(/A outra pessoa/gi, "Ele")
-      .replace(/a outra pessoa/gi, "ele")
-      .replace(/a pessoa/gi, "ele");
+      .replace(/a outra pessoa/gi, "ele");
   } else if (receiver === "WOMAN") {
     rendered_body = rendered_body
       .replace(/quem conduz/gi, "ele")
@@ -295,10 +209,8 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
       .replace(/O homem/gi, "Cara, você")
       .replace(/o homem/gi, "você, cara")
       .replace(/A outra pessoa/gi, "Ela")
-      .replace(/a outra pessoa/gi, "ela")
-      .replace(/a pessoa/gi, "ela");
+      .replace(/a outra pessoa/gi, "ela");
   } else {
-    // NONE or fallback
     rendered_body = rendered_body
       .replace(/Quem conduz/gi, "Você")
       .replace(/quem conduz/gi, "você")
@@ -308,13 +220,12 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
       .replace(/a outra pessoa/gi, "a outra pessoa");
   }
 
-  // Remove mechanical text
   rendered_body = rendered_body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
 
   return {
     front_text,
     rendered_body,
     original_receiver: receiver,
-    current_receiver: receiver, // Can be flipped later
+    current_receiver: receiver,
   };
 }

@@ -159,7 +159,7 @@ export default function AdminVideosPage() {
       video_category: asset.video_category || "LESBICO",
       content_type: asset.content_type || "COMPLETE",
       visual_tags: asset.visual_tags || [],
-      file: asset.is_active as any
+      file: asset.is_active as Record<string, unknown>
     });
     setShowEdit(asset);
   };
@@ -316,7 +316,7 @@ export default function AdminVideosPage() {
 
                 {showEdit && (
                   <label className="flex items-center gap-2 mt-4 cursor-pointer">
-                     <input type="checkbox" checked={form.file as any} onChange={e => setForm({...form, file: e.target.checked as any})} className="w-4 h-4 accent-[var(--color-copper)]" />
+                     <input type="checkbox" checked={form.file as Record<string, unknown>} onChange={e => setForm({...form, file: e.target.checked as Record<string, unknown>})} className="w-4 h-4 accent-[var(--color-copper)]" />
                      <span className="text-sm">Vídeo Ativo (Entra em Sorteios)</span>
                   </label>
                 )}

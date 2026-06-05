@@ -133,6 +133,11 @@ export default function AdminCartasPage() {
                       </span>
                     )}
                   </div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {card.stage && <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-[var(--color-text-secondary)] border border-white/10">Estágio: {card.stage}</span>}
+                    {card.primary_tag && <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-[var(--color-text-secondary)] border border-white/10">Tag: {card.primary_tag}</span>}
+                    {card.erotic_function && <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-[var(--color-text-secondary)] border border-white/10">Func: {card.erotic_function}</span>}
+                  </div>
                   <div className="text-base font-medium truncate mb-1">{card.title}</div>
                   <div className="text-xs text-[var(--color-text-secondary)] truncate">
                     {card.body}

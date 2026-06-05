@@ -9,7 +9,13 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma = new Proxy({} as PrismaClient, {
   get(target, prop) {
     if (!globalForPrisma.prisma) {
-      const connectionString = process.env.DATABASE_URL;
+      let connectionString = process.env.DATABASE_URL || '';
+      
+      // Patch local Prisma Postgres URLs to use the raw Postgres port so pg-pool works locally
+      if (connectionString.startsWith('prisma+postgres://localhost')) {
+        connectionString = 'postgres://postgres:postgres@localhost:51214/template1?sslmode=disable';
+      }
+
       const pool = new Pool({ connectionString });
       const adapter = new PrismaPg(pool);
 

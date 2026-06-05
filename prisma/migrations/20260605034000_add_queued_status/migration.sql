@@ -1,1 +1,0 @@
-ALTER TYPE "SessionCardStatus" ADD VALUE 'QUEUED';

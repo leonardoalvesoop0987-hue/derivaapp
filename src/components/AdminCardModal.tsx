@@ -15,6 +15,10 @@ export type AdminCard = {
   requires_video: boolean;
   receiver_rule: string | null;
   metadata_json?: string | null;
+  primary_tag?: string | null;
+  stage?: string | null;
+  erotic_function?: string | null;
+  progression_role?: string | null;
   deck: { name: string; type: string };
 };
 
@@ -62,6 +66,10 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
           is_invertible: formData.is_invertible,
           requires_video: formData.requires_video,
           receiver_rule: formData.receiver_rule === "null" ? null : formData.receiver_rule,
+          primary_tag: formData.primary_tag === "null" ? null : formData.primary_tag,
+          stage: formData.stage === "null" ? null : formData.stage,
+          erotic_function: formData.erotic_function === "null" ? null : formData.erotic_function,
+          progression_role: formData.progression_role === "null" ? null : formData.progression_role,
         }),
       });
 
@@ -138,6 +146,24 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
                   <div className="text-sm">{card.receiver_rule || "Nenhuma"}</div>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Estágio</div>
+                  <div className="text-sm">{card.stage || "Não definido"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Função Erótica</div>
+                  <div className="text-sm">{card.erotic_function || "Não definida"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Tag Principal</div>
+                  <div className="text-sm">{card.primary_tag || "Não definida"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Papel na Progressão</div>
+                  <div className="text-sm">{card.progression_role || "Não definido"}</div>
+                </div>
+              </div>
             </div>
           ) : (
             <form id="edit-form" onSubmit={handleSubmit} className="space-y-5">
@@ -172,6 +198,58 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
               <div>
                 <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Corpo da Carta</label>
                 <textarea name="body" value={formData.body} onChange={handleChange} required rows={5} className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-3 text-sm focus:outline-none focus:border-[var(--color-copper)] resize-none" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-t border-[var(--color-border)] pt-4 mt-4">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Estágio (Stage)</label>
+                  <select name="stage" value={formData.stage || "null"} onChange={handleChange} className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2 text-xs focus:outline-none focus:border-[var(--color-copper)]">
+                    <option value="null">Não definido</option>
+                    <option value="OPENING">Abertura (Opening)</option>
+                    <option value="WARMUP">Aquecimento (Warmup)</option>
+                    <option value="TEASING">Provocação (Teasing)</option>
+                    <option value="BUILDUP">Construção (Buildup)</option>
+                    <option value="INTENSE">Intenso (Intense)</option>
+                    <option value="PEAK">Pico (Peak)</option>
+                    <option value="COOLDOWN">Respiro (Cooldown)</option>
+                    <option value="CLOSING">Fechamento (Closing)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Função Erótica</label>
+                  <select name="erotic_function" value={formData.erotic_function || "null"} onChange={handleChange} className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2 text-xs focus:outline-none focus:border-[var(--color-copper)]">
+                    <option value="null">Não definida</option>
+                    <option value="PREPARO">Preparo</option>
+                    <option value="PROVOCACAO">Provocação</option>
+                    <option value="PRAZER_NELA">Prazer Nela</option>
+                    <option value="PRAZER_NELE">Prazer Nele</option>
+                    <option value="PRAZER_CASAL">Prazer Casal</option>
+                    <option value="TRANSICAO">Transição</option>
+                    <option value="RESPIRO">Respiro</option>
+                    <option value="FANTASIA">Fantasia</option>
+                    <option value="VIDEO_ESTIMULO">Vídeo Estímulo</option>
+                    <option value="PICO">Pico</option>
+                    <option value="FECHAMENTO">Fechamento</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Tag Principal</label>
+                  <input name="primary_tag" value={formData.primary_tag || ""} onChange={handleChange} placeholder="Ex: BEIJO, MASSAGEM" className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2 text-xs focus:outline-none focus:border-[var(--color-copper)] uppercase" />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Papel na Progressão</label>
+                  <select name="progression_role" value={formData.progression_role || "null"} onChange={handleChange} className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2 text-xs focus:outline-none focus:border-[var(--color-copper)]">
+                    <option value="null">Não definido</option>
+                    <option value="ABRIR">Abrir</option>
+                    <option value="AQUECER">Aquecer</option>
+                    <option value="PROVOCAR">Provocar</option>
+                    <option value="INTENSIFICAR">Intensificar</option>
+                    <option value="SUSTENTAR">Sustentar</option>
+                    <option value="PICO">Pico</option>
+                    <option value="RESPIRAR">Respirar</option>
+                    <option value="FECHAR">Fechar</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 border-t border-[var(--color-border)] pt-4 mt-4">

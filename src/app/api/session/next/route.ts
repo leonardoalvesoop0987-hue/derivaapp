@@ -22,10 +22,17 @@ export async function POST(req: Request) {
       ? session.cards.find(c => c.card_id === session.last_card_id && c.position === session.current_position)
       : null;
 
+    if (action === "START") {
+      if (currentCardState) {
+        const currentCard = await prisma.card.findUnique({ where: { id: currentCardState.card_id } });
+        return NextResponse.json({ card: currentCard, state: currentCardState, session });
+      }
+    }
+
     if (action === "INVERT" && currentCardState) {
       if (session.inversions_used >= 2) return NextResponse.json({ error: "Limite de inversões atingido" }, { status: 400 });
       
-      let meta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
+      const meta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
       
       currentCardState = await prisma.sessionCard.update({
         where: { id: currentCardState.id },
@@ -71,7 +78,10 @@ export async function POST(req: Request) {
         maxIntensity: session.max_intensity,
         videosEnabled: true,
         targetCardCount: 1, // Draw just 1
-      });
+        fullTargetCardCount: session.target_card_count,
+        shownCardIds: session.cards.map(c => c.card_id),
+        currentPosition: nextPos
+      } as Record<string, unknown>);
 
       if (substitute.length > 0) {
         await prisma.sessionCard.create({

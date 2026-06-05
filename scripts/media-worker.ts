@@ -76,7 +76,7 @@ async function getVideoDuration(filePath: string): Promise<number> {
   }
 }
 
-async function processVideo(asset: any) {
+async function processVideo(asset: unknown) {
   console.log(`Processing video: ${asset.id}`);
   
   await prisma.mediaAsset.update({
