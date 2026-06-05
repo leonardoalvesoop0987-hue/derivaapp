@@ -67,10 +67,6 @@ export function FaqSection() {
     {
       q: "A entrega é discreta?",
       a: "100% discreta. A caixa que chega na sua casa é parda, lisa e sem logomarcas chamativas. Apenas você saberá o que há dentro."
-    },
-    {
-      q: "O botão de compra já funciona?",
-      a: "No momento, a compra online está em ativação final. O botão permite demonstrar o interesse, e muito em breve o checkout direto estará liberado."
     }
   ];
 

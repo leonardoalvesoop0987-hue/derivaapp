@@ -19,6 +19,7 @@ type NextCardInput = {
   shownCardIds: string[];
   currentPosition: number;
   targetCardCount: number;
+  preferencesJson?: string | null;
 };
 
 export async function getNextCard(input: NextCardInput) {
@@ -48,11 +49,35 @@ export async function getNextCard(input: NextCardInput) {
     availableCards = availableCards.filter((c) => !c.requires_video);
   }
 
-  // 4. Mode restrictions
+  // 4. Mode and preferences restrictions
+  let experienceType = "COMPLETA";
+  let kinkLevel = "NORMAL";
+
+  if (input.mode === "COM_PREFERENCIAS" && input.preferencesJson) {
+     try {
+        const prefs = JSON.parse(input.preferencesJson);
+        experienceType = prefs.experienceType || "COMPLETA";
+        kinkLevel = prefs.kinkLevel || "NORMAL";
+     } catch(e) {}
+  }
+
   if (input.mode === "ESTREIA") {
     availableCards = availableCards.filter(
       (c) => c.intensity === "LEVE" || c.intensity === "QUENTE"
     );
+  } else if (input.mode === "COM_PREFERENCIAS") {
+    if (experienceType === "SEM_VIDEO") {
+       availableCards = availableCards.filter(c => !c.requires_video && !c.tags.includes("VIDEO"));
+    } else if (experienceType === "MAIS_ORAL") {
+       // Filter out penetration if they want focus on oral
+       availableCards = availableCards.filter(c => !c.tags.includes("PENETRACAO"));
+    } else if (experienceType === "MAIS_PENETRACAO") {
+       // Nothing filtered, just let weights handle it, or filter out non-penetration pico cards
+    }
+
+    if (kinkLevel === "DESATIVADO") {
+       availableCards = availableCards.filter(c => c.category !== "PRETO");
+    }
   }
 
   // 5. Max intensity restriction
@@ -110,18 +135,44 @@ export async function getNextCard(input: NextCardInput) {
   // Fallback 3: null → caller handles graceful end
   if (filtered.length === 0) return null;
 
-  // 8. Apply weights based on user preferences
+  // 8. Apply weights based on user preferences and tags
+  const recentCards = await prisma.card.findMany({
+    where: { id: { in: input.shownCardIds.slice(-3) } }
+  });
+  
+  const lastCardTags = recentCards.length > 0 ? recentCards[recentCards.length - 1].tags : [];
+  const secondLastCardTags = recentCards.length > 1 ? recentCards[recentCards.length - 2].tags : [];
+
   const weightedCandidates: { card: typeof filtered[0]; weight: number }[] = filtered.map((card) => {
     const pref = prefMap.get(card.id);
-    let weight = 1;
+    let weight = 1.0;
 
     if (pref) {
-      if (pref.is_favorite) weight += 2;           // Favoritas ganham peso
+      if (pref.is_favorite) weight += 2.0;           // Favoritas ganham peso
       if (pref.skip_count > 0) weight -= Math.min(pref.skip_count * 0.5, 0.9); // Puladas perdem peso
     }
 
+    // Penalize same primary tag as the immediate last card
+    const cardPrimaryTag = card.tags.length > 0 ? card.tags[0] : null;
+    const lastPrimaryTag = lastCardTags.length > 0 ? lastCardTags[0] : null;
+    
+    if (cardPrimaryTag && cardPrimaryTag === lastPrimaryTag) {
+       weight *= 0.2; // -80% weight
+    }
+
+    // Penalize if it shares any tag with the last card
+    if (card.tags.some(t => lastCardTags.includes(t))) {
+       weight *= 0.6; // -40% weight
+    }
+
+    // Penalize if the category is the same as the last TWO cards (prevent 3 in a row)
+    const recentCategories = recentCards.slice(-2).map(c => c.category);
+    if (recentCategories.length === 2 && recentCategories[0] === card.category && recentCategories[1] === card.category) {
+       weight *= 0.5; // -50% weight
+    }
+
     // Ensure weight is always positive
-    weight = Math.max(weight, 0.1);
+    weight = Math.max(weight, 0.05);
     return { card, weight };
   });
 
@@ -142,9 +193,9 @@ export type GeneratedSessionCard = {
   metadata_json: string;
 };
 
-export async function generateSessionSequence(input: Omit<NextCardInput, "currentPosition" | "shownCardIds">): Promise<GeneratedSessionCard[]> {
+export async function generateSessionSequence(input: NextCardInput & { preferencesJson?: string | null }): Promise<GeneratedSessionCard[]> {
   const sequence: GeneratedSessionCard[] = [];
-  const shownCardIds: string[] = [];
+  const shownCardIds: string[] = [...(input.shownCardIds || [])];
 
   for (let pos = 0; pos < input.targetCardCount; pos++) {
     const card = await getNextCard({
@@ -223,13 +274,13 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
   // Humanize the body text
   let rendered_body = (card.body as string) || "";
   
-  // Replace generic roles
+  // Replace generic roles with warmer tone
   if (receiver === "MAN") {
     rendered_body = rendered_body
       .replace(/quem conduz/gi, "ela")
       .replace(/quem recebe/gi, "ele")
-      .replace(/A mulher/gi, "Ela")
-      .replace(/a mulher/gi, "ela")
+      .replace(/A mulher/gi, "Gata, você")
+      .replace(/a mulher/gi, "você, gata")
       .replace(/O homem/gi, "Ele")
       .replace(/o homem/gi, "ele")
       .replace(/A outra pessoa/gi, "Ele")
@@ -241,16 +292,19 @@ export function buildCardMetadata(card: Record<string, unknown>, position: numbe
       .replace(/quem recebe/gi, "ela")
       .replace(/A mulher/gi, "Ela")
       .replace(/a mulher/gi, "ela")
-      .replace(/O homem/gi, "Ele")
-      .replace(/o homem/gi, "ele")
+      .replace(/O homem/gi, "Cara, você")
+      .replace(/o homem/gi, "você, cara")
       .replace(/A outra pessoa/gi, "Ela")
       .replace(/a outra pessoa/gi, "ela")
       .replace(/a pessoa/gi, "ela");
   } else {
     // NONE or fallback
     rendered_body = rendered_body
+      .replace(/Quem conduz/gi, "Você")
       .replace(/quem conduz/gi, "você")
+      .replace(/Quem recebe/gi, "Seu parceiro(a)")
       .replace(/quem recebe/gi, "seu parceiro(a)")
+      .replace(/A outra pessoa/gi, "A outra pessoa")
       .replace(/a outra pessoa/gi, "a outra pessoa");
   }
 

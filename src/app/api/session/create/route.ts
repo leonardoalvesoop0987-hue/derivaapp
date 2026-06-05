@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { mode, length, maxIntensity, musicEnabled } = body;
+    const { mode, length, maxIntensity, musicEnabled, preferencesJson } = body;
 
     // Get default deck
     const deck = await prisma.deck.findFirst({
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         music_enabled: musicEnabled,
         target_card_count: targetCardCount,
         current_position: 0,
+        preferences_json: preferencesJson
       }
     });
 
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
       maxIntensity: session.max_intensity,
       videosEnabled: true,
       targetCardCount: session.target_card_count,
+      preferencesJson: session.preferences_json
     });
 
     if (sequence.length > 0) {

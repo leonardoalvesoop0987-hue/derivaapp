@@ -18,10 +18,10 @@ export function RelationshipSection() {
           <div className="w-16 h-16 mx-auto rounded-full bg-background-primary border border-border flex items-center justify-center mb-6">
             <ShieldCheck className="text-copper" size={32} />
           </div>
-          <h2 className="text-3xl font-bold mb-6 text-text-primary">Para relações fortes, não só para crises.</h2>
+          <h2 className="text-3xl font-bold mb-6 text-text-primary">Para casais que buscam ainda mais intensidade.</h2>
           <p className="text-text-secondary text-lg leading-relaxed max-w-2xl mx-auto">
-            O Deriva não foi feito para disfarçar uma relação ruim. Ele foi feito para casais que já escolheram estar juntos e querem continuar descobrindo novas formas de desejo, intimidade e presença. 
-            Casamento feliz também cai na rotina, mas a novidade não significa problema. Desejo se constrói, e intimidade melhora com prática e confiança.
+            O Deriva foi feito para casais fortes, que já escolheram estar juntos e querem elevar o nível do desejo, da intimidade e da presença.
+            A rotina é natural, mas a chama sempre pode ser intensificada. Descubram juntos novas formas de provocar, sentir e se conectar com confiança e entrega total.
           </p>
         </motion.div>
       </div>

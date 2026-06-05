@@ -15,6 +15,9 @@ export default function NovaSessaoPage() {
   const [length, setLength] = useState("MEDIA");
   const [maxIntensity, setMaxIntensity] = useState("PICO");
   const [musicEnabled, setMusicEnabled] = useState(true);
+  
+  const [experienceType, setExperienceType] = useState("COMPLETA");
+  const [kinkLevel, setKinkLevel] = useState("NORMAL");
 
   useEffect(() => {
     fetch("/api/session/active")
@@ -48,7 +51,8 @@ export default function NovaSessaoPage() {
           mode,
           length,
           maxIntensity,
-          musicEnabled
+          musicEnabled,
+          preferencesJson: mode === "COM_PREFERENCIAS" ? JSON.stringify({ experienceType, kinkLevel }) : null
         }),
       });
 
@@ -140,6 +144,41 @@ export default function NovaSessaoPage() {
             ))}
           </div>
         </div>
+
+        {/* Accordion Com Preferências */}
+        {mode === "COM_PREFERENCIAS" && (
+          <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-copper)] shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+             <label className="block text-sm font-medium mb-3 text-[var(--color-copper)]">Preferências Avançadas</label>
+             <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Tipo de Experiência</label>
+                  <select 
+                    value={experienceType} 
+                    onChange={e => setExperienceType(e.target.value)}
+                    className="w-full bg-[var(--color-background-primary)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[var(--color-wine)]"
+                  >
+                    <option value="COMPLETA">Completa (Tudo liberado)</option>
+                    <option value="MAIS_ORAL">Mais Oral</option>
+                    <option value="MAIS_PENETRACAO">Mais Penetração</option>
+                    <option value="SEM_VIDEO">Sem Vídeo</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-2">Presença de Fetiches / Personagens (Cartas Pretas)</label>
+                  <select 
+                    value={kinkLevel} 
+                    onChange={e => setKinkLevel(e.target.value)}
+                    className="w-full bg-[var(--color-background-primary)] border border-[var(--color-border)] rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[var(--color-wine)]"
+                  >
+                    <option value="NORMAL">Normal</option>
+                    <option value="ALTO">Alto</option>
+                    <option value="DESATIVADO">Desativado</option>
+                  </select>
+                </div>
+             </div>
+          </div>
+        )}
 
         {/* Duração */}
         <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] shadow-sm">

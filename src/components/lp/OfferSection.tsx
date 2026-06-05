@@ -42,8 +42,10 @@ export function OfferSection({ onBuyClick }: OfferSectionProps) {
             </div>
             
             <div className="text-center md:text-right md:border-l md:border-border/50 md:pl-8">
+              <span className="text-xl text-text-secondary line-through block mb-1">De R$ 199,00</span>
               <span className="text-5xl font-extrabold text-text-primary block mb-2 tracking-tight">R$ 19,90</span>
-              <span className="text-sm text-text-secondary block mb-6">Pagamento único e vitalício</span>
+              <span className="text-sm text-copper block mb-6 font-semibold uppercase tracking-wider">Promoção Mês dos Namorados</span>
+              <span className="text-xs text-text-secondary block mb-6">Pagamento único e vitalício</span>
               <button 
                 onClick={onBuyClick}
                 className="w-full md:w-auto bg-red-deep hover:bg-wine text-text-primary font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 shadow-lg shadow-red-deep/20 flex items-center justify-center gap-2"

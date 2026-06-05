@@ -12,11 +12,33 @@ export async function GET(
 
     const { id } = await params;
 
-    const sessionCards = await prisma.sessionCard.findMany({
-      where: { session_id: id },
-      include: { card: true },
-      orderBy: { position: "asc" },
+    const session = await prisma.session.findUnique({
+      where: { id: id },
+      select: { session_group_id: true, id: true }
     });
+
+    if (!session) return NextResponse.json({ error: "Sessão não encontrada" }, { status: 404 });
+
+    const groupId = session.session_group_id || session.id;
+
+    const sessionCards = await prisma.sessionCard.findMany({
+      where: { session: { session_group_id: groupId } },
+      include: { card: true },
+      orderBy: [
+        { session: { created_at: "asc" } },
+        { position: "asc" }
+      ],
+    });
+
+    // Fallback if the group search fails for some reason or returns none (for legacy sessions without group_id)
+    if (sessionCards.length === 0) {
+       const legacyCards = await prisma.sessionCard.findMany({
+         where: { session_id: id },
+         include: { card: true },
+         orderBy: { position: "asc" },
+       });
+       sessionCards.push(...legacyCards);
+    }
 
     const cards = sessionCards.map((sc) => ({
       card_id: sc.card_id,

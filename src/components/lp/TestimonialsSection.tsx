@@ -31,9 +31,9 @@ export function TestimonialsSection() {
     <section className="py-24 bg-background-secondary px-6">
       <div className="max-w-6xl mx-auto">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Relatos ilustrativos de uso</h2>
-          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Exemplos ilustrativos baseados em situações reais e comuns vivenciadas por casais adultos.
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">O que dizem os casais</h2>
+            <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+            Histórias reais de quem já transformou a própria noite.
           </p>
         </motion.div>
 
@@ -51,9 +51,6 @@ export function TestimonialsSection() {
               <div className="mt-auto pt-6 border-t border-border/50">
                 <span className="block font-semibold text-text-primary">{item.author}</span>
                 <span className="block text-xs text-text-secondary mt-1">{item.location}</span>
-                <span className="inline-block mt-2 px-2 py-0.5 bg-card border border-border text-[10px] text-text-secondary/70 uppercase tracking-wider rounded">
-                  Relato Ilustrativo
-                </span>
               </div>
             </motion.div>
           ))}

@@ -116,22 +116,69 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
     );
   }
 
+  async function handleContinue(mode: "SAME" | "LIGHTER" | "HEAVIER") {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/session/continue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: resolvedParams.id, mode }),
+      });
+      const data = await res.json();
+      if (data.sessionId) {
+        router.push(`/app/sessao/${data.sessionId}`);
+      }
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  }
+
   if (completed) {
     return (
-      <div className="flex flex-col h-[70vh] items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-700">
-        <div className="w-20 h-20 bg-[var(--color-wine)]/20 rounded-full flex items-center justify-center mb-4">
-          <Flame className="w-10 h-10 text-[var(--color-copper)]" />
+      <div className="flex flex-col min-h-[100dvh] pt-12 pb-[calc(1.5rem+env(safe-area-inset-bottom))] px-6 items-center justify-center animate-in fade-in zoom-in duration-700">
+        <div className="w-20 h-20 bg-[var(--color-wine)]/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(153,27,27,0.3)]">
+          <Flame className="w-10 h-10 text-[var(--color-copper)] animate-pulse" />
         </div>
-        <h2 className="text-3xl font-light">O clima ferveu.</h2>
-        <p className="text-[var(--color-text-secondary)] text-sm mb-8 max-w-[250px] mx-auto leading-relaxed">
-          O Deriva cumpriu o seu papel por hoje. Agora é com vocês.
+        <h2 className="text-3xl font-bold mb-4">Quer continuar?</h2>
+        <p className="text-[var(--color-text-secondary)] text-base mb-10 max-w-[280px] mx-auto text-center leading-relaxed">
+          Se o clima ainda está bom, vocês podem puxar uma nova sequência sem cortar o ritmo.
         </p>
-        <button
-          onClick={() => router.push(`/app/sessao/${resolvedParams.id}/feedback`)}
-          className="bg-[var(--color-wine)] px-8 py-4 rounded-full text-white font-medium hover:bg-[var(--color-red-deep)] transition-colors shadow-lg shadow-[var(--color-wine)]/20"
-        >
-          Dar feedback do deck
-        </button>
+        
+        <div className="w-full max-w-sm flex flex-col gap-3">
+          <button
+            onClick={() => handleContinue("SAME")}
+            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-[var(--color-copper)] transition-colors text-left flex justify-between items-center"
+          >
+            <span>Continuar no mesmo ritmo</span>
+            <Flame className="w-4 h-4 text-[var(--color-copper)]" />
+          </button>
+          
+          <button
+            onClick={() => handleContinue("LIGHTER")}
+            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-blue-400/50 transition-colors text-left flex justify-between items-center"
+          >
+            <span>Continuar mais leve</span>
+            <span className="text-sm opacity-50">Respiro</span>
+          </button>
+          
+          <button
+            onClick={() => handleContinue("HEAVIER")}
+            className="w-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] border border-transparent px-6 py-4 rounded-2xl text-white font-medium hover:brightness-110 transition-colors text-left flex justify-between items-center shadow-lg"
+          >
+            <span>Continuar mais pesado</span>
+            <Flame className="w-5 h-5 text-white" />
+          </button>
+          
+          <div className="h-px bg-[var(--color-border)] w-full my-3" />
+          
+          <button
+            onClick={() => router.push(`/app/sessao/${resolvedParams.id}/feedback`)}
+            className="w-full bg-transparent px-6 py-4 rounded-2xl text-[var(--color-text-secondary)] font-medium hover:text-white transition-colors text-center"
+          >
+            Encerrar por aqui
+          </button>
+        </div>
       </div>
     );
   }
@@ -144,7 +191,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const meta = state.metadata_json ? JSON.parse(state.metadata_json) : {};
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)]">
+    <div className="flex flex-col min-h-[100dvh] pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       
       {/* Abort Modal */}
       <AnimatePresence>
@@ -221,7 +268,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
               {/* BACK (Verso) */}
               <div 
-                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl border border-white/10`}
+                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl border border-white/10 overflow-y-auto custom-scrollbar`}
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />

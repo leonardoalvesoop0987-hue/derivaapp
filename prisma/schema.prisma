@@ -32,6 +32,39 @@ enum SessionMode {
   PADRAO
   ESTREIA
   PERSONALIZADO
+  COM_PREFERENCIAS
+}
+
+enum CardTag {
+  MASSAGEM
+  TOQUE
+  BEIJO
+  RESPIRO
+  COMANDO_DELA
+  COMANDO_DELE
+  CONTROLE_DELA
+  CONTROLE_DELE
+  ORAL
+  MAOS
+  PENETRACAO
+  SEM_PENETRACAO
+  VIDEO
+  MUSICA
+  ROLEPLAY
+  FANTASIA
+  TERCEIRO_IMAGINARIO
+  PROIBICAO
+  OLHAR
+  FALA
+  DIRTY_TALK
+  DOMINANCIA_LEVE
+  SUBMISSAO_LEVE
+  FOCO_NELA
+  FOCO_NELE
+  FOCO_CASAL
+  COPIAR_ENERGIA
+  PROVOCACAO
+  ENCERRAMENTO
 }
 
 enum SessionLength {
@@ -148,6 +181,7 @@ model Card {
   requires_video Boolean       @default(false)
   receiver_rule  ReceiverRule?
   metadata_json  String?
+  tags           CardTag[]     @default([])
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
 
@@ -179,6 +213,8 @@ model Session {
   inversions_used   Int           @default(0)
   started_at        DateTime      @default(now())
   ended_at          DateTime?
+  session_group_id  String?
+  preferences_json  String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
 
