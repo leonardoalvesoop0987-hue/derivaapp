@@ -9,6 +9,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <nav className="flex gap-4 text-sm">
           <Link href="/admin" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">Dashboard</Link>
           <Link href="/admin/cartas" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">Cartas</Link>
+          <Link href="/admin/decks" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">Decks</Link>
           <Link href="/admin/videos" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">Vídeos</Link>
           <Link href="/admin/musicas" className="text-[var(--color-text-secondary)] hover:text-white transition-colors">Músicas</Link>
         </nav>

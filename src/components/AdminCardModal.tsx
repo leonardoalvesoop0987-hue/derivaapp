@@ -19,6 +19,11 @@ export type AdminCard = {
   stage?: string | null;
   erotic_function?: string | null;
   progression_role?: string | null;
+  is_available_in_default: boolean;
+  is_available_in_estreia: boolean;
+  is_available_in_custom_selection: boolean;
+  requires_couple_unlock: boolean;
+  unlock_group_key?: string | null;
   deck: { name: string; type: string };
 };
 
@@ -32,9 +37,9 @@ type Props = {
 export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<Partial<AdminCard>>(card);
+  const [formData, setFormData] = useState<Partial<AdminCard>>(card || {});
 
-  if (!isOpen) return null;
+  if (!isOpen || !card) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -59,9 +64,9 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
           id: card.id,
           title: formData.title,
           body: formData.body,
-          category: formData.category,
-          intensity: formData.intensity,
-          position: formData.position,
+          category: formData.category || "AZUL",
+          intensity: formData.intensity || "LEVE",
+          position: formData.position || 0,
           is_active: formData.is_active,
           is_invertible: formData.is_invertible,
           requires_video: formData.requires_video,
@@ -70,6 +75,11 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
           stage: formData.stage === "null" ? null : formData.stage,
           erotic_function: formData.erotic_function === "null" ? null : formData.erotic_function,
           progression_role: formData.progression_role === "null" ? null : formData.progression_role,
+          is_available_in_default: formData.is_available_in_default,
+          is_available_in_estreia: formData.is_available_in_estreia,
+          is_available_in_custom_selection: formData.is_available_in_custom_selection,
+          requires_couple_unlock: formData.requires_couple_unlock,
+          unlock_group_key: formData.unlock_group_key === "null" ? null : formData.unlock_group_key,
         }),
       });
 
@@ -162,6 +172,26 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
                 <div>
                   <div className="text-xs text-[var(--color-text-secondary)] mb-1">Papel na Progressão</div>
                   <div className="text-sm">{card.progression_role || "Não definido"}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Padrão</div>
+                  <div className="text-sm">{card.is_available_in_default ? "Sim" : "Não"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Estreia</div>
+                  <div className="text-sm">{card.is_available_in_estreia ? "Sim" : "Não"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Seleção Casal</div>
+                  <div className="text-sm">{card.is_available_in_custom_selection ? "Sim" : "Não"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-1">Bloqueada (Unlock)</div>
+                  <div className="text-sm">
+                    {card.requires_couple_unlock ? `Sim (${card.unlock_group_key})` : "Não"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -261,7 +291,7 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
                   <input type="checkbox" name="requires_video" checked={formData.requires_video} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
                   Requer Vídeo
                 </label>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" name="is_invertible" checked={formData.is_invertible} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
                   Invertível
                 </label>
@@ -275,6 +305,32 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
                     <option value="ANY">Sortear na sessão</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-t border-[var(--color-border)] pt-4 mt-4">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" name="is_available_in_default" checked={formData.is_available_in_default} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
+                  Padrão (Deck Principal)
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" name="is_available_in_estreia" checked={formData.is_available_in_estreia} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
+                  Deck Estreia
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" name="is_available_in_custom_selection" checked={formData.is_available_in_custom_selection} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
+                  Custom (Seleção Casal)
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" name="requires_couple_unlock" checked={formData.requires_couple_unlock} onChange={handleChange} className="w-4 h-4 accent-[var(--color-copper)] bg-[var(--color-background-secondary)] border-[var(--color-border)]" />
+                  Bloqueada (Unlock)
+                </label>
+                
+                {formData.requires_couple_unlock && (
+                  <div className="col-span-2">
+                    <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Chave do Grupo de Desbloqueio</label>
+                    <input name="unlock_group_key" value={formData.unlock_group_key || ""} onChange={handleChange} placeholder="Ex: DARK_THIRD_IMAGINATION" className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2 text-xs focus:outline-none focus:border-[var(--color-copper)] uppercase" />
+                  </div>
+                )}
               </div>
             </form>
           )}

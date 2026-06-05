@@ -41,13 +41,36 @@ function getExpectedStages(position: number, totalCount: number): SessionStage[]
 }
 
 async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise<Card | null> {
-  let availableCards = await prisma.card.findMany({
-    where: {
-      deck_id: input.deckId,
-      is_active: true,
-      id: { notIn: input.shownCardIds },
-    },
+  const deck = await prisma.deck.findUnique({ where: { id: input.deckId } });
+  if (!deck) return null;
+
+  let availableCards: Card[] = [];
+
+  if (deck.type === "COUPLE_CUSTOM") {
+    const deckCards = await prisma.deckCard.findMany({
+      where: { deck_id: input.deckId, is_active: true },
+      include: { card: true }
+    });
+    availableCards = deckCards.map(dc => dc.card).filter(c => c.is_active && !input.shownCardIds.includes(c.id));
+  } else {
+    availableCards = await prisma.card.findMany({
+      where: {
+        deck_id: input.deckId,
+        is_active: true,
+        id: { notIn: input.shownCardIds },
+      },
+    });
+  }
+
+  // Filter based on unlocks
+  const unlocks = await prisma.coupleUnlock.findMany({
+    where: { user_id: input.userId, is_enabled: true }
   });
+  const unlockedKeys = unlocks.map(u => u.unlock_group_key);
+
+  availableCards = availableCards.filter(c => 
+    !c.requires_couple_unlock || (c.unlock_group_key && unlockedKeys.includes(c.unlock_group_key))
+  );
 
   const preferences = await prisma.userCardPreference.findMany({
     where: { user_id: input.userId, card_id: { in: availableCards.map((c) => c.id) } },

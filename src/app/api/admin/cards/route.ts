@@ -28,6 +28,13 @@ const patchSchema = z.object({
   avoid_near_repetition: z.boolean().optional(),
   should_not_follow_tags: z.array(z.string()).optional(),
   should_not_precede_tags: z.array(z.string()).optional(),
+  requires_couple_unlock: z.boolean().optional(),
+  unlock_group_key: z.string().nullable().optional(),
+  is_available_in_default: z.boolean().optional(),
+  is_available_in_estreia: z.boolean().optional(),
+  is_available_in_custom_selection: z.boolean().optional(),
+  is_official: z.boolean().optional(),
+  admin_only_editable: z.boolean().optional(),
 });
 
 export async function GET() {

@@ -2,75 +2,75 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, ToggleLeft, ToggleRight, ArrowLeft } from "lucide-react";
+import { CheckSquare, Square, ArrowLeft } from "lucide-react";
 
 interface Card {
   id: string;
   title: string;
   category: string;
   intensity: string;
-  is_active: boolean;
-  is_invertible: boolean;
-  requires_video: boolean;
 }
 
-interface Deck { id: string; name: string; }
-
-type NewCard = {
-  title: string;
-  body: string;
-  category: string;
-  intensity: string;
-  is_invertible: boolean;
-  requires_video: boolean;
-  receiver_rule: string;
-};
+interface Deck { id: string; name: string; type: string; }
 
 export default function DeckDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [deck, setDeck] = useState<Deck | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
+  const [allCards, setAllCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
-  const [newCard, setNewCard] = useState<NewCard>({
-    title: "", body: "", category: "AZUL", intensity: "LEVE",
-    is_invertible: false, requires_video: false, receiver_rule: "NONE",
-  });
 
   useEffect(() => {
     fetch(`/api/decks/${id}`)
       .then((r) => r.json())
-      .then((d: { deck: Deck; cards: Card[] }) => { setDeck(d.deck); setCards(d.cards ?? []); })
+      .then((d: { deck: Deck; cards: Card[] }) => { 
+        setDeck(d.deck); 
+        setCards(d.cards ?? []); 
+        setSelectedCardIds(new Set((d.cards ?? []).map(c => c.id)));
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
-  async function addCard(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (isEditing && allCards.length === 0) {
+      fetch('/api/cards')
+        .then(r => r.json())
+        .then((d: { cards: Card[] }) => setAllCards(d.cards ?? []));
+    }
+  }, [isEditing, allCards.length]);
+
+  async function saveSelection() {
     setSaving(true);
     try {
       const res = await fetch(`/api/decks/${id}`, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newCard),
+        body: JSON.stringify({ cardIds: Array.from(selectedCardIds) }),
       });
-      const d: { card: Card } = await res.json();
-      setCards((prev) => [...prev, d.card]);
-      setNewCard({ title: "", body: "", category: "AZUL", intensity: "LEVE", is_invertible: false, requires_video: false, receiver_rule: "NONE" });
-      setShowForm(false);
+      if (res.ok) {
+        setIsEditing(false);
+        // Refresh cards
+        fetch(`/api/decks/${id}`)
+          .then((r) => r.json())
+          .then((d: { deck: Deck; cards: Card[] }) => { 
+            setDeck(d.deck); 
+            setCards(d.cards ?? []); 
+          });
+      }
     } finally {
       setSaving(false);
     }
   }
 
-  async function toggleCard(cardId: string, is_active: boolean) {
-    await fetch(`/api/decks/${id}/cards/${cardId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_active: !is_active }),
-    });
-    setCards((prev) => prev.map((c) => c.id === cardId ? { ...c, is_active: !is_active } : c));
+  function toggleCard(cardId: string) {
+    const newSet = new Set(selectedCardIds);
+    if (newSet.has(cardId)) newSet.delete(cardId);
+    else newSet.add(cardId);
+    setSelectedCardIds(newSet);
   }
 
   if (loading) return <div className="text-[var(--color-text-secondary)] text-sm animate-pulse">Carregando...</div>;
@@ -82,89 +82,67 @@ export default function DeckDetailPage({ params }: { params: Promise<{ id: strin
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="text-xl font-light flex-1">{deck?.name}</h2>
-        <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-1 text-sm text-[var(--color-copper)]">
-          <Plus className="w-4 h-4" /> Nova carta
-        </button>
-      </div>
-
-      {showForm && (
-        <form onSubmit={addCard} className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-border)] space-y-4">
-          <h3 className="font-medium text-sm">Nova carta</h3>
-          <input
-            placeholder="Título"
-            value={newCard.title}
-            onChange={(e) => setNewCard((p) => ({ ...p, title: e.target.value }))}
-            required
-            className="w-full px-4 py-2 bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-xl text-sm focus:outline-none focus:border-[var(--color-copper)] text-white"
-          />
-          <textarea
-            placeholder="Texto da carta"
-            value={newCard.body}
-            onChange={(e) => setNewCard((p) => ({ ...p, body: e.target.value }))}
-            required
-            rows={4}
-            className="w-full px-4 py-2 bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-xl text-sm focus:outline-none focus:border-[var(--color-copper)] text-white resize-none"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Categoria</label>
-              <select
-                value={newCard.category}
-                onChange={(e) => setNewCard((p) => ({ ...p, category: e.target.value }))}
-                className="w-full px-3 py-2 bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-xl text-sm text-white"
-              >
-                {["AZUL","DERIVA","ROSA","ROXO","VERMELHO","PRETO"].map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Intensidade</label>
-              <select
-                value={newCard.intensity}
-                onChange={(e) => setNewCard((p) => ({ ...p, intensity: e.target.value }))}
-                className="w-full px-3 py-2 bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-xl text-sm text-white"
-              >
-                {["LEVE","QUENTE","INTENSO","PICO"].map((i) => (
-                  <option key={i}>{i}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={newCard.is_invertible} onChange={(e) => setNewCard((p) => ({ ...p, is_invertible: e.target.checked }))} />
-              Invertível
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={newCard.requires_video} onChange={(e) => setNewCard((p) => ({ ...p, requires_video: e.target.checked }))} />
-              Requer vídeo
-            </label>
-          </div>
-          <button type="submit" disabled={saving} className="w-full py-2 bg-[var(--color-wine)] rounded-xl text-sm hover:bg-[var(--color-red-deep)] transition-colors disabled:opacity-60">
-            {saving ? "Salvando..." : "Adicionar carta"}
+        {deck?.type === "COUPLE_CUSTOM" && !isEditing && (
+          <button onClick={() => setIsEditing(true)} className="text-sm text-[var(--color-copper)]">
+            Editar Seleção
           </button>
-        </form>
-      )}
-
-      <div className="space-y-3">
-        {cards.map((card) => (
-          <div key={card.id} className={`flex items-start gap-3 p-4 rounded-2xl border ${card.is_active ? "border-[var(--color-border)]" : "border-[var(--color-border)] opacity-50"} bg-[var(--color-card)]`}>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs text-[var(--color-text-secondary)] mb-0.5">{card.category} · {card.intensity}</div>
-              <div className="font-medium text-sm truncate">{card.title}</div>
-            </div>
-            <button onClick={() => toggleCard(card.id, card.is_active)} className="text-[var(--color-text-secondary)] hover:text-white transition-colors flex-shrink-0">
-              {card.is_active ? <ToggleRight className="w-6 h-6 text-[var(--color-copper)]" /> : <ToggleLeft className="w-6 h-6" />}
-            </button>
-          </div>
-        ))}
-        {cards.length === 0 && (
-          <div className="text-center py-12 text-[var(--color-text-secondary)] text-sm">
-            Nenhuma carta ainda. Adicione a primeira carta ao deck.
-          </div>
         )}
       </div>
+
+      {!isEditing ? (
+        <div className="space-y-3">
+          {cards.map((card) => (
+            <div key={card.id} className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)]">
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-[var(--color-text-secondary)] mb-0.5">{card.category} · {card.intensity}</div>
+                <div className="font-medium text-sm truncate">{card.title}</div>
+              </div>
+            </div>
+          ))}
+          {cards.length === 0 && (
+            <div className="text-center py-12 text-[var(--color-text-secondary)] text-sm bg-[var(--color-background-secondary)] rounded-2xl border border-[var(--color-border)]">
+              Este deck ainda não possui cartas.
+              <br/>
+              <button onClick={() => setIsEditing(true)} className="text-[var(--color-copper)] hover:underline mt-2">Selecionar Cartas</button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-border)] space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium text-sm">Selecione as Cartas ({selectedCardIds.size})</h3>
+            <div className="flex gap-2">
+              <button onClick={() => setIsEditing(false)} className="text-sm text-[var(--color-text-secondary)] hover:text-white px-3 py-1">Cancelar</button>
+              <button onClick={saveSelection} disabled={saving} className="text-sm bg-[var(--color-copper)] hover:bg-[#b07355] text-white px-3 py-1 rounded-md transition-colors disabled:opacity-50">
+                {saving ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            {allCards.length === 0 ? (
+              <div className="text-xs text-[var(--color-text-secondary)]">Carregando catálogo de cartas...</div>
+            ) : (
+              allCards.map((card) => (
+                <div 
+                  key={card.id} 
+                  onClick={() => toggleCard(card.id)}
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                    selectedCardIds.has(card.id) ? "border-[var(--color-copper)] bg-[var(--color-copper)]/10" : "border-[var(--color-border)] bg-[var(--color-background-secondary)] hover:border-white/20"
+                  }`}
+                >
+                  <div className="mt-0.5 text-[var(--color-copper)]">
+                    {selectedCardIds.has(card.id) ? <CheckSquare size={18} /> : <Square size={18} className="text-[var(--color-text-secondary)]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-[var(--color-text-secondary)] mb-0.5">{card.category} · {card.intensity}</div>
+                    <div className="font-medium text-sm">{card.title}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

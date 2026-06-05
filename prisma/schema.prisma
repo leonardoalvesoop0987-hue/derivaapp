@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -25,6 +25,8 @@ enum CardIntensity {
 
 enum DeckType {
   SYSTEM
+  OFFICIAL
+  COUPLE_CUSTOM
   CUSTOM
 }
 
@@ -203,31 +205,41 @@ model User {
   updated_at    DateTime  @updatedAt
   last_login_at DateTime?
 
-  decks                 Deck[]
-  sessions              Session[]
-  feedbacks             CardFeedback[]
-  card_preferences      UserCardPreference[]
-  preferences           UserPreference?
-  participants          CoupleParticipant[]
-  alignment_responses   PrivateAlignmentResponse[]
+  decks               Deck[]
+  sessions            Session[]
+  feedbacks           CardFeedback[]
+  card_preferences    UserCardPreference[]
+  preferences         UserPreference?
+  participants        CoupleParticipant[]
+  alignment_responses PrivateAlignmentResponse[]
+  couple_unlocks      CoupleUnlock[]
 
   @@map("users")
 }
 
 model Deck {
-  id            String   @id @default(cuid())
-  owner_user_id String?
-  system_key    String?  @unique
-  name          String
-  type          DeckType
-  is_default    Boolean  @default(false)
-  is_active     Boolean  @default(true)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  owner_user_id          String?
+  created_by_admin_id    String?
+  system_key             String?  @unique
+  slug                   String?  @unique
+  name                   String
+  description            String?
+  type                   DeckType
+  is_default             Boolean  @default(false)
+  is_active              Boolean  @default(true)
+  requires_couple_unlock Boolean  @default(false)
+  unlock_group_key       String?
+  cover_style            String?
+  back_design            String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
 
-  owner         User?    @relation(fields: [owner_user_id], references: [id], onDelete: SetNull)
-  cards         Card[]
-  sessions      Session[]
+  owner        User?        @relation(fields: [owner_user_id], references: [id], onDelete: SetNull)
+  unlock_group UnlockGroup? @relation(fields: [unlock_group_key], references: [key], onDelete: SetNull)
+  cards        Card[]
+  deck_cards   DeckCard[]
+  sessions     Session[]
 
   @@map("decks")
 }
@@ -246,7 +258,7 @@ model Card {
   requires_video Boolean       @default(false)
   receiver_rule  ReceiverRule?
   metadata_json  String?
-  
+
   // Classificação Avançada
   primary_tag                CardTag?
   secondary_tags             CardTag[]        @default([])
@@ -262,67 +274,78 @@ model Card {
   avoid_near_repetition      Boolean          @default(true)
   should_not_follow_tags     CardTag[]        @default([])
   should_not_precede_tags    CardTag[]        @default([])
-  
-  tags           CardTag[]     @default([]) // Maintain legacy for now to avoid breaking changes immediately
-  created_at     DateTime      @default(now())
-  updated_at     DateTime      @updatedAt
 
-  deck           Deck                  @relation(fields: [deck_id], references: [id], onDelete: Cascade)
-  session_cards  SessionCard[]
-  feedbacks      CardFeedback[]
-  preferences    UserCardPreference[]
-  video_options  SessionVideoOption[]
+  // Permissões e Desbloqueios
+  requires_couple_unlock           Boolean @default(false)
+  unlock_group_key                 String?
+  is_available_in_default          Boolean @default(true)
+  is_available_in_estreia          Boolean @default(true)
+  is_available_in_custom_selection Boolean @default(true)
+  is_official                      Boolean @default(true)
+  admin_only_editable              Boolean @default(true)
+
+  tags       CardTag[] @default([]) // Maintain legacy for now to avoid breaking changes immediately
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  deck          Deck                 @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+  unlock_group  UnlockGroup?         @relation(fields: [unlock_group_key], references: [key], onDelete: SetNull)
+  session_cards SessionCard[]
+  deck_cards    DeckCard[]
+  feedbacks     CardFeedback[]
+  preferences   UserCardPreference[]
+  video_options SessionVideoOption[]
 
   @@index([deck_id, position])
   @@map("cards")
 }
 
 model Session {
-  id                String        @id @default(cuid())
-  user_id           String
-  deck_id           String
-  mode              SessionMode
-  length            SessionLength
-  status            SessionStatus
-  max_intensity     CardIntensity
-  videos_enabled    Boolean       @default(true)
-  music_enabled     Boolean       @default(true)
-  target_card_count Int
-  current_position  Int           @default(0)
-  last_card_id      String?
-  completed_card_count Int        @default(0)
-  skips_used        Int           @default(0)
-  inversions_used   Int           @default(0)
-  started_at        DateTime      @default(now())
-  ended_at          DateTime?
-  session_group_id  String?
-  preferences_json  String?
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
+  id                   String        @id @default(cuid())
+  user_id              String
+  deck_id              String
+  mode                 SessionMode
+  length               SessionLength
+  status               SessionStatus
+  max_intensity        CardIntensity
+  videos_enabled       Boolean       @default(true)
+  music_enabled        Boolean       @default(true)
+  target_card_count    Int
+  current_position     Int           @default(0)
+  last_card_id         String?
+  completed_card_count Int           @default(0)
+  skips_used           Int           @default(0)
+  inversions_used      Int           @default(0)
+  started_at           DateTime      @default(now())
+  ended_at             DateTime?
+  session_group_id     String?
+  preferences_json     String?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
 
-  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  deck              Deck          @relation(fields: [deck_id], references: [id])
-  cards             SessionCard[]
-  feedbacks         CardFeedback[]
-  video_options     SessionVideoOption[]
+  user          User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  deck          Deck                 @relation(fields: [deck_id], references: [id])
+  cards         SessionCard[]
+  feedbacks     CardFeedback[]
+  video_options SessionVideoOption[]
 
   @@map("sessions")
 }
 
 model SessionCard {
-  id            String             @id @default(cuid())
+  id            String            @id @default(cuid())
   session_id    String
   card_id       String
   position      Int
   status        SessionCardStatus
-  was_inverted  Boolean            @default(false)
-  shown_at      DateTime           @default(now())
+  was_inverted  Boolean           @default(false)
+  shown_at      DateTime          @default(now())
   completed_at  DateTime?
   skipped_at    DateTime?
   metadata_json String?
 
-  session       Session            @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  card          Card               @relation(fields: [card_id], references: [id])
+  session Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  card    Card    @relation(fields: [card_id], references: [id])
 
   @@index([session_id, position])
   @@map("session_cards")
@@ -336,9 +359,9 @@ model CardFeedback {
   feedback_type FeedbackType
   created_at    DateTime     @default(now())
 
-  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  card          Card         @relation(fields: [card_id], references: [id], onDelete: Cascade)
-  session       Session?     @relation(fields: [session_id], references: [id], onDelete: SetNull)
+  user    User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  card    Card     @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [session_id], references: [id], onDelete: SetNull)
 
   @@map("card_feedback")
 }
@@ -358,84 +381,84 @@ model UserCardPreference {
   created_at         DateTime      @default(now())
   updated_at         DateTime      @updatedAt
 
-  user               User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  card               Card          @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [card_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, card_id])
   @@map("user_card_preferences")
 }
 
 model MediaAsset {
-  id               String                 @id @default(cuid())
-  type             MediaType
-  video_category   VideoCategory?
-  content_type     VideoContentType?
-  visual_tags      String[]
-  music_mood       MusicMood?
+  id                String                @id @default(cuid())
+  type              MediaType
+  video_category    VideoCategory?
+  content_type      VideoContentType?
+  visual_tags       String[]
+  music_mood        MusicMood?
   processing_status MediaProcessingStatus @default(READY)
-  storage_key      String
-  hls_master_key   String?
-  thumbnail_key    String?
-  bucket           String?
-  public_url       String?
-  mime_type        String
-  size_bytes       Int
-  duration_seconds Int?
-  weight           Int                    @default(1)
-  is_active        Boolean                @default(true)
-  internal_label   String?
+  storage_key       String
+  hls_master_key    String?
+  thumbnail_key     String?
+  bucket            String?
+  public_url        String?
+  mime_type         String
+  size_bytes        Int
+  duration_seconds  Int?
+  weight            Int                   @default(1)
+  is_active         Boolean               @default(true)
+  internal_label    String?
   original_filename String?
-  created_at       DateTime               @default(now())
-  updated_at       DateTime               @updatedAt
+  created_at        DateTime              @default(now())
+  updated_at        DateTime              @updatedAt
 
-  session_videos   SessionVideoOption[]
+  session_videos SessionVideoOption[]
 
   @@map("media_assets")
 }
 
 model SessionVideoOption {
-  id             String      @id @default(cuid())
+  id             String   @id @default(cuid())
   session_id     String
   card_id        String
   media_asset_id String
   draw_order     Int
-  was_selected   Boolean     @default(false)
-  was_skipped    Boolean     @default(false)
-  created_at     DateTime    @default(now())
+  was_selected   Boolean  @default(false)
+  was_skipped    Boolean  @default(false)
+  created_at     DateTime @default(now())
 
-  session        Session     @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  card           Card        @relation(fields: [card_id], references: [id], onDelete: Cascade)
-  media_asset    MediaAsset  @relation(fields: [media_asset_id], references: [id], onDelete: Cascade)
+  session     Session    @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  card        Card       @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  media_asset MediaAsset @relation(fields: [media_asset_id], references: [id], onDelete: Cascade)
 
   @@map("session_video_options")
 }
 
 model UserPreference {
-  user_id                  String         @id
-  videos_enabled_default   Boolean        @default(true)
-  music_enabled_default    Boolean        @default(true)
-  max_intensity_default    CardIntensity  @default(PICO)
-  preferred_session_length SessionLength  @default(MEDIA)
-  show_history             Boolean        @default(false)
-  created_at               DateTime       @default(now())
-  updated_at               DateTime       @updatedAt
+  user_id                  String        @id
+  videos_enabled_default   Boolean       @default(true)
+  music_enabled_default    Boolean       @default(true)
+  max_intensity_default    CardIntensity @default(PICO)
+  preferred_session_length SessionLength @default(MEDIA)
+  show_history             Boolean       @default(false)
+  created_at               DateTime      @default(now())
+  updated_at               DateTime      @updatedAt
 
-  user                     User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
 }
 
 model CoupleParticipant {
-  id            String          @id @default(cuid())
-  user_id       String
-  name          String
-  email         String?
-  role          ParticipantRole
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
+  id         String          @id @default(cuid())
+  user_id    String
+  name       String
+  email      String?
+  role       ParticipantRole
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
 
-  user          User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  responses     PrivateAlignmentResponse[]
+  user      User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  responses PrivateAlignmentResponse[]
 
   @@map("couple_participants")
 }
@@ -452,8 +475,59 @@ model PrivateAlignmentResponse {
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
 
-  user              User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  participant       CoupleParticipant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  participant CoupleParticipant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
 
   @@map("private_alignment_responses")
+}
+
+model UnlockGroup {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  title       String
+  description String
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  couple_unlocks CoupleUnlock[]
+  cards          Card[]
+  decks          Deck[]
+
+  @@map("unlock_groups")
+}
+
+model CoupleUnlock {
+  id               String    @id @default(cuid())
+  user_id          String
+  unlock_group_key String
+  is_enabled       Boolean   @default(false)
+  enabled_at       DateTime?
+  disabled_at      DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  user         User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  unlock_group UnlockGroup @relation(fields: [unlock_group_key], references: [key], onDelete: Cascade)
+
+  @@unique([user_id, unlock_group_key])
+  @@map("couple_unlocks")
+}
+
+model DeckCard {
+  id         String   @id @default(cuid())
+  deck_id    String
+  card_id    String
+  position   Int
+  weight     Int      @default(1)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  deck Deck @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [card_id], references: [id], onDelete: Cascade)
+
+  @@unique([deck_id, card_id])
+  @@index([deck_id, position])
+  @@map("deck_cards")
 }

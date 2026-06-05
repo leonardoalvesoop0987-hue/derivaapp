@@ -11,7 +11,13 @@ export async function GET() {
   if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const decks = await prisma.deck.findMany({
-    where: { owner_user_id: userSession.userId, type: "CUSTOM", is_active: true },
+    where: {
+      OR: [
+        { owner_user_id: userSession.userId, type: "COUPLE_CUSTOM" },
+        { type: { in: ["SYSTEM", "OFFICIAL"] } }
+      ],
+      is_active: true
+    },
     include: { _count: { select: { cards: { where: { is_active: true } } } } },
     orderBy: { created_at: "desc" },
   });
@@ -20,17 +26,32 @@ export async function GET() {
 }
 
 // POST — create deck
-const createSchema = z.object({ name: z.string().min(1).max(100) });
+const createSchema = z.object({ 
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  cardIds: z.array(z.string()).optional()
+});
 
 export async function POST(req: Request) {
   const userSession = await getSession();
   if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { name } = createSchema.parse(await req.json());
+    const { name, description, cardIds } = createSchema.parse(await req.json());
 
     const deck = await prisma.deck.create({
-      data: { owner_user_id: userSession.userId, name, type: "CUSTOM" },
+      data: { 
+        owner_user_id: userSession.userId, 
+        name, 
+        description,
+        type: "COUPLE_CUSTOM",
+        deck_cards: cardIds ? {
+          create: cardIds.map((card_id, index) => ({
+            card_id,
+            position: index,
+          }))
+        } : undefined
+      },
     });
 
     return NextResponse.json({ deck });

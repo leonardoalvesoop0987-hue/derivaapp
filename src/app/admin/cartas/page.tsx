@@ -173,6 +173,7 @@ export default function AdminCartasPage() {
       )}
 
       <AdminCardModal 
+        key={selectedCard?.id || "empty"}
         card={selectedCard!} 
         isOpen={selectedCard !== null} 
         onClose={() => setSelectedCard(null)} 
