@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
 import path from "path";
@@ -6,9 +5,9 @@ import os from "os";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { pipeline } from "stream/promises";
+import { prisma } from "../src/lib/db";
 
 const execAsync = promisify(exec);
-const prisma = new PrismaClient();
 
 const r2Client = process.env.R2_ACCOUNT_ID ? new S3Client({
   region: "auto",
