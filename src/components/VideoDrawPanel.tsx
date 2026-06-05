@@ -96,9 +96,9 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     const video = videoRef.current;
     
     // Cleanup previous hls
-    if (hlsInstance) {
-      hlsInstance.destroy();
-      setHlsInstance(null);
+    let currentHls = hlsInstance;
+    if (currentHls) {
+      currentHls.destroy();
     }
 
     if (videoUrl.includes(".m3u8") && Hls.isSupported()) {
@@ -112,6 +112,7 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
         video.play().catch(() => {});
       });
       setHlsInstance(hls);
+      currentHls = hls;
     } else if (video.canPlayType("application/vnd.apple.mpegurl") || videoUrl.includes(".mp4")) {
       // Safari or direct MP4
       video.src = videoUrl;
@@ -121,11 +122,11 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     }
 
     return () => {
-      if (hlsInstance) {
-        hlsInstance.destroy();
+      if (currentHls) {
+        currentHls.destroy();
       }
     };
-  }, [videoUrl]);
+  }, [videoUrl]); // Removed hlsInstance from dependency logic to avoid loops
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -138,8 +139,8 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
     if (videoRef.current) {
       if (videoRef.current.requestFullscreen) {
         videoRef.current.requestFullscreen();
-      } else if ((videoRef.current as any).webkitRequestFullscreen) {
-        (videoRef.current as any).webkitRequestFullscreen();
+      } else if ((videoRef.current as HTMLVideoElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
+        (videoRef.current as HTMLVideoElement & { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen?.();
       }
     }
   };
