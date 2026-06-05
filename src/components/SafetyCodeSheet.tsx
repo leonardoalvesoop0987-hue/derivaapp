@@ -28,39 +28,43 @@ export default function SafetyCodeSheet({ onClose, onAbort }: Props) {
           >
             <h3 className="text-lg font-medium text-center mb-6">Códigos de Segurança</h3>
 
+            <p className="text-sm text-[var(--color-text-secondary)] text-center mb-6 px-4">
+              O combinado existe pra proteger o clima de vocês. Não precisa explicar na hora, só usar as cores.
+            </p>
+
             <div className="space-y-4">
               <div className="flex items-start gap-4 p-4 rounded-xl bg-green-900/20 border border-green-700/30">
-                <div className="w-3 h-3 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-green-500 mt-1 flex-shrink-0 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                 <div>
-                  <div className="font-medium text-green-400 mb-1">Verde — Continua</div>
+                  <div className="font-medium text-green-400 mb-1">Verde — Quero mais</div>
                   <div className="text-sm text-[var(--color-text-secondary)]">
-                    Tudo bem, pode prosseguir.
+                    Tá gostoso, pode continuar.
                   </div>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 p-4 rounded-xl bg-yellow-900/20 border border-yellow-700/30">
-                <div className="w-3 h-3 rounded-full bg-yellow-400 mt-0.5 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400 mt-1 flex-shrink-0 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
                 <div>
-                  <div className="font-medium text-yellow-400 mb-1">Amarelo — Diminui</div>
+                  <div className="font-medium text-yellow-400 mb-1">Amarelo — Com calma</div>
                   <div className="text-sm text-[var(--color-text-secondary)]">
-                    Reduzir a intensidade. Ir com mais calma.
+                    Diminui o ritmo, vamos mudar de foco.
                   </div>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 p-4 rounded-xl bg-red-900/20 border border-red-700/30">
-                <div className="w-3 h-3 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
+                <div className="w-3 h-3 rounded-full bg-red-500 mt-1 flex-shrink-0 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
                 <div>
-                  <div className="font-medium text-red-400 mb-1">Vermelho — Para imediatamente</div>
-                  <div className="text-sm text-[var(--color-text-secondary)] mb-3">
-                    Parar tudo. Sem questionamentos.
+                  <div className="font-medium text-red-400 mb-1">Vermelho — Para agora</div>
+                  <div className="text-sm text-[var(--color-text-secondary)] mb-4">
+                    Para tudo imediatamente. Sem questionar.
                   </div>
                   <button
                     onClick={() => { setShow(false); onAbort(); }}
-                    className="px-4 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-sm transition-colors"
+                    className="w-full py-3 bg-red-700/80 hover:bg-red-600 rounded-xl text-sm font-medium transition-colors text-white"
                   >
-                    Encerrar sessão agora
+                    Encerrar a sessão
                   </button>
                 </div>
               </div>

@@ -53,8 +53,7 @@ enum SessionCardStatus {
 
 enum FeedbackType {
   FAVORITE
-  REPEAT
-  LATER
+  NEUTRAL
   NEVER_AGAIN
 }
 

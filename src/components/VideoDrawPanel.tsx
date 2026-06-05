@@ -82,22 +82,22 @@ export default function VideoDrawPanel({ cardId, sessionId, onContinue }: Props)
   if (!current && drawCount === 0) {
     return (
       <div className="flex flex-col items-center gap-6 py-8">
-        <p className="text-[var(--color-text-secondary)] text-sm text-center">
-          Esta carta inclui um vídeo. Sortear agora?
+        <p className="text-[var(--color-copper)] font-medium text-center text-lg leading-snug">
+          O Deriva separou um vídeo pra inspirar vocês.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 w-full max-w-[200px]">
           <button
             onClick={drawVideo}
             disabled={loading}
-            className="px-6 py-3 bg-[var(--color-wine)] rounded-xl hover:bg-[var(--color-red-deep)] transition-colors text-sm"
+            className="w-full py-4 bg-gradient-to-r from-[var(--color-wine)] to-pink-700 rounded-xl hover:from-pink-700 hover:to-[var(--color-wine)] transition-colors font-medium text-white shadow-lg"
           >
-            {loading ? "Sorteando..." : "Sortear vídeo"}
+            {loading ? "Sorteando..." : "Revelar vídeo"}
           </button>
           <button
             onClick={onContinue}
-            className="px-6 py-3 bg-transparent border border-[var(--color-border)] rounded-xl hover:bg-[var(--color-card)] transition-colors text-sm text-[var(--color-text-secondary)]"
+            className="w-full py-3 bg-transparent border border-[var(--color-border)] rounded-xl hover:bg-white/5 transition-colors text-sm text-[var(--color-text-secondary)]"
           >
-            Continuar sem vídeo
+            Pular vídeo
           </button>
         </div>
       </div>
