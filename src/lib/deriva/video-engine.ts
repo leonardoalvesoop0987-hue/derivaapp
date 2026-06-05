@@ -23,7 +23,7 @@ export async function drawVideoAdvanced(cardId: string, excludeIds: string[] = [
 
   // Retrieve basic info from card
   const receiver = card.receiver_rule || "ANY"; // MAN, WOMAN, ANY, NONE
-  let metadata: any = {};
+  let metadata: Record<string, unknown> = {};
   try {
     if (card.metadata_json) metadata = JSON.parse(card.metadata_json);
   } catch {}
@@ -32,7 +32,7 @@ export async function drawVideoAdvanced(cardId: string, excludeIds: string[] = [
   const isOralReceiving = metadata.is_oral_receiving_context === true || metadata.video_context === 'ORAL_RECEIVING';
 
   // 1. Fetch all ACTIVE and READY videos
-  let availableVideos = await prisma.mediaAsset.findMany({
+  const availableVideos = await prisma.mediaAsset.findMany({
     where: {
       type: "VIDEO",
       is_active: true,

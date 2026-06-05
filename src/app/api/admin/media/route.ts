@@ -29,7 +29,7 @@ export async function PATCH(req: Request) {
 
   try {
     const { id, ...data } = schema.parse(await req.json());
-    const asset = await prisma.mediaAsset.update({ where: { id }, data: data as any });
+    const asset = await prisma.mediaAsset.update({ where: { id }, data: data as Record<string, unknown> });
     return NextResponse.json({ asset });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
@@ -58,7 +58,7 @@ export async function DELETE(req: Request) {
     // Note: To fully delete from R2 we'd need to call R2 delete logic here, 
     // but the instruction says "prefer soft delete/desativação se houver vínculo histórico".
     return NextResponse.json({ message: "Arquivo deletado do banco." });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

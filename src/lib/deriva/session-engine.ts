@@ -170,7 +170,7 @@ export async function generateSessionSequence(input: Omit<NextCardInput, "curren
   return sequence;
 }
 
-export function buildCardMetadata(card: any, position: number) {
+export function buildCardMetadata(card: Record<string, unknown>, position: number) {
   // Resolve receiver rule (ANY -> MAN or WOMAN randomly)
   let receiver = card.receiver_rule;
   if (receiver === "ANY") {
