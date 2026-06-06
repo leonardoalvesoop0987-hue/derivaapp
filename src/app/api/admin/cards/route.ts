@@ -14,6 +14,8 @@ const patchSchema = z.object({
   is_invertible: z.boolean().optional(),
   requires_video: z.boolean().optional(),
   receiver_rule: z.enum(["NONE","WOMAN","MAN","ANY"]).optional(),
+  session_short_text: z.string().nullable().optional(),
+  session_quick_tip: z.string().nullable().optional(),
   primary_tag: z.string().nullable().optional(),
   secondary_tags: z.array(z.string()).optional(),
   stage: z.string().nullable().optional(),

@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { CardType, SessionCardType, SessionType } from "@/types";
 import AudioPlayer from "@/components/AudioPlayer";
 import VideoDrawPanel from "@/components/VideoDrawPanel";
-import SafetyCodeSheet from "@/components/SafetyCodeSheet";
 
 type SessionResponse = {
   card?: CardType;
@@ -54,6 +53,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const [isFlipped, setIsFlipped] = useState(false);
   
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
+  const [showFullTextModal, setShowFullTextModal] = useState(false);
 
   const fetchNext = useCallback(async (action: string) => {
     setLoading(true);
@@ -217,16 +217,40 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         )}
       </AnimatePresence>
 
+      {/* Full Text Modal */}
+      <AnimatePresence>
+        {showFullTextModal && card.session_short_text && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setShowFullTextModal(false)}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-4 pb-4 sm:p-6"
+          >
+            <motion.div 
+              initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[var(--color-card)] border border-[var(--color-border)] p-6 md:p-8 rounded-[2rem] w-full max-w-md shadow-2xl relative max-h-[85vh] flex flex-col"
+            >
+              <button onClick={() => setShowFullTextModal(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+              <h3 className="text-xl md:text-2xl font-medium mb-4 pr-8">{card.title}</h3>
+              <div className="overflow-y-auto custom-scrollbar pr-2">
+                <div className="text-base md:text-lg opacity-90 leading-relaxed whitespace-pre-wrap font-light">
+                  {meta.rendered_body || renderCardBody(card.body)}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Progress bar */}
       <div className="h-1 bg-black/40 rounded-full mb-6 overflow-hidden border border-white/5">
         <div className="h-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-copper)] transition-all duration-700 ease-out" style={{ width: `${progress}%` }} />
       </div>
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <SafetyCodeSheet onClose={() => {}} onAbort={() => setShowAbortConfirm(true)} />
-        </div>
+      <div className="flex justify-end items-center mb-6">
         <div className="flex items-center gap-3">
           <span className="text-xs font-medium text-[var(--color-text-secondary)] bg-black/20 px-3 py-1 rounded-full border border-white/5 shadow-inner">
             Carta {session.current_position + 1} de {session.target_card_count}
@@ -235,7 +259,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Card physical container */}
-      <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full relative perspective-[1000px]">
+      <div className="flex-1 flex flex-col justify-center max-w-sm md:max-w-md lg:max-w-xl mx-auto w-full relative perspective-[1000px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={state.id}
@@ -248,7 +272,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             <motion.div
               animate={{ rotateY: isFlipped ? 180 : 0 }}
               transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-              className="w-full min-h-[400px] relative cursor-pointer"
+              className="w-full min-h-[400px] md:min-h-[450px] relative cursor-pointer"
               style={{ transformStyle: 'preserve-3d' }}
               onClick={() => !isFlipped && setIsFlipped(true)}
             >
@@ -283,12 +307,28 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                  </div>
 
                  <div className="flex-1 flex flex-col justify-center z-10">
-                   <h2 className="text-2xl font-medium mb-4 leading-snug drop-shadow-md">
+                   <h2 className="text-2xl md:text-3xl font-medium mb-4 leading-snug drop-shadow-md">
                      {card.title}
                    </h2>
-                   <div className="text-base opacity-90 leading-relaxed whitespace-pre-wrap font-light">
-                     {meta.rendered_body || renderCardBody(card.body)}
+                   
+                   {card.session_quick_tip && (
+                     <div className="mb-4 bg-black/20 border border-white/10 p-3 rounded-xl text-sm italic text-white/90">
+                       💡 {card.session_quick_tip}
+                     </div>
+                   )}
+                   
+                   <div className="text-lg md:text-xl opacity-90 leading-relaxed whitespace-pre-wrap font-light">
+                     {card.session_short_text ? card.session_short_text : (meta.rendered_body || renderCardBody(card.body))}
                    </div>
+
+                   {card.session_short_text && (
+                     <button
+                       onClick={(e) => { e.stopPropagation(); setShowFullTextModal(true); }}
+                       className="mt-6 self-start text-sm border-b border-white/30 text-white/70 hover:text-white pb-0.5 transition-colors"
+                     >
+                       Ver detalhes
+                     </button>
+                   )}
                  </div>
 
                  {meta.current_receiver && meta.current_receiver !== "NONE" && meta.current_receiver !== "ANY" && (

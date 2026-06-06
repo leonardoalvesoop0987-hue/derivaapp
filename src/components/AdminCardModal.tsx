@@ -15,6 +15,8 @@ export type AdminCard = {
   requires_video: boolean;
   receiver_rule: string | null;
   metadata_json?: string | null;
+  session_short_text?: string | null;
+  session_quick_tip?: string | null;
   primary_tag?: string | null;
   stage?: string | null;
   erotic_function?: string | null;
@@ -75,6 +77,8 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
           stage: formData.stage === "null" ? null : formData.stage,
           erotic_function: formData.erotic_function === "null" ? null : formData.erotic_function,
           progression_role: formData.progression_role === "null" ? null : formData.progression_role,
+          session_short_text: formData.session_short_text === "" ? null : formData.session_short_text,
+          session_quick_tip: formData.session_quick_tip === "" ? null : formData.session_quick_tip,
           is_available_in_default: formData.is_available_in_default,
           is_available_in_estreia: formData.is_available_in_estreia,
           is_available_in_custom_selection: formData.is_available_in_custom_selection,
@@ -226,8 +230,22 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Corpo da Carta</label>
+                <label className="block text-sm text-[var(--color-text-secondary)] mb-1 flex justify-between items-center">
+                  <span>Corpo da Carta (Texto Completo Original)</span>
+                </label>
                 <textarea name="body" value={formData.body} onChange={handleChange} required rows={5} className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-3 text-sm focus:outline-none focus:border-[var(--color-copper)] resize-none" />
+              </div>
+
+              <div className="bg-[#1a1410] p-4 rounded-xl border border-[#d4a373]/20 space-y-4">
+                <div>
+                  <label className="block text-sm text-[#d4a373] mb-1 font-medium">Texto curto (Sessão)</label>
+                  <p className="text-xs text-[var(--color-text-secondary)] mb-2">O texto curto aparece durante a sessão para leitura rápida. O texto completo continuará disponível no botão “Ver detalhes”.</p>
+                  <textarea name="session_short_text" value={formData.session_short_text || ""} onChange={handleChange} rows={3} placeholder="Texto reduzido para leitura rápida..." className="w-full bg-[var(--color-background-secondary)] border border-[#d4a373]/30 rounded-lg p-3 text-sm focus:outline-none focus:border-[#d4a373] resize-none" />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Dica Rápida (Opcional)</label>
+                  <input name="session_quick_tip" value={formData.session_quick_tip || ""} onChange={handleChange} placeholder="Ex: Olhem nos olhos, falem baixo..." className="w-full bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-lg p-2.5 text-sm focus:outline-none focus:border-[var(--color-copper)]" />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 border-t border-[var(--color-border)] pt-4 mt-4">

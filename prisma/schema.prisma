@@ -258,6 +258,8 @@ model Card {
   requires_video Boolean       @default(false)
   receiver_rule  ReceiverRule?
   metadata_json  String?
+  session_short_text String?
+  session_quick_tip  String?
 
   // Classificação Avançada
   primary_tag                CardTag?

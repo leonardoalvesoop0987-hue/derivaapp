@@ -15,6 +15,8 @@ export interface CardType {
   requires_video: boolean;
   receiver_rule: ReceiverRule | null;
   metadata_json: string | null;
+  session_short_text?: string | null;
+  session_quick_tip?: string | null;
   created_at: Date;
   updated_at: Date;
 }

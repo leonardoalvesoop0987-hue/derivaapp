@@ -271,6 +271,29 @@ export default function NovaSessaoPage() {
           </button>
         </div>
 
+        <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-border)] shadow-sm flex items-center justify-between opacity-50 cursor-not-allowed">
+          <div>
+            <div className="font-medium text-sm text-white">Narração da carta</div>
+            <div className="text-xs text-[var(--color-text-secondary)] mt-1 font-light">Desligada (Recurso indisponível no momento)</div>
+          </div>
+        </div>
+
+        <div className="bg-[#1a1410]/50 p-5 rounded-2xl border border-[#d4a373]/20 space-y-4">
+          <div>
+            <div className="font-[var(--font-cormorant)] italic text-[#d4a373] text-lg mb-1">Como ler:</div>
+            <div className="text-xs text-[var(--color-text-secondary)] font-light leading-relaxed">
+              Nesta rodada, uma pessoa pode revelar e ler em voz baixa. Na próxima, vocês podem alternar. Se preferirem, leiam apenas o comando curto e sigam.
+            </div>
+          </div>
+          <div>
+            <div className="font-[var(--font-cormorant)] italic text-[#d4a373] text-lg mb-1">Combinem agora:</div>
+            <div className="text-xs text-[var(--color-text-secondary)] font-light leading-relaxed">
+              Verde continua. Amarelo diminui. Vermelho para.<br/>
+              Não precisa explicar na hora. O combinado existe para proteger o clima dos dois.
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={handleStartRequest}
           disabled={loading}
