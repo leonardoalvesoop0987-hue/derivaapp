@@ -15,6 +15,7 @@ import { MediaAndMusicSection } from "@/components/lp/MediaAndMusicSection";
 import { RelationshipSection } from "@/components/lp/RelationshipSection";
 import { TestimonialsSection } from "@/components/lp/TestimonialsSection";
 import { FaqSection } from "@/components/lp/FaqSection";
+import { AtmosphereCarouselSection } from "@/components/lp/AtmosphereCarouselSection";
 import { AtmosphericClosingSection } from "@/components/lp/AtmosphericClosingSection";
 import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
@@ -41,6 +42,7 @@ export function LpContent() {
       <ForHerForHimSection />
       <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={false} />
       <DeckStructureSection />
+      <AtmosphereCarouselSection />
       <SmartRandomSection />
       <IdealMomentsSection />
       <MediaAndMusicSection />

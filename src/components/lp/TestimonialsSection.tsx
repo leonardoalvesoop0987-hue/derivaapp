@@ -6,22 +6,22 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
-    text: "No começo eu achei que ia travar. Mas a primeira carta não me cobrou nada. Só me colocou no clima e fez meu corpo entender que estava tudo bem relaxar.",
+    text: "No começo fiquei um pouco tímida, achei que ia travar. Mas a primeira carta não cobrou nada. Só me colocou no clima e foi muito mais quente do que eu esperava.",
     author: "Camila",
     location: "Recife/PE, 2024"
   },
   {
-    text: "Eu gostei porque não parecia que eu precisava virar outra pessoa. Era eu, só que mais solta. Ele prestou atenção em coisas que a rotina tinha apagado.",
+    text: "A noite ficou com outro clima. Me senti muito mais no centro de tudo, e ele entrou no jogo de um jeito que eu adorei. Safadeza com elegância.",
     author: "Renata",
     location: "Curitiba/PR, 2025"
   },
   {
-    text: "A gente já era bem. O Deriva só tirou a noite do automático. Ter um roteiro sem saber o final dá um frio na barriga que eu não sentia há muito tempo.",
+    text: "Nós já estávamos super bem, mas ficou diferente. Ter uma provocação guiada sem saber o que vem a seguir dá um frio na barriga incrível.",
     author: "Marina",
     location: "Belo Horizonte/MG, 2025"
   },
   {
-    text: "Sempre fui mais insegura em como conduzir. Quando eu li a minha primeira carta em voz alta para ele, me senti poderosa, sabe? Mudou a dinâmica.",
+    text: "Sempre deixei ele conduzir mais. Quando li a minha primeira carta vermelha em voz alta para ele, me senti poderosa, sabe? Mudou a dinâmica pra melhor.",
     author: "Beatriz",
     location: "Rio de Janeiro/RJ, 2024"
   },
@@ -31,7 +31,7 @@ const testimonials = [
     location: "Brasília/DF, 2025"
   },
   {
-    text: "Eu achava que ia ser só mais um jogo bobo de perguntas. Mas a música, as pausas... é tudo muito elegante. Não ofende, não força a barra, só te puxa pro momento.",
+    text: "Eu achava que ia ser só um jogo de perguntas. Mas a música, as pausas... é tudo muito elegante. Não força a barra, só te puxa pro momento de verdade.",
     author: "Patrícia",
     location: "Salvador/BA, 2026"
   }

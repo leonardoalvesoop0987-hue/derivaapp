@@ -28,9 +28,9 @@ export function WhyItWorksSection() {
 
         <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
           {[
-            { num: "01", title: "Criação do clima", desc: "Você começa. Sem pressão. Sem roteiro imposto. Devagar é a palavra que mais falta na maioria das noites. O Deriva abre espaço para o corpo entender que não precisa correr." },
-            { num: "02", title: "Tensão que cresce", desc: "Uma carta não entrega tudo de uma vez. Ela aproxima, provoca, dá pausa e volta mais quente. O desejo não aparece por obrigação; ele é construído." },
-            { num: "03", title: "Ritmo dos dois", desc: "Ele não precisa adivinhar. Você não precisa explicar tudo. A sequência ajuda o casal a entrar no mesmo clima, sem transformar intimidade em conversa difícil." }
+            { num: "01", title: "O clima começa antes", desc: "Nada entra pesado de primeira. A sequência abre espaço para olhar, toque e presença antes da intensidade." },
+            { num: "02", title: "A surpresa ajuda", desc: "A próxima carta tira vocês do automático. Não é improviso solto. É provocação com direção." },
+            { num: "03", title: "Vocês seguem no controle", desc: "Dá para pular, diminuir ou parar. O jogo esquenta, mas o limite continua sendo dos dois." }
           ].map((b, i) => (
             <motion.div 
               key={i}

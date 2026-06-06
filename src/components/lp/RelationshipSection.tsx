@@ -19,13 +19,16 @@ export function RelationshipSection() {
           <div className="w-16 h-16 mx-auto rounded-full bg-[var(--color-background-primary)] border border-[var(--color-border)] flex items-center justify-center mb-8 shadow-[0_0_20px_rgba(184,115,51,0.1)]">
             <ShieldCheck className="text-[var(--color-copper)]" size={32} strokeWidth={1.5} />
           </div>
-          <span className="text-[var(--color-copper)] text-sm uppercase tracking-[0.2em] font-medium mb-6 block">Confiança Absoluta</span>
+          <span className="text-[var(--color-copper)] text-sm uppercase tracking-[0.2em] font-medium mb-6 block">Para vocês dois</span>
           <h2 className="text-3xl md:text-5xl font-serif mb-8 text-white leading-tight">
-            Para casais que buscam ainda <span className="italic text-[var(--color-copper)]">mais intensidade.</span>
+            Para transformar <span className="italic text-[var(--color-copper)]">clima em jogo.</span>
           </h2>
-          <p className="text-[var(--color-text-secondary)] text-lg leading-relaxed max-w-2xl mx-auto font-light">
-            O Deriva não promete &quot;salvar casamentos&quot;. Ele foi feito para casais fortes, que já escolheram estar juntos e querem apenas elevar o nível do desejo, da intimidade e da presença mútua, sem o peso da rotina.
-          </p>
+          <div className="text-[var(--color-text-secondary)] text-lg leading-relaxed max-w-2xl mx-auto font-light space-y-3">
+            <p className="flex items-center justify-center gap-3"><span className="w-1.5 h-1.5 rounded-full bg-[var(--color-copper)] opacity-70"></span> Começar devagar e deixar a tensão subir.</p>
+            <p className="flex items-center justify-center gap-3"><span className="w-1.5 h-1.5 rounded-full bg-[var(--color-copper)] opacity-70"></span> Provocar sem precisar explicar tudo.</p>
+            <p className="flex items-center justify-center gap-3"><span className="w-1.5 h-1.5 rounded-full bg-[var(--color-copper)] opacity-70"></span> Fazer o toque parecer mais esperado.</p>
+            <p className="flex items-center justify-center gap-3"><span className="w-1.5 h-1.5 rounded-full bg-[var(--color-copper)] opacity-70"></span> Terminar a noite com gosto de &quot;quero mais&quot;.</p>
+          </div>
         </motion.div>
       </div>
     </section>

@@ -9,12 +9,12 @@ export function DeckStructureSection() {
   };
 
   const categories = [
-    { color: "from-[#1a2a6c] to-[#0d0820] border-blue-500/10 text-blue-100", name: "Azul", desc: "Início e preparo", example: "Começa onde o corpo ainda está aprendendo a relaxar." },
-    { color: "from-[#4a102b] to-[#160710] border-pink-500/10 text-pink-100", name: "Rosa", desc: "Prazer e atenção nela", example: "A atenção vai para ela, mas o efeito volta para os dois." },
-    { color: "from-[#4a1118] to-[#140607] border-red-500/10 text-red-100", name: "Vermelho", desc: "Intensidade e calor", example: "Quando o clima já não precisa ser explicado." },
+    { color: "from-[#1a2a6c] to-[#0d0820] border-blue-500/10 text-blue-100", name: "Azul", desc: "Início e preparo", example: "Para começar sem pressa." },
+    { color: "from-[#4a102b] to-[#160710] border-pink-500/10 text-pink-100", name: "Rosa", desc: "Prazer e atenção nela", example: "Quando a atenção vai para ela." },
+    { color: "from-[#4a1118] to-[#140607] border-red-500/10 text-red-100", name: "Vermelho", desc: "Intensidade e calor", example: "Quando o corpo já entendeu o jogo." },
     { color: "from-[#3a2416] to-[#0d0806] border-[#d4a373]/10 text-[#d4a373]", name: "Deriva", desc: "Respiros e transições", example: "Respira, aproxima, reorganiza o desejo." },
-    { color: "from-[#32124a] to-[#100719] border-purple-500/10 text-purple-100", name: "Roxo", desc: "Tela e provocação áudio/vídeo", example: "Um estímulo, uma pausa, uma provocação." },
-    { color: "from-[#1a1410] to-[#050505] border-zinc-700/30 text-zinc-300", name: "Preto", desc: "Fantasia e mente", example: "Personagem, cena e imaginação entre vocês dois." }
+    { color: "from-[#32124a] to-[#100719] border-purple-500/10 text-purple-100", name: "Roxo", desc: "Tela e provocação", example: "Estímulo, provocação e clima." },
+    { color: "from-[#1a1410] to-[#050505] border-zinc-700/30 text-zinc-300", name: "Preto", desc: "Fantasia e mente", example: "Fantasia entre vocês dois." }
   ];
 
   const levels = [
