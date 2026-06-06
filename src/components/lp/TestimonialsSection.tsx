@@ -2,68 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
-    text: "No começo eu achei que ficaria travada, mas o fato de começar leve ajudou muito. Não parecia pressão. Foi ficando natural.",
+    text: "No começo eu achei que ia travar. Mas a primeira carta não me cobrou nada. Só me colocou no clima e fez meu corpo entender que estava tudo bem relaxar.",
     author: "Camila",
     location: "Recife/PE, 2024"
   },
   {
-    text: "Meu marido ficou muito mais atento aos detalhes. Parecia que ele tava focado só em mim, seguindo o que a carta pedia. Adorei essa sensação.",
-    author: "Juliana",
-    location: "São Paulo/SP, 2023"
+    text: "Eu gostei porque não parecia que eu precisava virar outra pessoa. Era eu, só que mais solta. Ele prestou atenção em coisas que a rotina tinha apagado.",
+    author: "Renata",
+    location: "Curitiba/PR, 2025"
   },
   {
-    text: "O que mais gostei foi a progressão. Não pulou direto pro final. A gente teve tempo pra conversar, dar risada e depois o clima esquentou muito.",
-    author: "Amanda",
-    location: "Florianópolis/SC, 2025"
+    text: "A gente já era bem. O Deriva só tirou a noite do automático. Ter um roteiro sem saber o final dá um frio na barriga que eu não sentia há muito tempo.",
+    author: "Marina",
+    location: "Belo Horizonte/MG, 2025"
   },
   {
-    text: "Nosso casamento é ótimo, não precisávamos 'salvar' nada. Mas a rotina cansa. O Deriva trouxe aquele frio na barriga do início do namoro de volta.",
+    text: "Sempre fui mais insegura em como conduzir. Quando eu li a minha primeira carta em voz alta para ele, me senti poderosa, sabe? Mudou a dinâmica.",
     author: "Beatriz",
     location: "Rio de Janeiro/RJ, 2024"
   },
   {
-    text: "Eu sou tímida e a ideia me assustava. Mas o fato de eu poder pular uma carta se não quisesse, me deu segurança pra tentar. Fui no meu ritmo.",
-    author: "Fernanda",
-    location: "Porto Alegre/RS, 2023"
-  },
-  {
-    text: "Na primeira vez eu fiquei com vergonha, mas gostei porque não parecia que eu precisava virar outra pessoa. Foi indo aos poucos. Na terceira vez, eu já tava esperando a próxima carta.",
-    author: "Marina",
-    location: "Belo Horizonte/MG, 2024"
-  },
-  {
-    text: "Foi um alívio não precisar 'conduzir' ou improvisar tudo sozinho. A surpresa das cartas fez ela se entregar de um jeito muito mais livre. Recomendo pra qualquer homem.",
-    author: "Thiago",
-    location: "Campinas/SP, 2024"
-  },
-  {
-    text: "A gente já tinha uma relação boa, mas o Deriva trouxe uma provocação diferente. Parecia que a noite tinha roteiro, mas sem perder a espontaneidade.",
+    text: "Jogamos num final de semana. Desligamos as notificações, abrimos um vinho e o app fez o resto. Foi a nossa noite mais quente do ano, sem dúvida.",
     author: "Larissa",
     location: "Brasília/DF, 2025"
   },
   {
-    text: "Levamos para uma viagem de fim de semana na serra. Fez toda a diferença. Desligamos a TV e ficamos um tempão só focados um no outro.",
-    author: "Rafael e Carol",
-    location: "Gramado/RS, 2025"
-  },
-  {
-    text: "Eu achava que ia ser só um baralho, mas o app com a música e o sorteio inteligente deixam o clima de cinema. Muito premium, muito bem feito.",
+    text: "Eu achava que ia ser só mais um jogo bobo de perguntas. Mas a música, as pausas... é tudo muito elegante. Não ofende, não força a barra, só te puxa pro momento.",
     author: "Patrícia",
     location: "Salvador/BA, 2026"
-  },
-  {
-    text: "No dia a dia a gente acaba indo direto ao ponto pela correria. Jogamos no deck 'Azul e Rosa' e só focamos nas preliminares. Delícia.",
-    author: "Isabela",
-    location: "Curitiba/PR, 2024"
-  },
-  {
-    text: "A gente jogou o baralho padrão várias vezes e depois resolvemos liberar o deck mais quente. Valeu a pena esperar a confiança crescer. Foi a melhor noite do ano.",
-    author: "Daniela",
-    location: "Goiânia/GO, 2025"
   }
 ];
 
@@ -100,7 +70,7 @@ export function TestimonialsSection() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % totalPages);
-    }, 8000);
+    }, 10000);
     return () => clearInterval(timer);
   }, [totalPages]);
 
@@ -116,14 +86,16 @@ export function TestimonialsSection() {
 
   return (
     <section className="py-24 lg:py-32 bg-[var(--color-background-secondary)] px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--color-wine)]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#2a1510]/30 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="text-center mb-16 lg:mb-20">
-          <span className="text-[var(--color-copper)] text-sm uppercase tracking-[0.2em] font-medium mb-4 block">Experiência Real</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif mb-4 text-white">O que dizem os casais</h2>
-          <p className="text-[var(--color-text-secondary)] text-sm mt-4 font-light italic opacity-70">
-            Relatos ilustrativos baseados em situações comuns de casais da comunidade.
+          <span className="text-[#d4a373] text-sm uppercase tracking-[0.2em] font-light mb-4 block">Experiência Real</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-light mb-4 text-white">
+            O que <span className="font-[var(--font-cormorant)] italic text-[#d4a373]">elas</span> dizem
+          </h2>
+          <p className="text-zinc-500 text-xs mt-4 font-light italic opacity-60">
+            Relatos ilustrativos baseados em situações comuns de casais.
           </p>
         </motion.div>
 
@@ -131,7 +103,7 @@ export function TestimonialsSection() {
           {/* Controls */}
           <button 
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-[var(--color-background-primary)] border border-[var(--color-border)] text-white hover:text-[var(--color-copper)] hover:border-[var(--color-copper)]/50 transition-all shadow-xl disabled:opacity-50 hidden sm:flex"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-[#0a0605] border border-white/5 text-white hover:text-[#d4a373] hover:border-[#d4a373]/30 transition-all shadow-xl disabled:opacity-50 hidden sm:flex"
             aria-label="Anterior"
           >
             <ChevronLeft size={24} />
@@ -139,7 +111,7 @@ export function TestimonialsSection() {
 
           <button 
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-[var(--color-background-primary)] border border-[var(--color-border)] text-white hover:text-[var(--color-copper)] hover:border-[var(--color-copper)]/50 transition-all shadow-xl disabled:opacity-50 hidden sm:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-[#0a0605] border border-white/5 text-white hover:text-[#d4a373] hover:border-[#d4a373]/30 transition-all shadow-xl disabled:opacity-50 hidden sm:flex"
             aria-label="Próximo"
           >
             <ChevronRight size={24} />
@@ -158,15 +130,17 @@ export function TestimonialsSection() {
                 {visibleTestimonials.map((item, i) => (
                   <div 
                     key={i}
-                    className="bg-[var(--color-background-primary)] p-8 rounded-2xl border border-[var(--color-border)] flex flex-col h-full relative group hover:border-[var(--color-copper)]/30 transition-colors"
+                    className="bg-[#0a0605] p-8 md:p-10 rounded-2xl border border-white/5 flex flex-col h-full relative group hover:border-[#d4a373]/20 transition-colors"
                   >
-                    <Quote size={40} className="text-[var(--color-copper)]/10 absolute top-6 right-6 group-hover:text-[var(--color-copper)]/20 transition-colors" />
-                    <p className="text-[var(--color-text-secondary)] italic mb-8 relative z-10 leading-relaxed text-[15px]">
-                      “{item.text}”
+                    <span className="font-[var(--font-cormorant)] italic text-[5rem] leading-none absolute -top-4 -left-2 text-white/5 group-hover:text-[#d4a373]/10 transition-colors pointer-events-none">
+                      "
+                    </span>
+                    <p className="text-zinc-300 font-light mb-8 relative z-10 leading-relaxed text-[15px]">
+                      {item.text}
                     </p>
-                    <div className="mt-auto pt-6 border-t border-[var(--color-border)]/50">
-                      <span className="block font-serif text-lg text-white">{item.author}</span>
-                      <span className="block text-xs text-[var(--color-text-secondary)] mt-1 tracking-wider uppercase">{item.location}</span>
+                    <div className="mt-auto pt-6 border-t border-white/5">
+                      <span className="block font-[var(--font-cormorant)] italic text-xl text-white">{item.author}</span>
+                      <span className="block text-xs text-zinc-500 mt-1 tracking-wider uppercase">{item.location}</span>
                     </div>
                   </div>
                 ))}
@@ -180,7 +154,7 @@ export function TestimonialsSection() {
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-8 bg-[var(--color-copper)]' : 'w-2 bg-[var(--color-border)] hover:bg-[var(--color-copper)]/50'}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-8 bg-[#d4a373]' : 'w-2 bg-white/10 hover:bg-[#d4a373]/50'}`}
                 aria-label={`Ir para a página ${i + 1}`}
               />
             ))}

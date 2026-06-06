@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { HeroSection } from "@/components/lp/HeroSection";
+import { InteractiveSampleCardSection } from "@/components/lp/InteractiveSampleCardSection";
 import { WhyItWorksSection } from "@/components/lp/WhyItWorksSection";
 import { ForHerForHimSection } from "@/components/lp/ForHerForHimSection";
 import { AppAndPhysicalSection } from "@/components/lp/AppAndPhysicalSection";
@@ -14,6 +15,7 @@ import { MediaAndMusicSection } from "@/components/lp/MediaAndMusicSection";
 import { RelationshipSection } from "@/components/lp/RelationshipSection";
 import { TestimonialsSection } from "@/components/lp/TestimonialsSection";
 import { FaqSection } from "@/components/lp/FaqSection";
+import { AtmosphericClosingSection } from "@/components/lp/AtmosphericClosingSection";
 import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
 import { FounderAuthoritySection } from "@/components/lp/FounderAuthoritySection";
@@ -34,6 +36,7 @@ export function LpContent() {
       />
 
       <HeroSection onBuyClick={handleBuyClick} isLoading={false} />
+      <InteractiveSampleCardSection />
       <WhyItWorksSection />
       <ForHerForHimSection />
       <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={false} />
@@ -45,6 +48,7 @@ export function LpContent() {
       <FounderAuthoritySection />
       <TestimonialsSection />
       <FaqSection />
+      <AtmosphericClosingSection />
       <OfferSection onBuyClick={handleBuyClick} isLoading={false} />
       <LpFooter />
     </div>

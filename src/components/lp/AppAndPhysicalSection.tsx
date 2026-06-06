@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Smartphone, Package, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { Smartphone, ChevronRight } from "lucide-react";
 
 interface AppAndPhysicalSectionProps {
   onBuyClick: () => void;
@@ -10,43 +11,64 @@ interface AppAndPhysicalSectionProps {
 
 export function AppAndPhysicalSection({ onBuyClick, isLoading = false }: AppAndPhysicalSectionProps) {
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   };
 
   return (
-    <section className="py-24 bg-background-secondary px-6">
-      <div className="max-w-5xl mx-auto">
+    <section className="py-24 lg:py-32 bg-[var(--color-background-primary)] px-6 relative overflow-hidden">
+      {/* Glow background */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#d4a373]/5 blur-[150px] rounded-full pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        
+        {/* Featured Image */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="relative w-full max-w-4xl mx-auto aspect-[16/9] md:aspect-[21/9] mb-20"
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-background-primary)] via-transparent to-transparent z-10 pointer-events-none" />
+          <Image 
+            src="/ilustracards.png" 
+            alt="Cartas premium do Deriva" 
+            fill
+            className="object-contain drop-shadow-2xl opacity-90"
+          />
+        </motion.div>
+
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">A versão física é linda. O app é mais inteligente.</h2>
-          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Juntos, eles deixam a experiência mais completa. Você não precisa esperar os correios: pode começar pelo app antes mesmo da versão física chegar em casa.
+          <h2 className="text-3xl md:text-5xl font-light mb-6 text-white tracking-wide">
+            O App e o <span className="font-[var(--font-cormorant)] italic text-[#d4a373]">Físico</span>
+          </h2>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            Você não precisa esperar. Acesso imediato pelo celular para começar hoje mesmo, enquanto a versão premium de mesa viaja até sua casa.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
           {/* O App */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="bg-background-primary p-8 md:p-10 rounded-3xl border border-border flex flex-col h-full"
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="bg-[#0a0605] p-8 md:p-10 rounded-3xl border border-white/5 flex flex-col h-full hover:border-white/10 transition-colors"
           >
-            <div className="w-16 h-16 rounded-2xl bg-card border border-copper/20 flex items-center justify-center mb-6">
-              <Smartphone className="text-copper" size={32} />
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+              <Smartphone className="text-zinc-300" size={32} strokeWidth={1.5} />
             </div>
-            <h3 className="text-2xl font-bold mb-4">A inteligência do App</h3>
-            <p className="text-text-secondary mb-8">
-              O aplicativo tira toda a pressão de decidir &quot;o que fazer agora&quot;. Ele não apenas sorteia cartas, ele cria uma jornada.
+            <h3 className="text-2xl font-[var(--font-cormorant)] italic mb-4 text-white">Na palma da mão</h3>
+            <p className="text-zinc-400 font-light mb-8 leading-relaxed">
+              O aplicativo tira o peso de "conduzir". Ele sorteia, avança no ritmo certo e sugere trilhas sonoras. Vocês só precisam aproveitar a noite.
             </p>
-            <ul className="space-y-3 mt-auto">
+            <ul className="space-y-4 mt-auto">
               {[
-                "Sorteio automático e progressão planejada",
-                "Evita repetição de experiências",
-                "Permite adicionar música ambiente",
-                "Exibe mídia visual quando cabível",
-                "Controle total dos níveis e da sessão em andamento"
+                "Sorteio que lê o clima do casal",
+                "Progressão que nunca repete roteiro",
+                "Controle total: avance ou pule quando quiser"
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm font-medium text-text-primary">
-                  <div className="w-1.5 h-1.5 rounded-full bg-copper/50" />
+                <li key={i} className="flex items-center gap-3 text-sm font-light text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
                   {item}
                 </li>
               ))}
@@ -55,27 +77,25 @@ export function AppAndPhysicalSection({ onBuyClick, isLoading = false }: AppAndP
 
           {/* O Físico */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="bg-card p-8 md:p-10 rounded-3xl border border-copper/20 flex flex-col h-full shadow-xl shadow-copper/5 relative overflow-hidden"
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-gradient-to-br from-[#1a1410] to-[#050505] p-8 md:p-10 rounded-3xl border border-[#d4a373]/20 flex flex-col h-full shadow-2xl relative overflow-hidden"
           >
-            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-red-deep/10 blur-3xl rounded-full"></div>
-            <div className="w-16 h-16 rounded-2xl bg-background-primary border border-copper/10 flex items-center justify-center mb-6 relative z-10">
-              <Package className="text-red-deep" size={32} />
+            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#d4a373]/10 blur-3xl rounded-full"></div>
+            <div className="w-16 h-16 rounded-2xl bg-[#d4a373]/10 border border-[#d4a373]/20 flex items-center justify-center mb-6 relative z-10">
+              <span className="font-[var(--font-cormorant)] italic text-[#d4a373] text-3xl">D</span>
             </div>
-            <h3 className="text-2xl font-bold mb-4 relative z-10">O charme da Versão Física</h3>
-            <p className="text-text-secondary mb-8 relative z-10">
-              Receber em casa um produto premium traz o aspecto tátil e luxuoso que nenhuma tela consegue substituir.
+            <h3 className="text-2xl font-[var(--font-cormorant)] italic mb-4 text-[#d4a373] relative z-10">O toque do Papel</h3>
+            <p className="text-zinc-400 font-light mb-8 relative z-10 leading-relaxed">
+              O celular fica de lado. Quando a caixa chega, a experiência se torna tátil, analógica e ainda mais íntima.
             </p>
-            <ul className="space-y-3 mt-auto relative z-10">
+            <ul className="space-y-4 mt-auto relative z-10">
               {[
-                "Uma experiência tátil e luxuosa",
-                "Ideal para usar longe das telas",
-                "Perfeito para presentear a pessoa amada",
-                "Fácil de levar em viagens",
-                "Recebido com total discrição em sua casa"
+                "Acabamento premium de alta gramatura",
+                "Ideal para noites de vinho sem telas",
+                "Discrição total na embalagem de entrega"
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm font-medium text-text-primary">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-deep/50" />
+                <li key={i} className="flex items-center gap-3 text-sm font-light text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#d4a373]/50" />
                   {item}
                 </li>
               ))}
@@ -83,20 +103,25 @@ export function AppAndPhysicalSection({ onBuyClick, isLoading = false }: AppAndP
           </motion.div>
         </div>
 
-        <div className="mt-16 text-center">
+        <div className="mt-20 text-center flex justify-center">
           <button 
             onClick={onBuyClick}
             disabled={isLoading}
-            className="bg-transparent border border-copper hover:bg-copper/10 text-copper font-medium px-8 py-3 rounded-full transition-all duration-300 inline-flex items-center justify-center gap-2 relative disabled:opacity-80 disabled:cursor-not-allowed"
+            className="group relative overflow-hidden rounded-full p-[1px] disabled:opacity-80 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <div className="w-5 h-5 rounded-full border-2 border-copper/30 border-t-copper animate-spin my-1" />
-            ) : (
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] line-through opacity-70 leading-tight">De R$ 199,00</span>
-                <span className="font-bold leading-tight flex items-center gap-1">Garantir no Mês dos Namorados por R$ 19,90 <ChevronRight size={18} /></span>
-              </div>
-            )}
+            <span className="absolute inset-0 bg-gradient-to-r from-[#d4a373] via-[#b57a4e] to-[#d4a373] rounded-full opacity-70 group-hover:opacity-100 transition-opacity duration-500"></span>
+            <div className="relative bg-[#0a0605] px-8 py-4 rounded-full transition-all duration-300 group-hover:bg-opacity-0">
+              {isLoading ? (
+                <div className="w-5 h-5 rounded-full border-2 border-[#d4a373]/30 border-t-[#d4a373] animate-spin my-1 mx-auto" />
+              ) : (
+                <div className="flex flex-col items-center">
+                  <span className="text-[11px] text-zinc-500 line-through opacity-70 leading-tight mb-1">De R$ 199,00</span>
+                  <span className="font-light tracking-wide flex items-center gap-2 text-white group-hover:text-black transition-colors duration-300">
+                    Acesso imediato + Físico por R$ 19,90 <ChevronRight size={18} className="opacity-70" />
+                  </span>
+                </div>
+              )}
+            </div>
           </button>
         </div>
       </div>

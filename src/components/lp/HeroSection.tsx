@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
 interface HeroSectionProps {
@@ -11,72 +10,52 @@ interface HeroSectionProps {
 
 export function HeroSection({ onBuyClick, isLoading = false }: HeroSectionProps) {
   const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
-  };
-
-  const imageFade = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 1, ease: "easeOut", delay: 0.2 } },
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: "easeOut" } },
   };
 
   return (
-    <section className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 px-6 max-w-7xl mx-auto flex flex-col items-center">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--color-wine)]/30 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[var(--color-copper)]/10 blur-[100px] rounded-full pointer-events-none" />
-
-      <div className="relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-        {/* Text Column */}
-        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col text-center lg:text-left items-center lg:items-start order-2 lg:order-1">
-          <span className="inline-block py-1.5 px-4 rounded-full border border-[var(--color-copper)]/30 bg-[var(--color-copper)]/10 text-[var(--color-copper)] text-xs font-semibold tracking-widest uppercase mb-6 lg:mb-8">
-            Para Casais Adultos
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight mb-6">
-            Transforme uma noite comum em uma experiência{" "}
-            <span className="text-[var(--color-copper)] italic">inesquecível.</span>
+    <section className="relative min-h-[90vh] flex items-center justify-center px-6 overflow-hidden">
+      {/* Background Atmosférico */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, #2a1510 0%, #0d0806 70%, var(--color-background-primary) 100%)'
+        }}
+      />
+      
+      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center mt-12">
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="flex flex-col items-center w-full">
+          
+          <h1 className="text-[2.5rem] md:text-6xl lg:text-[5rem] font-light text-white leading-[1.1] mb-8 tracking-tight">
+            Existe uma <span className="font-[var(--font-cormorant)] italic text-[#d4a373]">noite</span> mais sua.<br className="hidden md:block"/>
+            Mais <span className="font-[var(--font-cormorant)] italic text-[#d4a373]">lenta</span>. Mais quente.<br className="hidden md:block"/>
+            Mais <span className="font-[var(--font-cormorant)] italic text-[#d4a373]">inesquecível</span>.
           </h1>
-          <p className="text-lg text-[var(--color-text-secondary)] mb-10 max-w-lg leading-relaxed">
-            O Deriva combina app, cartas e sorteios inteligentes para guiar o casal por uma sequência sensual, progressiva e surpreendente — do leve ao muito quente, no ritmo de vocês.
+          
+          <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl leading-relaxed font-light">
+            O Deriva guia o casal por cartas, música e escolhas inesperadas — sem pressa, sem obrigação e com espaço para o <span className="font-[var(--font-cormorant)] italic text-zinc-300">desejo</span> aparecer no ritmo certo.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
             <button 
               onClick={onBuyClick}
               disabled={isLoading}
-              className="w-full sm:w-auto bg-[var(--color-copper)] hover:bg-[var(--color-copper)]/90 text-[var(--color-background-primary)] font-medium px-8 py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-copper)]/20 relative disabled:opacity-80 disabled:cursor-not-allowed group"
+              className="w-full sm:w-auto bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] hover:brightness-110 text-white font-medium px-10 py-5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl relative disabled:opacity-80 disabled:cursor-not-allowed group"
             >
-              <div className="flex flex-col items-center">
-                <span className="font-bold leading-tight flex items-center gap-1 text-[16px]">
-                  Acesso ao App + Físico <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </span>
-                <span className="text-[12px] opacity-80 mt-0.5">Por apenas R$ 19,90</span>
-              </div>
+              <span className="text-[17px] tracking-wide">Descubra a sua noite</span>
+              <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform opacity-70" />
             </button>
             <a 
               href="/app"
-              className="w-full sm:w-auto bg-transparent border border-white/20 hover:border-white/50 text-white font-medium px-8 py-4 rounded-xl transition-all duration-300 flex items-center justify-center"
+              className="w-full sm:w-auto bg-transparent border border-white/10 hover:border-white/30 text-zinc-400 hover:text-white font-medium px-10 py-5 rounded-2xl transition-all duration-300 flex items-center justify-center text-[17px]"
             >
               Já tenho uma conta
             </a>
           </div>
-          <p className="text-xs text-[var(--color-text-secondary)]/70 mt-6 lg:mt-8">
-            Acesso imediato ao App. O baralho físico será enviado para sua casa.
+          <p className="text-sm text-zinc-500 mt-8 font-light tracking-wide">
+            Acesso imediato ao App • Físico entregue em casa
           </p>
-        </motion.div>
-
-        {/* Image Column */}
-        <motion.div initial="hidden" animate="visible" variants={imageFade} className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-          <div className="relative w-full max-w-[400px] lg:max-w-[550px] aspect-square lg:aspect-[4/5]">
-            <div className="absolute inset-0 bg-gradient-to-tr from-[var(--color-background-primary)] via-transparent to-transparent z-10 pointer-events-none" />
-            <Image 
-              src="/ilustracards.png" 
-              alt="Cartas premium do Deriva para casais" 
-              fill
-              className="object-contain drop-shadow-2xl"
-              priority
-            />
-          </div>
         </motion.div>
       </div>
     </section>
