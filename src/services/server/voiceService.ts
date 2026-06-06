@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto";
 
-// AWS S3 / Cloudflare R2 Client (Reuse from existing setup or create a basic one)
-// Assuming we use standard environment variables for R2
 const s3Client = new S3Client({
   region: "auto",
   endpoint: process.env.R2_ENDPOINT_URL || "",
@@ -14,25 +13,25 @@ const s3Client = new S3Client({
 const BUCKET_NAME = process.env.R2_BUCKET_NAME || "";
 const PUBLIC_URL = process.env.R2_PUBLIC_URL || "";
 
-/**
- * Checks if the generated audio already exists in R2
- */
-async function getExistingAudioUrl(cardId: string): Promise<string | null> {
-  const key = `voice/cards/${cardId}.mp3`;
+function generateHash(text: string, voiceId: string, provider: string): string {
+  return crypto.createHash("md5").update(`${text}-${voiceId}-${provider}`).digest("hex");
+}
+
+async function getExistingAudioUrl(key: string): Promise<string | null> {
+  if (!BUCKET_NAME || !PUBLIC_URL) return null;
   try {
     await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
     return `${PUBLIC_URL}/${key}`;
-  } catch (e) {
-    return null; // Not found
+  } catch (_e) {
+    return null;
   }
 }
 
-/**
- * Uploads an audio buffer to R2 and returns its public URL
- */
-async function uploadAudio(cardId: string, audioBuffer: Buffer): Promise<string | null> {
-  if (!BUCKET_NAME || !PUBLIC_URL) return null;
-  const key = `voice/cards/${cardId}.mp3`;
+async function uploadAudio(key: string, audioBuffer: Buffer): Promise<string | null> {
+  if (!BUCKET_NAME || !PUBLIC_URL) {
+    console.warn("[VoiceService] No R2 bucket configured. Skipping cache upload.");
+    return null;
+  }
   try {
     await s3Client.send(
       new PutObjectCommand({
@@ -44,42 +43,42 @@ async function uploadAudio(cardId: string, audioBuffer: Buffer): Promise<string 
     );
     return `${PUBLIC_URL}/${key}`;
   } catch (e) {
-    console.error("Failed to upload audio to R2:", e);
+    console.error("[VoiceService] Failed to upload audio to R2:", e);
     return null;
   }
 }
 
-/**
- * Generates audio for a given text using ElevenLabs API
- */
-export async function generateCardAudio(cardId: string, text: string): Promise<string | null> {
+export async function generateCardAudio(cardId: string, text: string): Promise<{ enabled: boolean; audioUrl?: string; reason?: string }> {
   const isEnabled = process.env.VOICE_TTS_ENABLED === "true";
   if (!isEnabled) {
-    console.log("[VoiceService] TTS is globally disabled.");
-    return null;
+    return { enabled: false, reason: "VOICE_TTS_DISABLED" };
   }
 
   const provider = process.env.VOICE_PROVIDER || "ELEVENLABS";
-  if (provider !== "ELEVENLABS") {
-    console.log(`[VoiceService] Unsupported provider: ${provider}`);
-    return null;
+  if (provider !== "ELEVENLABS" && provider !== "elevenlabs") {
+    return { enabled: false, reason: "UNSUPPORTED_PROVIDER" };
   }
 
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const voiceId = process.env.ELEVENLABS_VOICE_ID;
 
   if (!apiKey || !voiceId) {
-    console.log("[VoiceService] Missing ElevenLabs credentials.");
-    return null;
+    return { enabled: false, reason: "MISSING_CREDENTIALS" };
   }
 
-  // 1. Check if it already exists
-  const existingUrl = await getExistingAudioUrl(cardId);
+  const cleanText = text.trim();
+  if (!cleanText) {
+    return { enabled: false, reason: "EMPTY_TEXT" };
+  }
+
+  const hash = generateHash(cleanText, voiceId, provider);
+  const key = `voice/cards/${cardId}/${hash}.mp3`;
+
+  const existingUrl = await getExistingAudioUrl(key);
   if (existingUrl) {
-    return existingUrl;
+    return { enabled: true, audioUrl: existingUrl };
   }
 
-  // 2. Generate with ElevenLabs
   try {
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
     const response = await fetch(url, {
@@ -90,7 +89,7 @@ export async function generateCardAudio(cardId: string, text: string): Promise<s
         "xi-api-key": apiKey,
       },
       body: JSON.stringify({
-        text,
+        text: cleanText,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
           stability: 0.5,
@@ -101,18 +100,25 @@ export async function generateCardAudio(cardId: string, text: string): Promise<s
 
     if (!response.ok) {
       console.error("[VoiceService] ElevenLabs API Error:", await response.text());
-      return null;
+      return { enabled: false, reason: "VOICE_GENERATION_FAILED" };
     }
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 3. Upload to R2
-    const uploadedUrl = await uploadAudio(cardId, buffer);
-    return uploadedUrl;
+    const uploadedUrl = await uploadAudio(key, buffer);
+    
+    if (uploadedUrl) {
+      return { enabled: true, audioUrl: uploadedUrl };
+    }
+
+    // If upload fails but audio was generated, we can't reliably serve it without cache.
+    // We could return a base64 string, but that might be huge.
+    // For now, if no R2, we consider it a failure.
+    return { enabled: false, reason: "CACHE_UPLOAD_FAILED" };
 
   } catch (e) {
     console.error("[VoiceService] Exception generating audio:", e);
-    return null;
+    return { enabled: false, reason: "VOICE_GENERATION_FAILED" };
   }
 }

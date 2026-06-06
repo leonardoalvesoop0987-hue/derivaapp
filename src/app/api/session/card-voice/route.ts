@@ -13,13 +13,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing cardId or text" }, { status: 400 });
     }
 
-    const audioUrl = await generateCardAudio(cardId, text);
+    const result = await generateCardAudio(cardId, text);
     
-    if (!audioUrl) {
-      return NextResponse.json({ error: "Voice generation disabled or failed" }, { status: 503 });
+    if (!result.enabled) {
+      return NextResponse.json(result); // { enabled: false, reason: "..." }
     }
 
-    return NextResponse.json({ url: audioUrl });
+    return NextResponse.json(result); // { enabled: true, audioUrl: "..." }
   } catch (error) {
     console.error("[CardVoiceRoute] Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

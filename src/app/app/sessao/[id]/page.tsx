@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { SkipForward, Repeat, Check, X, Flame, ShieldAlert } from "lucide-react";
+import { SkipForward, Repeat, Check, X, Flame, ShieldAlert, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CardType, SessionCardType, SessionType } from "@/types";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -54,6 +54,9 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
   const [showFullTextModal, setShowFullTextModal] = useState(false);
+  
+  const [audioState, setAudioState] = useState<"IDLE" | "LOADING" | "PLAYING" | "ERROR">("IDLE");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchNext = useCallback(async (action: string) => {
     setLoading(true);
@@ -131,6 +134,60 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
     } catch (e) {
       console.error(e);
       setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setAudioState("IDLE");
+  }, [card?.id]);
+
+  async function handlePlayVoice(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (audioState === "PLAYING") {
+      if (audioRef.current) audioRef.current.pause();
+      setAudioState("IDLE");
+      return;
+    }
+    if (audioState === "LOADING") return;
+
+    setAudioState("LOADING");
+    try {
+      const metaLocal = state?.metadata_json ? JSON.parse(state.metadata_json) : {};
+      const textToRead = card?.session_short_text || metaLocal.rendered_body || renderCardBody(card?.body || "");
+      
+      if (!textToRead) {
+        setAudioState("ERROR");
+        return;
+      }
+
+      const res = await fetch("/api/session/card-voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId: card?.id, text: textToRead }),
+      });
+      
+      const data = await res.json();
+      
+      if (!data.enabled || !data.audioUrl) {
+        setAudioState("ERROR");
+        return;
+      }
+
+      const audio = new Audio(data.audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => setAudioState("IDLE");
+      audio.onerror = () => setAudioState("ERROR");
+      
+      await audio.play();
+      setAudioState("PLAYING");
+    } catch (err) {
+      console.error("Audio playback error:", err);
+      setAudioState("ERROR");
     }
   }
 
@@ -321,14 +378,31 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                      {card.session_short_text ? card.session_short_text : (meta.rendered_body || renderCardBody(card.body))}
                    </div>
 
-                   {card.session_short_text && (
+                   <div className="flex items-center gap-4 mt-6">
+                     {card.session_short_text && (
+                       <button
+                         onClick={(e) => { e.stopPropagation(); setShowFullTextModal(true); }}
+                         className="text-sm border-b border-white/30 text-white/70 hover:text-white pb-0.5 transition-colors"
+                       >
+                         Ver detalhes
+                       </button>
+                     )}
+                     
                      <button
-                       onClick={(e) => { e.stopPropagation(); setShowFullTextModal(true); }}
-                       className="mt-6 self-start text-sm border-b border-white/30 text-white/70 hover:text-white pb-0.5 transition-colors"
+                       onClick={handlePlayVoice}
+                       disabled={audioState === "LOADING"}
+                       className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors ml-auto"
+                       title="Ouvir narração"
                      >
-                       Ver detalhes
+                       {audioState === "LOADING" && <Loader2 className="w-4 h-4 animate-spin" />}
+                       {audioState === "PLAYING" && <Volume2 className="w-4 h-4 text-[var(--color-copper)]" />}
+                       {audioState === "IDLE" && <Volume2 className="w-4 h-4" />}
+                       {audioState === "ERROR" && <VolumeX className="w-4 h-4 text-red-400" />}
+                       <span className={audioState === "PLAYING" ? "text-[var(--color-copper)]" : ""}>
+                         {audioState === "PLAYING" ? "Parar narração" : audioState === "ERROR" ? "Não disponível" : "Ouvir carta"}
+                       </span>
                      </button>
-                   )}
+                   </div>
                  </div>
 
                  {meta.current_receiver && meta.current_receiver !== "NONE" && meta.current_receiver !== "ANY" && (
