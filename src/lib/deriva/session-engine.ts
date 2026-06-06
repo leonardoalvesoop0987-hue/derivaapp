@@ -30,14 +30,16 @@ export type GeneratedSessionCard = {
 
 function getExpectedStages(position: number, totalCount: number): SessionStage[] {
   const progress = position / Math.max(1, totalCount - 1); // 0.0 to 1.0
-  if (progress < 0.15) return ["OPENING"];
-  if (progress < 0.3) return ["WARMUP", "OPENING"];
-  if (progress < 0.45) return ["TEASING", "WARMUP"];
-  if (progress < 0.6) return ["BUILDUP", "TEASING"];
-  if (progress < 0.8) return ["INTENSE", "BUILDUP"];
-  if (progress < 0.9) return ["PEAK", "INTENSE"];
-  if (progress < 0.95) return ["COOLDOWN", "PEAK"];
-  return ["CLOSING", "COOLDOWN"];
+  if (progress < 0.1) return ["OPENING"]; // 1. abrir clima
+  if (progress < 0.2) return ["WARMUP", "OPENING"]; // 2. reduzir vergonha
+  if (progress < 0.3) return ["TEASING", "WARMUP"]; // 3. criar toque
+  if (progress < 0.4) return ["BUILDUP", "TEASING"]; // 4. aumentar tensão
+  if (progress < 0.5) return ["BUILDUP", "INTENSE"]; // 5. escolher foco
+  if (progress < 0.6) return ["INTENSE", "BUILDUP"]; // 6. intensificar
+  if (progress < 0.7) return ["COOLDOWN", "TEASING"]; // 7. respiro estratégico
+  if (progress < 0.8) return ["INTENSE", "PEAK"]; // 8. voltar mais quente
+  if (progress < 0.9) return ["PEAK", "INTENSE"]; // 9. pico
+  return ["CLOSING", "COOLDOWN"]; // 10. fechamento
 }
 
 async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise<Card | null> {
@@ -101,7 +103,7 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
 
   // Hard constraints based on mode
   if (input.mode === "ESTREIA") {
-    availableCards = availableCards.filter(c => (c.intensity === "LEVE" || c.intensity === "QUENTE") && c.is_available_in_estreia);
+    availableCards = availableCards.filter(c => (c.intensity === "LEVE" || c.intensity === "QUENTE") && c.is_available_in_estreia && c.unlock_group_key !== "DARK_THIRD_IMAGINATION");
   } else if (input.mode === "COM_PREFERENCIAS") {
     if (experienceType === "SEM_VIDEO") availableCards = availableCards.filter(c => !c.requires_video);
     if (experienceType === "MAIS_ORAL") availableCards = availableCards.filter(c => c.primary_tag !== "PENETRACAO");
@@ -138,6 +140,11 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
     if (pref) {
       if (pref.is_favorite) score += 40;
       if (pref.skip_count > 0) score -= Math.min(pref.skip_count * 15, 60);
+    }
+
+    // Penalize dark content in PADRAO mode so it's rare
+    if (input.mode === "PADRAO" && candidate.unlock_group_key === "DARK_THIRD_IMAGINATION") {
+      score -= 50; 
     }
 
     return { card: candidate, score };
@@ -243,10 +250,14 @@ export function buildCardMetadata(card: Record<string, unknown>) {
     rendered_body = rendered_body
       .replace(/Quem conduz/gi, "Você")
       .replace(/quem conduz/gi, "você")
-      .replace(/Quem recebe/gi, "Seu parceiro(a)")
-      .replace(/quem recebe/gi, "seu parceiro(a)")
-      .replace(/A outra pessoa/gi, "A outra pessoa")
-      .replace(/a outra pessoa/gi, "a outra pessoa");
+      .replace(/Quem recebe/gi, "Quem está na sua frente")
+      .replace(/quem recebe/gi, "quem está na sua frente")
+      .replace(/A mulher/gi, "A gata")
+      .replace(/a mulher/gi, "a gata")
+      .replace(/O homem/gi, "O parceiro")
+      .replace(/o homem/gi, "o parceiro")
+      .replace(/A outra pessoa/gi, "Ele ou Ela")
+      .replace(/a outra pessoa/gi, "ele ou ela");
   }
 
   rendered_body = rendered_body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();

@@ -158,7 +158,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             onClick={() => handleContinue("LIGHTER")}
             className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-blue-400/50 transition-colors text-left flex justify-between items-center"
           >
-            <span>Continuar mais leve</span>
+            <span>Desacelerar um pouco</span>
             <span className="text-sm opacity-50">Respiro</span>
           </button>
           
@@ -166,7 +166,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             onClick={() => handleContinue("HEAVIER")}
             className="w-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] border border-transparent px-6 py-4 rounded-2xl text-white font-medium hover:brightness-110 transition-colors text-left flex justify-between items-center shadow-lg"
           >
-            <span>Continuar mais pesado</span>
+            <span>Esquentar mais</span>
             <Flame className="w-5 h-5 text-white" />
           </button>
           
@@ -336,7 +336,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         <button
           onClick={() => setShowAbortConfirm(true)}
           className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-white/5 hover:bg-[var(--color-red-deep)] hover:border-transparent transition-colors border border-white/10 backdrop-blur-md"
-          title="Encerrar"
+          title="Encerrar por aqui"
         >
           <X className="w-5 h-5 text-white/70" />
         </button>
@@ -356,7 +356,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
           onClick={() => fetchNext("NEXT")}
           disabled={loading || !isFlipped}
           className={`flex flex-col items-center justify-center w-20 h-20 rounded-full transition-transform ${isFlipped ? "bg-gradient-to-br from-[var(--color-wine)] to-[var(--color-red-deep)] hover:scale-105 shadow-[0_0_30px_rgba(153,27,27,0.4)]" : "bg-white/10 opacity-50 cursor-not-allowed"}`}
-          title="Próxima"
+          title="Próxima carta"
         >
           <Check className="w-8 h-8 text-white" />
         </button>

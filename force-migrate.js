@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { spawn } = require('child_process');
 
 const child = spawn('npx.cmd', ['prisma', 'migrate', 'dev', '--name', 'decks-unlocks-dark-content'], {

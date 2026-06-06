@@ -16,25 +16,27 @@ import { TestimonialsSection } from "@/components/lp/TestimonialsSection";
 import { FaqSection } from "@/components/lp/FaqSection";
 import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
-
 import { FounderAuthoritySection } from "@/components/lp/FounderAuthoritySection";
+import { PurchaseLeadModal } from "@/components/lp/PurchaseLeadModal";
 
 export function LpContent() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleBuyClick = () => {
-    setIsLoading(true);
+    setIsModalOpen(true);
   };
 
   return (
     <div className="relative overflow-x-hidden">
-      {/* Global Sales Toast */}
-      {/* Removed Toast */}
+      <PurchaseLeadModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
 
-      <HeroSection onBuyClick={handleBuyClick} isLoading={isLoading} />
+      <HeroSection onBuyClick={handleBuyClick} isLoading={false} />
       <WhyItWorksSection />
       <ForHerForHimSection />
-      <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={isLoading} />
+      <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={false} />
       <DeckStructureSection />
       <SmartRandomSection />
       <IdealMomentsSection />
@@ -43,7 +45,7 @@ export function LpContent() {
       <FounderAuthoritySection />
       <TestimonialsSection />
       <FaqSection />
-      <OfferSection onBuyClick={handleBuyClick} isLoading={isLoading} />
+      <OfferSection onBuyClick={handleBuyClick} isLoading={false} />
       <LpFooter />
     </div>
   );

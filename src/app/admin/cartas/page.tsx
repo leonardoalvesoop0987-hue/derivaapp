@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { AdminCardModal, AdminCard } from "@/components/AdminCardModal";
-import { Search, Eye, PowerOff, Power } from "lucide-react";
+import { Search, Eye, PowerOff, Power, PlayCircle, Lock } from "lucide-react";
 
 const CATEGORIES = ["TODAS", "AZUL", "DERIVA", "ROSA", "ROXO", "VERMELHO", "PRETO"];
 
@@ -13,6 +13,9 @@ export default function AdminCartasPage() {
   const [activeTab, setActiveTab] = useState("TODAS");
   
   const [selectedCard, setSelectedCard] = useState<AdminCard | null>(null);
+
+  const [simulating, setSimulating] = useState(false);
+  const [simulationResult, setSimulationResult] = useState<any[] | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/cards")
@@ -55,15 +58,48 @@ export default function AdminCartasPage() {
     }
   };
 
+  async function handleSimulate() {
+    setSimulating(true);
+    setSimulationResult(null);
+    try {
+      const res = await fetch("/api/admin/cards/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "PADRAO",
+          length: "MEDIA",
+          maxIntensity: "INTENSO",
+          videosEnabled: false
+        })
+      });
+      const data = await res.json();
+      setSimulationResult(data.sequence);
+    } catch (e) {
+      alert("Erro na simulação.");
+    } finally {
+      setSimulating(false);
+    }
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in">
       
       {/* Header Info */}
-      <div>
-        <h1 className="text-2xl font-light mb-2">Cartas</h1>
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          Gerencie o deck base, ajuste textos, categorias, intensidade e disponibilidade das {cards.length} cartas totais do sistema.
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-light mb-2">Cartas</h1>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Gerencie o deck base, ajuste textos, categorias, intensidade e disponibilidade das {cards.length} cartas totais do sistema.
+          </p>
+        </div>
+        <button
+          onClick={handleSimulate}
+          disabled={simulating}
+          className="flex items-center gap-2 bg-[var(--color-copper)]/10 text-[var(--color-copper)] border border-[var(--color-copper)]/30 hover:bg-[var(--color-copper)]/20 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+        >
+          <PlayCircle className="w-4 h-4" />
+          {simulating ? "Simulando..." : "Testar Sequência"}
+        </button>
       </div>
 
       {/* Categorias / Dashboard */}
@@ -127,6 +163,12 @@ export default function AdminCartasPage() {
                     <span className="text-[10px] bg-[var(--color-background-secondary)] px-2 py-0.5 rounded text-[var(--color-text-secondary)]">
                       {card.intensity}
                     </span>
+                    {card.requires_couple_unlock && (
+                      <span className="text-[10px] bg-purple-900/50 text-purple-300 px-2 py-0.5 rounded border border-purple-800 flex items-center gap-1">
+                        <Lock size={10} />
+                        BLOQUEADA
+                      </span>
+                    )}
                     {!card.is_active && (
                       <span className="text-[10px] bg-red-900/50 text-red-300 px-2 py-0.5 rounded border border-red-800">
                         INATIVA
@@ -169,6 +211,38 @@ export default function AdminCartasPage() {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* Simulation Modal */}
+      {simulationResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setSimulationResult(null)} />
+          <div className="relative w-full max-w-2xl max-h-[80vh] overflow-hidden bg-[var(--color-card)] border border-[var(--color-border)] rounded-3xl shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-[var(--color-border)] flex justify-between items-center">
+              <h2 className="text-xl font-medium">Simulação de Sequência (PADRÃO)</h2>
+              <button onClick={() => setSimulationResult(null)} className="text-[var(--color-text-secondary)] hover:text-white">
+                <PowerOff size={20} />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-2">
+              {simulationResult.map((c, i) => (
+                <div key={i} className="p-3 bg-[var(--color-background-secondary)] border border-[var(--color-border)] rounded-xl flex items-center gap-4 text-sm">
+                  <div className="font-bold text-[var(--color-copper)] w-6 text-right">#{c.position}</div>
+                  <div className="w-2 h-8 rounded-full" style={{ backgroundColor: getCategoryColor(c.category) }} />
+                  <div className="flex-1">
+                    <div className="font-medium">{c.title}</div>
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1 flex gap-2">
+                      <span>{c.category} - {c.intensity}</span>
+                      <span>•</span>
+                      <span className="text-white/60">Estágio: {c.stage}</span>
+                      {c.unlock_group_key && <span className="text-red-400 font-bold">• Bloqueada ({c.unlock_group_key})</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
