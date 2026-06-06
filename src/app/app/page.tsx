@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlayCircle } from "lucide-react";
+import { PlayCircle, Zap, Flame, Heart, Layers, EyeOff, Video } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 
@@ -9,18 +9,30 @@ export default async function AppPage() {
   const userSession = await getSession();
   
   let activeSessionId = null;
+  let isDarkUnlocked = false;
+
   if (userSession) {
     const active = await prisma.session.findFirst({
       where: { user_id: userSession.userId, status: "ACTIVE" },
       orderBy: { created_at: "desc" }
     });
     if (active) activeSessionId = active.id;
+
+    const darkUnlock = await prisma.coupleUnlock.findUnique({
+      where: {
+        user_id_unlock_group_key: {
+          user_id: userSession.userId,
+          unlock_group_key: "DARK_THIRD_IMAGINATION"
+        }
+      }
+    });
+    isDarkUnlocked = !!(darkUnlock && darkUnlock.is_enabled);
   }
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto pb-10">
       
-      {/* Hero / Start */}
+      {/* Hero / Guided Session */}
       <div className="bg-gradient-to-br from-[#2a0a0f] to-[#1a0508] p-8 rounded-[2rem] shadow-2xl relative overflow-hidden border border-white/5 text-center">
         <div className="absolute top-[-30%] right-[-20%] w-64 h-64 bg-[#B9825A]/10 blur-[60px] rounded-full mix-blend-screen pointer-events-none" />
         
@@ -28,17 +40,17 @@ export default async function AppPage() {
           {!activeSessionId ? (
             <>
               <h2 className="text-3xl font-light mb-4 leading-tight tracking-wide">
-                A noite começa <br />
-                <span className="font-serif text-[#d4a373] italic">devagar</span>.
+                Uma noite diferente <br />
+                <span className="font-serif text-[#d4a373] italic">começa aqui</span>.
               </h2>
               <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[260px] leading-relaxed font-light">
-                Escolham o ritmo e deixem o Deriva conduzir carta por carta — sem pressa, sem cobrança, no tempo de vocês.
+                Para uma sequência completa, com começo, tensão e progressão.
               </p>
               <Link 
                 href="/app/sessao/nova" 
-                className="w-full bg-[#B9825A] text-white py-4 rounded-2xl font-medium tracking-wide shadow-lg shadow-[#B9825A]/20 hover:brightness-110 transition-all text-center"
+                className="w-full bg-gradient-to-r from-[#B9825A] to-[#8C5D3D] text-white py-4 rounded-2xl font-medium tracking-wide shadow-xl shadow-[#B9825A]/20 hover:brightness-110 transition-all text-center"
               >
-                Começar a noite
+                Sessão Guiada
               </Link>
             </>
           ) : (
@@ -48,7 +60,7 @@ export default async function AppPage() {
                 <span className="font-serif text-[#d4a373] italic">acabou</span>.
               </h2>
               <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[260px] leading-relaxed font-light">
-                O clima já começou. Continuem de onde pararam ou encerrem quando quiserem.
+                O clima já foi criado. Continuem do ponto de tensão em que pararam ou encerrem o jogo.
               </p>
               <Link 
                 href={`/app/sessao/${activeSessionId}`}
@@ -62,60 +74,88 @@ export default async function AppPage() {
         </div>
       </div>
 
-      {/* Como funciona (Editorial) */}
-      <div className="px-2">
-        <h3 className="font-serif italic text-xl text-[#d4a373] mb-6">Como funciona</h3>
+      {/* Modos Rápidos */}
+      <div className="px-2 space-y-4">
+        <h3 className="font-serif italic text-xl text-[#d4a373] mb-4">Modos Rápidos</h3>
         
-        <div className="space-y-6">
-          <div className="flex gap-4">
-            <span className="font-serif text-2xl text-white/20">01</span>
-            <div>
-              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Escolham o clima</h4>
-              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-                Leve, quente ou mais intenso. O ponto de partida é de vocês.
-              </p>
-            </div>
+        <Link href="/app/sessao/nova?mode=FAISCA" className="flex items-center gap-4 bg-white/5 border border-white/5 p-5 rounded-2xl hover:bg-white/10 transition-colors group">
+          <div className="w-12 h-12 rounded-full bg-[#B9825A]/20 flex items-center justify-center text-[#B9825A] group-hover:scale-110 transition-transform">
+            <Zap className="w-5 h-5 fill-current opacity-80" />
           </div>
-          
-          <div className="flex gap-4">
-            <span className="font-serif text-2xl text-white/20">02</span>
-            <div>
-              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Revelem uma carta</h4>
-              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-                A surpresa faz parte do jogo. Vocês só precisam seguir até onde fizer sentido.
-              </p>
-            </div>
+          <div className="flex-1">
+            <h4 className="text-base font-medium text-white mb-1 tracking-wide">Faísca</h4>
+            <p className="text-sm text-[var(--color-text-secondary)] font-light">Uma carta. Agora.</p>
           </div>
-          
-          <div className="flex gap-4">
-            <span className="font-serif text-2xl text-white/20">03</span>
-            <div>
-              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Sigam no ritmo dos dois</h4>
-              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-                Pular, diminuir ou parar também faz parte da experiência.
-              </p>
-            </div>
+        </Link>
+
+        <Link href="/app/sessao/nova?mode=MERGULHO" className="flex items-center gap-4 bg-gradient-to-r from-red-950/40 to-transparent border border-red-900/30 p-5 rounded-2xl hover:bg-red-950/60 transition-colors group">
+          <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
+            <Flame className="w-5 h-5 fill-current opacity-80" />
           </div>
-        </div>
+          <div className="flex-1">
+            <h4 className="text-base font-medium text-white mb-1 tracking-wide">Mergulho</h4>
+            <p className="text-sm text-[var(--color-text-secondary)] font-light">Quando o clima já começou.</p>
+          </div>
+        </Link>
+
+        <Link href="/app/sessao/nova?mode=NOITE_DELA" className="flex items-center gap-4 bg-gradient-to-r from-pink-950/40 to-transparent border border-pink-900/30 p-5 rounded-2xl hover:bg-pink-950/60 transition-colors group">
+          <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+            <Heart className="w-5 h-5 fill-current opacity-80" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-base font-medium text-white mb-1 tracking-wide">Noite Dela</h4>
+            <p className="text-sm text-[var(--color-text-secondary)] font-light">Ela no centro desde a primeira carta.</p>
+          </div>
+        </Link>
       </div>
 
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
 
-      {/* Dicas e Combinado */}
-      <div className="px-2 space-y-8 pb-4">
-        <div>
-          <h3 className="text-sm font-medium text-white tracking-widest uppercase mb-2">Combinado simples</h3>
-          <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-            <span className="text-green-400 font-medium">Verde</span> continua. <span className="text-yellow-400 font-medium">Amarelo</span> diminui. <span className="text-red-400 font-medium">Vermelho</span> para. Não precisa justificar na hora. O combinado existe para proteger o clima dos dois.
-          </p>
-        </div>
+      {/* Explorar */}
+      <div className="px-2 space-y-4">
+        <h3 className="font-serif italic text-xl text-[#d4a373] mb-4">Explorar</h3>
+        
+        <Link href="/app/sessao/nova?mode=FOCO_CATEGORIA" className="flex items-center gap-4 bg-white/5 border border-white/5 p-5 rounded-2xl hover:bg-white/10 transition-colors group">
+          <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-base font-medium text-white mb-1 tracking-wide">Foco em Categoria</h4>
+            <p className="text-sm text-[var(--color-text-secondary)] font-light">Escolham o tipo de clima.</p>
+          </div>
+        </Link>
 
-        <div>
-          <h3 className="text-sm font-medium text-white tracking-widest uppercase mb-2">Melhor quando existe tempo</h3>
-          <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-            O Deriva funciona melhor sem pressa: uma noite tranquila, o celular no modo silencioso e espaço para vocês entrarem no clima.
-          </p>
-        </div>
+        {isDarkUnlocked ? (
+          <Link href="/app/sessao/nova?mode=TONS_ESCUROS" className="flex items-center gap-4 bg-gradient-to-r from-black to-[#1a1a1a] border border-gray-800 p-5 rounded-2xl hover:border-gray-600 transition-colors group">
+            <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 group-hover:scale-110 transition-transform">
+              <EyeOff className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-base font-medium text-white mb-1 tracking-wide">Explorar Tons mais escuros</h4>
+              <p className="text-sm text-gray-500 font-light">Um território mais provocante.</p>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-4 bg-black/40 border border-white/5 p-5 rounded-2xl opacity-60">
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/30">
+              <EyeOff className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-base font-medium text-white/50 mb-1 tracking-wide">Tons mais escuros</h4>
+              <p className="text-sm text-[var(--color-text-secondary)] font-light">Disponível quando desbloqueado.</p>
+            </div>
+          </div>
+        )}
+
+        <Link href="/app/cena-solta" className="flex items-center gap-4 bg-purple-950/20 border border-purple-900/30 p-5 rounded-2xl hover:bg-purple-950/40 transition-colors group">
+          <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+            <Video className="w-5 h-5 fill-current opacity-80" />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-base font-medium text-white mb-1 tracking-wide">Cena Solta</h4>
+            <p className="text-sm text-[var(--color-text-secondary)] font-light">Inspiração visual aleatória.</p>
+          </div>
+        </Link>
       </div>
 
     </div>

@@ -35,6 +35,12 @@ enum SessionMode {
   ESTREIA
   PERSONALIZADO
   COM_PREFERENCIAS
+  FAISCA
+  MERGULHO
+  NOITE_DELA
+  FOCO_CATEGORIA
+  TONS_ESCUROS
+  CENA_SOLTA
 }
 
 enum CardTag {
@@ -80,7 +86,14 @@ enum SessionStage {
   INTENSE
   PEAK
   COOLDOWN
+  TRANSITION
   CLOSING
+}
+
+enum SessionFocus {
+  BALANCED
+  FOR_HER
+  FOR_HIM
 }
 
 enum EroticFunction {
@@ -245,19 +258,19 @@ model Deck {
 }
 
 model Card {
-  id             String        @id @default(cuid())
-  deck_id        String
-  system_key     String?       @unique
-  category       CardCategory
-  title          String
-  body           String
-  intensity      CardIntensity
-  position       Int
-  is_active      Boolean       @default(true)
-  is_invertible  Boolean       @default(false)
-  requires_video Boolean       @default(false)
-  receiver_rule  ReceiverRule?
-  metadata_json  String?
+  id                 String        @id @default(cuid())
+  deck_id            String
+  system_key         String?       @unique
+  category           CardCategory
+  title              String
+  body               String
+  intensity          CardIntensity
+  position           Int
+  is_active          Boolean       @default(true)
+  is_invertible      Boolean       @default(false)
+  requires_video     Boolean       @default(false)
+  receiver_rule      ReceiverRule?
+  metadata_json      String?
   session_short_text String?
   session_quick_tip  String?
 
@@ -297,6 +310,7 @@ model Card {
   feedbacks     CardFeedback[]
   preferences   UserCardPreference[]
   video_options SessionVideoOption[]
+  voice_audios  CardVoiceAudio[]
 
   @@index([deck_id, position])
   @@map("cards")
@@ -322,6 +336,7 @@ model Session {
   ended_at             DateTime?
   session_group_id     String?
   preferences_json     String?
+  session_focus        SessionFocus  @default(FOR_HER)
   created_at           DateTime      @default(now())
   updated_at           DateTime      @updatedAt
 
@@ -330,6 +345,7 @@ model Session {
   cards         SessionCard[]
   feedbacks     CardFeedback[]
   video_options SessionVideoOption[]
+  pace_events   SessionPaceEvent[]
 
   @@map("sessions")
 }
@@ -340,11 +356,13 @@ model SessionCard {
   card_id       String
   position      Int
   status        SessionCardStatus
-  was_inverted  Boolean           @default(false)
-  shown_at      DateTime          @default(now())
-  completed_at  DateTime?
-  skipped_at    DateTime?
-  metadata_json String?
+  was_inverted                  Boolean           @default(false)
+  is_inserted_pause             Boolean           @default(false)
+  does_not_count_towards_target Boolean           @default(false)
+  shown_at                      DateTime          @default(now())
+  completed_at                  DateTime?
+  skipped_at                    DateTime?
+  metadata_json                 String?
 
   session Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
   card    Card    @relation(fields: [card_id], references: [id])
@@ -533,4 +551,49 @@ model DeckCard {
   @@unique([deck_id, card_id])
   @@index([deck_id, position])
   @@map("deck_cards")
+}
+
+model AppSetting {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String?
+  encrypted_value String?
+  updated_at      DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+model CardVoiceAudio {
+  id              String   @id @default(cuid())
+  card_id         String
+  session_card_id String?
+  provider        String
+  voice_id        String
+  text_hash       String
+  text_used       String
+  audio_url       String?
+  r2_key          String?
+  status          String   @default("PENDING") // PENDING, GENERATING, READY, ERROR
+  error_message   String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  card Card @relation(fields: [card_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, voice_id, card_id, text_hash])
+  @@index([status])
+  @@map("card_voice_audios")
+}
+
+model SessionPaceEvent {
+  id          String   @id @default(cuid())
+  session_id  String
+  position    Int
+  pace_choice String
+  created_at  DateTime @default(now())
+
+  session     Session  @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  
+  @@index([session_id])
+  @@map("session_pace_events")
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { SessionMode, SessionLength, CardIntensity } from "@prisma/client";
+import { SessionMode, SessionLength, CardIntensity, SessionFocus } from "@prisma/client";
 import { generateSessionSequence } from "@/lib/deriva/session-engine";
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { mode, length, maxIntensity, musicEnabled, preferencesJson, deckId } = body;
+    const { mode, length, maxIntensity, musicEnabled, preferencesJson, deckId, videosEnabled, sessionFocus, categoryBias } = body;
 
     let deck;
     if (deckId) {
@@ -41,6 +41,32 @@ export async function POST(req: Request) {
     if (length === "CURTA") targetCardCount = 6;
     if (length === "COMPLETA") targetCardCount = 14;
 
+    let temperature = 1.0;
+    let actualCategoryBias = categoryBias;
+    let actualSessionFocus = sessionFocus || "FOR_HER";
+    let disableDarkPenalty = false;
+
+    if (mode === "FAISCA") {
+      targetCardCount = 1;
+      temperature = 2.0;
+    } else if (mode === "MERGULHO") {
+      targetCardCount = length === "CURTA" ? 4 : 5;
+      temperature = 0.6;
+    } else if (mode === "NOITE_DELA") {
+      actualSessionFocus = "FOR_HER";
+      temperature = 1.0;
+    } else if (mode === "FOCO_CATEGORIA") {
+      temperature = 0.7;
+    } else if (mode === "TONS_ESCUROS") {
+      temperature = 0.5;
+      actualCategoryBias = "PRETO";
+      disableDarkPenalty = true;
+    }
+
+    let parsedPrefs = {};
+    try { if (preferencesJson) parsedPrefs = JSON.parse(preferencesJson); } catch {}
+    const finalPrefsJson = JSON.stringify({ ...parsedPrefs, temperature, categoryBias: actualCategoryBias, disableDarkPenalty });
+
     const session = await prisma.session.create({
       data: {
         user_id: userSession.userId,
@@ -49,11 +75,12 @@ export async function POST(req: Request) {
         length: length as SessionLength,
         status: "ACTIVE",
         max_intensity: maxIntensity as CardIntensity,
-        videos_enabled: true, // videos always enabled now
+        videos_enabled: videosEnabled ?? true,
         music_enabled: musicEnabled,
         target_card_count: targetCardCount,
         current_position: 0,
-        preferences_json: preferencesJson
+        session_focus: actualSessionFocus as SessionFocus,
+        preferences_json: finalPrefsJson
       }
     });
 
@@ -65,9 +92,13 @@ export async function POST(req: Request) {
       mode: session.mode,
       length: session.length,
       maxIntensity: session.max_intensity,
-      videosEnabled: true,
+      videosEnabled: session.videos_enabled,
       targetCardCount: session.target_card_count,
-      preferencesJson: session.preferences_json
+      sessionFocus: session.session_focus,
+      preferencesJson: session.preferences_json,
+      temperature,
+      categoryBias: actualCategoryBias,
+      disableDarkPenalty
     });
 
     if (sequence.length > 0) {
@@ -86,6 +117,11 @@ export async function POST(req: Request) {
         where: { id: session.id },
         data: { last_card_id: sequence[0].card_id }
       });
+      
+      // Trigger voice preload asynchronously (don't await)
+      import("@/services/server/voiceService").then(({ preloadSessionAudios }) => {
+        preloadSessionAudios(session.id).catch(err => console.error("[Preload] error:", err));
+      }).catch(err => console.error("[Preload Import] error:", err));
     }
 
     return NextResponse.json({ sessionId: session.id });

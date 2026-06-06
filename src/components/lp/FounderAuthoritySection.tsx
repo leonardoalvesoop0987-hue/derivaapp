@@ -35,7 +35,7 @@ export function FounderAuthoritySection() {
             <div className="w-8 h-1 bg-[var(--color-copper)]/50 mb-8 mx-auto lg:mx-0 rounded-full" />
 
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-white leading-tight mb-8">
-              Idealizado com olhar clínico e sensível para a{" "}
+              Idealizado com olhar especialista para a{" "}
               <span className="text-[var(--color-copper)] italic">intimidade do casal</span>
             </h2>
             
@@ -46,7 +46,7 @@ export function FounderAuthoritySection() {
             
             <div className="space-y-4 text-base text-[var(--color-text-secondary)]/80 font-light leading-relaxed mb-10 max-w-2xl">
               <p>
-                Como Psicóloga e Sexóloga Clínica, entendo que a quebra de rotina precisa de respeito ao ritmo de cada um. O app combina pausas, perguntas guiadas e diferentes níveis de intensidade para que a transição do leve ao mais quente aconteça com consentimento e muito conforto.
+                Como Psicóloga e Sexóloga Clínica, entendo que a quebra de rotina precisa de química e segurança absoluta. O app combina pausas provocantes, perguntas guiadas e diferentes níveis de intensidade para que a transição do leve ao mais quente aconteça com tensão crescente e total liberdade.
               </p>
             </div>
 

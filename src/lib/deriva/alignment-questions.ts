@@ -125,7 +125,7 @@ export const womanQuestions: Question[] = [
     id: "w10",
     audience: "WOMAN",
     type: "single_choice",
-    text: "Você gosta da ideia de ter pausas de respiro, carinho ou reconexão no meio da experiência?",
+    text: "Você gosta da ideia de ter pausas para trocar olhares, carinho ou provocações no meio da experiência?",
     options: [
       { value: "A", label: "Sim, acho importante." },
       { value: "B", label: "Sim, desde que não esfrie demais." },
@@ -387,7 +387,7 @@ export const womanQuestions: Question[] = [
       { value: "B", label: "Quero sentir que ele me deseja mais." },
       { value: "C", label: "Quero sair da rotina sem parecer forçado." },
       { value: "D", label: "Quero experimentar algo mais quente, mas com segurança." },
-      { value: "E", label: "Quero fortalecer uma relação que já é importante para mim." }
+      { value: "E", label: "Quero viver noites intensas em uma relação que já tem química." }
     ]
   },
   {
@@ -749,7 +749,7 @@ export const manQuestions: Question[] = [
       { value: "B", label: "Quero sentir que ela também me deseja." },
       { value: "C", label: "Quero sair da rotina sem parecer forçado." },
       { value: "D", label: "Quero experimentar algo mais quente, mas com segurança." },
-      { value: "E", label: "Quero fortalecer uma relação que já é importante para mim." }
+      { value: "E", label: "Quero viver noites intensas em uma relação que já tem química." }
     ]
   },
   {

@@ -39,6 +39,7 @@ type Props = {
 export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<AdminCard>>(card || {});
 
   if (!isOpen || !card) return null;
@@ -91,10 +92,52 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
       const { card: updated } = await res.json();
       onSave(updated);
       setIsEditing(false);
-    } catch (_err) {
+    } catch {
       alert("Erro ao salvar a carta. Verifique os logs.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTestVoice = async () => {
+    setAudioLoading(true);
+    try {
+      const res = await fetch("/api/admin/voice/generate-card", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ cardId: card.id })
+      });
+      const data = await res.json();
+      if (data.audioUrl) {
+        new Audio(data.audioUrl).play();
+      } else {
+        alert("Não foi possível gerar: " + (data.reason || "Erro"));
+      }
+    } catch {
+      alert("Erro ao testar voz.");
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  const handleRegenerateVoice = async () => {
+    if(!confirm("Isto consumirá cota da ElevenLabs. Continuar?")) return;
+    setAudioLoading(true);
+    try {
+      const res = await fetch("/api/admin/voice/regenerate-card", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ cardId: card.id })
+      });
+      const data = await res.json();
+      if (data.audioUrl) {
+        new Audio(data.audioUrl).play();
+        alert("Áudio regenerado com sucesso!");
+      }
+    } catch {
+      alert("Erro ao regenerar voz.");
+    } finally {
+      setAudioLoading(false);
     }
   };
 
@@ -197,6 +240,39 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
                     {card.requires_couple_unlock ? `Sim (${card.unlock_group_key})` : "Não"}
                   </div>
                 </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+                <div className="text-sm font-medium mb-3">Narração de Voz (TTS)</div>
+                
+                <div className="bg-[#1a1410] p-4 rounded-xl border border-[#d4a373]/20 mb-4">
+                  <div className="text-xs text-[var(--color-text-secondary)] mb-2">Texto que será narrado:</div>
+                  {card.session_short_text?.trim() ? (
+                    <div className="text-sm font-medium text-[#d4a373] italic">&quot;{card.session_short_text}&quot;</div>
+                  ) : (
+                    <div className="text-sm text-red-400">Esta carta ainda não tem texto curto para narração.</div>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleTestVoice} 
+                    disabled={audioLoading || !card.session_short_text?.trim()}
+                    className="text-xs bg-[#1a1410] border border-[#d4a373]/30 text-[#d4a373] px-4 py-2 rounded hover:bg-[#d4a373]/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {audioLoading ? "Carregando..." : "Testar Áudio"}
+                  </button>
+                  <button 
+                    onClick={handleRegenerateVoice} 
+                    disabled={audioLoading || !card.session_short_text?.trim()}
+                    className="text-xs bg-transparent border border-white/10 text-white/50 px-4 py-2 rounded hover:text-white/80 hover:border-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Forçar Regeneração
+                  </button>
+                </div>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+                  &quot;Testar&quot; usará o cache se existir. &quot;Forçar Regeneração&quot; consome nova cota.
+                </p>
               </div>
             </div>
           ) : (
@@ -356,23 +432,23 @@ export function AdminCardModal({ card, isOpen, onClose, onSave }: Props) {
 
         <div className="p-4 border-t border-[var(--color-border)] flex items-center justify-end gap-3 bg-[var(--color-background-secondary)]/50 rounded-b-2xl">
           {!isEditing ? (
-            <>
-              <button onClick={onClose} className="px-5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors">
+            <div key="view-actions" className="flex gap-3">
+              <button type="button" onClick={onClose} className="px-5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors">
                 Fechar
               </button>
-              <button onClick={() => setIsEditing(true)} className="px-5 py-2 text-sm bg-[var(--color-wine)] hover:bg-[var(--color-red-deep)] text-white rounded-lg transition-colors shadow-lg">
+              <button type="button" onClick={() => setIsEditing(true)} className="px-5 py-2 text-sm bg-[var(--color-wine)] hover:bg-[var(--color-red-deep)] text-white rounded-lg transition-colors shadow-lg">
                 Editar Carta
               </button>
-            </>
+            </div>
           ) : (
-            <>
-              <button onClick={() => { setIsEditing(false); setFormData(card); }} className="px-5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors" disabled={loading}>
+            <div key="edit-actions" className="flex gap-3">
+              <button type="button" onClick={() => { setIsEditing(false); setFormData(card); }} className="px-5 py-2 text-sm text-[var(--color-text-secondary)] hover:text-white transition-colors" disabled={loading}>
                 Cancelar
               </button>
               <button type="submit" form="edit-form" disabled={loading} className="px-5 py-2 text-sm bg-[var(--color-copper)] hover:bg-[#b07355] text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
                 {loading ? "Salvando..." : <><Check size={16} /> Salvar Alterações</>}
               </button>
-            </>
+            </div>
           )}
         </div>
 

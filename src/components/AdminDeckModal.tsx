@@ -66,7 +66,7 @@ export function AdminDeckModal({ deck, isOpen, onClose, onSave }: Props) {
       const { deck: updated } = await res.json();
       onSave({ ...deck, ...updated });
       setIsEditing(false);
-    } catch (_err) {
+    } catch {
       alert("Erro ao salvar o deck. Verifique os logs.");
     } finally {
       setLoading(false);

@@ -62,7 +62,7 @@ async function getVideoHeight(filePath: string): Promise<number> {
   try {
     const { stdout } = await execAsync(`ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=s=x:p=0 "${filePath}"`);
     return parseInt(stdout.trim(), 10) || 720;
-  } catch (err) {
+  } catch (_err) {
     return 720;
   }
 }
@@ -71,7 +71,7 @@ async function getVideoDuration(filePath: string): Promise<number> {
   try {
     const { stdout } = await execAsync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`);
     return parseFloat(stdout.trim()) || 0;
-  } catch (err) {
+  } catch (_err) {
     return 0;
   }
 }
@@ -123,8 +123,6 @@ async function processVideo(asset: unknown) {
       mapArgs += `-map "[v${i}]" -map 0:a? -c:v:${i} libx264 -b:v:${i} ${v.bitrate} -c:a:${i} aac -b:a:${i} 128k `;
     });
 
-    const masterPlaylist = path.join(hlsDir, "master.m3u8");
-    
     // Using a single ffmpeg command to output multiple HLS streams and a master playlist
     const streamMap = variants.map((v, i) => `v:${i},a:${i},name:${v.name}`).join(" ");
     

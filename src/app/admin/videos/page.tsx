@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -18,7 +19,6 @@ export interface MediaAsset {
 }
 
 const CATEGORIES = ["LESBICO", "FFM", "MMF", "MF"];
-const CONTENT_TYPES = ["ORAL_ONLY", "PENETRATION_ONLY", "COMPLETE"];
 const TAGS = ["POV", "NO_FACE"];
 
 export default function AdminVideosPage() {
@@ -121,8 +121,8 @@ export default function AdminVideosPage() {
       if (!res.ok) throw new Error();
       setShowEdit(null);
       load();
-    } catch (err) {
-      alert("Erro ao salvar.");
+    } catch (_err) {
+      alert("Erro ao remover.");
     }
   };
 

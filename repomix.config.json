@@ -1,0 +1,55 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 20,
+    "showLineNumbers": false,
+    "copyToClipboard": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "prisma/schema.prisma",
+    "scripts/**/*.ts",
+    "middleware.ts",
+    "package.json",
+    "tailwind.config.ts"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      ".env*",
+      "node_modules",
+      ".next",
+      "deploy",
+      "dist",
+      "build",
+      "coverage",
+      "*.log",
+      "*.tar.gz",
+      "*.zip",
+      "package-lock.json",
+      "public/uploads",
+      "public/videos",
+      "public/audio",
+      "public/lp/atmosfera",
+      "*.mp4",
+      "*.mov",
+      "*.mkv",
+      "*.avi",
+      "*.webm",
+      "*.mp3",
+      "*.wav",
+      "*.ogg",
+      "*.aac",
+      ".codegraph",
+      ".rtk"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

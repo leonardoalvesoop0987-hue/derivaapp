@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { CardIntensity, SessionMode, SessionLength, SessionStage, Card } from "@prisma/client";
+import type { CardIntensity, SessionMode, SessionLength, SessionStage, Card, SessionFocus } from "@prisma/client";
 
 const INTENSITY_WEIGHTS: Record<CardIntensity, number> = {
   LEVE: 1,
@@ -20,6 +20,11 @@ type NextCardInput = {
   currentPosition: number;
   targetCardCount: number;
   preferencesJson?: string | null;
+  sessionFocus?: SessionFocus | string;
+  temperature?: number;
+  categoryBias?: string;
+  decayMap?: Map<string, number>;
+  disableDarkPenalty?: boolean;
 };
 
 export type GeneratedSessionCard = {
@@ -42,7 +47,7 @@ function getExpectedStages(position: number, totalCount: number): SessionStage[]
   return ["CLOSING", "COOLDOWN"]; // 10. fechamento
 }
 
-async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise<Card | null> {
+async function getNextCard(input: NextCardInput & { forceStage?: SessionStage }, sequenceSoFar: Card[]): Promise<Card | null> {
   const deck = await prisma.deck.findUnique({ where: { id: input.deckId } });
   if (!deck) return null;
 
@@ -98,7 +103,7 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
       const prefs = JSON.parse(input.preferencesJson);
       experienceType = prefs.experienceType || "COMPLETA";
       kinkLevel = prefs.kinkLevel || "NORMAL";
-    } catch(e) {}
+    } catch {}
   }
 
   // Hard constraints based on mode
@@ -116,7 +121,7 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
 
   if (availableCards.length === 0) return null;
 
-  const expectedStages = getExpectedStages(input.currentPosition, input.targetCardCount);
+  const expectedStages = input.forceStage ? [input.forceStage] : getExpectedStages(input.currentPosition, input.targetCardCount);
   const lastCard = sequenceSoFar.length > 0 ? sequenceSoFar[sequenceSoFar.length - 1] : null;
 
   const scoredCards = availableCards.map(candidate => {
@@ -142,9 +147,22 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
       if (pref.skip_count > 0) score -= Math.min(pref.skip_count * 15, 60);
     }
 
-    // Penalize dark content in PADRAO mode so it's rare
-    if (input.mode === "PADRAO" && candidate.unlock_group_key === "DARK_THIRD_IMAGINATION") {
+    // Penalize dark content in PADRAO mode so it's rare, unless disabled
+    if (input.mode === "PADRAO" && candidate.unlock_group_key === "DARK_THIRD_IMAGINATION" && !input.disableDarkPenalty) {
       score -= 50; 
+    }
+
+    // Category Bias
+    if (input.categoryBias && candidate.category === input.categoryBias) {
+      score *= 3; 
+    }
+
+    // Decay Penalty
+    if (input.decayMap && input.decayMap.has(candidate.id)) {
+      const lastTime = input.decayMap.get(candidate.id)!;
+      const daysSince = (Date.now() - lastTime) / 86400000;
+      const decayMultiplier = Math.min(1, daysSince / 7);
+      score *= Math.max(0.2, decayMultiplier);
     }
 
     return { card: candidate, score };
@@ -155,6 +173,13 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
   if (candidates.length === 0) {
     candidates = scoredCards;
   }
+
+  // Apply temperature
+  const temp = Math.max(0.4, Math.min(2.5, input.temperature || 1.0));
+  candidates = candidates.map(c => ({
+    card: c.card,
+    score: Math.pow(Math.max(c.score, 1), 1 / temp)
+  }));
 
   // Softmax-like weighted random
   const totalScore = candidates.reduce((sum, c) => sum + c.score, 0);
@@ -167,10 +192,23 @@ async function getNextCard(input: NextCardInput, sequenceSoFar: Card[]): Promise
   return candidates[candidates.length - 1].card;
 }
 
-export async function generateSessionSequence(input: NextCardInput & { preferencesJson?: string | null }): Promise<GeneratedSessionCard[]> {
+export async function generateSessionSequence(input: NextCardInput & { preferencesJson?: string | null, forceStage?: SessionStage, fullTargetCardCount?: number, sessionFocus?: SessionFocus | string }): Promise<GeneratedSessionCard[]> {
   const sequence: GeneratedSessionCard[] = [];
   const shownCardIds: string[] = [...(input.shownCardIds || [])];
   const sequenceSoFar: Card[] = [];
+
+  // Fetch decay history if not provided
+  if (!input.decayMap) {
+    const lastShownRecords = await prisma.sessionCard.groupBy({
+      by: ['card_id'],
+      _max: { updated_at: true },
+      where: {
+        status: "COMPLETED",
+        session: { user_id: input.userId }
+      }
+    });
+    input.decayMap = new Map(lastShownRecords.map(r => [r.card_id, r._max.updated_at?.getTime() || 0]));
+  }
 
   for (let pos = 0; pos < input.targetCardCount; pos++) {
     // If it's a SKIP generation, pos should be input.currentPosition
@@ -180,13 +218,14 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
     // Wait, let's fix the API of this.
     // Actually, we can use input.currentPosition directly for the stage if targetCardCount === 1.
     const actualPos = input.targetCardCount === 1 ? input.currentPosition : pos;
-    const actualTargetCount = input.targetCardCount === 1 ? (input as Record<string, unknown>).fullTargetCardCount || 10 : input.targetCardCount;
+    const actualTargetCount = input.targetCardCount === 1 ? input.fullTargetCardCount || 10 : input.targetCardCount;
 
     const card = await getNextCard({
       ...input,
       currentPosition: actualPos,
       targetCardCount: actualTargetCount,
       shownCardIds,
+      forceStage: input.forceStage,
     }, sequenceSoFar);
 
     if (!card) break;
@@ -194,7 +233,34 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
     shownCardIds.push(card.id);
     sequenceSoFar.push(card);
 
-    const metadata = buildCardMetadata(card);
+    let expectedStagesForPos = input.forceStage ? [input.forceStage] : getExpectedStages(actualPos, actualTargetCount);
+    
+    // MERGULHO Hot Start
+    if (input.mode === "MERGULHO" && actualPos === 0) {
+      expectedStagesForPos = ["INTENSE", "TRANSITION"];
+    }
+    
+    // Conditional COOLDOWN
+    if (!input.forceStage) {
+      const recentCards = sequenceSoFar.slice(-3);
+      const intenseCount = recentCards.filter(c => c.intensity === "INTENSO" || c.intensity === "PICO").length;
+      if (intenseCount >= 2 && actualPos > 2 && actualPos < actualTargetCount - 2) {
+        // Prevent back-to-back cooldowns
+        if (recentCards.length === 0 || recentCards[recentCards.length - 1].stage !== "COOLDOWN") {
+          expectedStagesForPos = ["COOLDOWN", "TRANSITION"];
+        }
+      }
+
+      // Gradual CLOSING for MEDIA/COMPLETA
+      if (input.length !== "CURTA" && actualPos >= actualTargetCount - 2) {
+        expectedStagesForPos = ["CLOSING", "COOLDOWN"];
+      } else if (actualPos === actualTargetCount - 1) {
+        expectedStagesForPos = ["CLOSING", "COOLDOWN"];
+      }
+    }
+
+    const metadata = buildCardMetadata(card, input.sessionFocus) as Record<string, unknown>;
+    metadata.intended_stage = expectedStagesForPos[0];
 
     sequence.push({
       card_id: card.id,
@@ -206,25 +272,8 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
   return sequence;
 }
 
-export function buildCardMetadata(card: Record<string, unknown>) {
-  let receiver = card.receiver_rule;
-  if (receiver === "ANY") {
-    receiver = Math.random() > 0.5 ? "MAN" : "WOMAN";
-  }
-
-  const fronts = {
-    AZUL: ["Aquecendo os motores...", "Hora de criar conexão.", "Sem pressa, o clima tá só começando.", "Olha bem no olho agora."],
-    DERIVA: ["Deixa rolar...", "O clima tá subindo.", "Sinta o momento.", "Sem pensar muito, só aproveita."],
-    ROSA: ["Toque com intenção.", "Agora o corpo fala.", "Explorando novos caminhos.", "Sente a pele."],
-    ROXO: ["Inspiração para vocês.", "Deixa a mente viajar.", "Assista e aprenda...", "O clima acabou de esquentar mais."],
-    VERMELHO: ["O bicho vai pegar.", "Sem limites agora.", "Entrega total.", "Aqui a brincadeira fica séria."],
-    PRETO: ["Surpresa selvagem.", "Intensidade máxima.", "Vocês aguentam?", "Passando dos limites."]
-  };
-
-  const categoryFronts = fronts[card.category as keyof typeof fronts] || fronts.DERIVA;
-  const front_text = categoryFronts[Math.floor(Math.random() * categoryFronts.length)];
-
-  let rendered_body = (card.body as string) || "";
+export function applyPronounRegex(bodyText: string, receiver: string): string {
+  let rendered_body = bodyText || "";
   
   if (receiver === "MAN") {
     rendered_body = rendered_body
@@ -262,9 +311,38 @@ export function buildCardMetadata(card: Record<string, unknown>) {
 
   rendered_body = rendered_body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
 
+  return rendered_body;
+}
+
+export function buildCardMetadata(card: Record<string, unknown>, sessionFocus?: SessionFocus | string) {
+  let receiver = card.receiver_rule as string;
+  if (receiver === "ANY") {
+    let prob = 0.5;
+    if (sessionFocus === "FOR_HER") prob = 0.9;
+    if (sessionFocus === "FOR_HIM") prob = 0.1;
+    receiver = Math.random() < prob ? "WOMAN" : "MAN";
+  }
+
+  const fronts = {
+    AZUL: ["Aquecendo os motores...", "Hora de criar conexão.", "Sem pressa, o clima tá só começando.", "Olha bem no olho agora."],
+    DERIVA: ["Deixa rolar...", "O clima tá subindo.", "Sinta o momento.", "Sem pensar muito, só aproveita."],
+    ROSA: ["Toque com intenção.", "Agora o corpo fala.", "Explorando novos caminhos.", "Sente a pele."],
+    ROXO: ["Inspiração para vocês.", "Deixa a mente viajar.", "Assista e aprenda...", "O clima acabou de esquentar mais."],
+    VERMELHO: ["O bicho vai pegar.", "Sem limites agora.", "Entrega total.", "Aqui a brincadeira fica séria."],
+    PRETO: ["Surpresa selvagem.", "Intensidade máxima.", "Vocês aguentam?", "Passando dos limites."]
+  };
+
+  const categoryFronts = fronts[card.category as keyof typeof fronts] || fronts.DERIVA;
+  const front_text = categoryFronts[Math.floor(Math.random() * categoryFronts.length)];
+
+  let rendered_body = applyPronounRegex((card.body as string) || "", receiver);
+
+  rendered_body = rendered_body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
+
   return {
     front_text,
     rendered_body,
+    original_body: card.body,
     original_receiver: receiver,
     current_receiver: receiver,
   };

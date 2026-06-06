@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 
 import { HeroSection } from "@/components/lp/HeroSection";
 import { InteractiveSampleCardSection } from "@/components/lp/InteractiveSampleCardSection";

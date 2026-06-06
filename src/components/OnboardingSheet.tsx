@@ -24,29 +24,30 @@ export default function OnboardingSheet({ isOpen, onClose, onStart }: Onboarding
             initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
             className="relative w-full max-w-sm bg-[var(--color-card)] border border-[var(--color-border)] rounded-3xl overflow-hidden shadow-2xl"
           >
-            <div className="p-8">
-              <div className="w-16 h-16 bg-[var(--color-copper)]/10 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <Info className="w-8 h-8 text-[var(--color-copper)]" />
+            <div className="p-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1a1410] to-[#0d0a08] opacity-80 pointer-events-none" />
+              <div className="w-16 h-16 bg-[#B9825A]/10 rounded-full flex items-center justify-center mb-6 mx-auto relative z-10">
+                <Info className="w-8 h-8 text-[#B9825A]" />
               </div>
               
-              <h2 className="text-2xl font-serif text-white mb-6 text-center">Antes de começar</h2>
+              <h2 className="text-2xl font-serif text-[#d4a373] italic mb-6 text-center relative z-10">Regras do jogo</h2>
               
-              <div className="space-y-5 mb-8">
+              <div className="space-y-5 mb-8 relative z-10">
                 <div className="flex gap-4">
                   <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                     <SkipForward className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <p className="text-sm text-zinc-300 font-light leading-relaxed">
-                    Vocês podem pular qualquer carta que não fizer sentido no momento.
+                    A noite é de vocês. Pulem o que não fizer sentido e sigam o ritmo que der vontade.
                   </p>
                 </div>
 
                 <div className="flex gap-4">
                   <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                    <ShieldAlert className="w-4 h-4 text-green-400" />
+                    <ShieldAlert className="w-4 h-4 text-[#d4a373]" />
                   </div>
                   <p className="text-sm text-zinc-300 font-light leading-relaxed">
-                    Use o farol: <span className="text-green-400 font-medium">Verde</span> continua, <span className="text-yellow-400 font-medium">amarelo</span> diminui o ritmo, <span className="text-[var(--color-red-deep)] font-medium">vermelho</span> para.
+                    O farol protege a tensão: <span className="text-green-400 font-medium">Verde</span> continua, <span className="text-yellow-400 font-medium">amarelo</span> diminui, <span className="text-[var(--color-red-deep)] font-medium">vermelho</span> corta a carta.
                   </p>
                 </div>
 
@@ -55,7 +56,7 @@ export default function OnboardingSheet({ isOpen, onClose, onStart }: Onboarding
                     <Check className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <p className="text-sm text-zinc-300 font-light leading-relaxed">
-                    Nada precisa ser explicado. A experiência começa leve e esquenta aos poucos.
+                    Aproveitem. A primeira carta já começa a mudar o clima.
                   </p>
                 </div>
 
@@ -64,16 +65,16 @@ export default function OnboardingSheet({ isOpen, onClose, onStart }: Onboarding
                     <Info className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   </div>
                   <p className="text-sm text-zinc-300 font-light leading-relaxed">
-                    Algumas cartas podem usar vídeo adulto como estímulo visual. Se não fizer sentido no momento, vocês podem pular sem problema.
+                    Ocasionalmente, o app usa curtos vídeos sensuais como estímulo visual. Usem como inspiração ou pulem.
                   </p>
                 </div>
               </div>
 
               <button 
                 onClick={onStart}
-                className="w-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] hover:brightness-110 text-white font-medium py-4 rounded-xl transition-all shadow-lg"
+                className="w-full bg-gradient-to-r from-[#B9825A] to-[#8C5D3D] hover:brightness-110 text-white font-medium py-4 rounded-xl transition-all shadow-xl shadow-[#B9825A]/20 relative z-10"
               >
-                Tudo pronto
+                Entrar no clima
               </button>
             </div>
           </motion.div>

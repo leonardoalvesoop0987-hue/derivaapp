@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Lock, Unlock, AlertTriangle } from "lucide-react";
 
@@ -11,9 +11,27 @@ type UnlockGroup = {
   is_enabled: boolean;
 };
 
+interface ParticipantStatus {
+  has_responded: boolean;
+  last_version: number;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  role: "WOMAN" | "MAN";
+  standard: ParticipantStatus;
+  dark: ParticipantStatus;
+}
+
 export default function ConfiguracoesPage() {
+  const router = useRouter();
   const [unlocks, setUnlocks] = useState<UnlockGroup[]>([]);
   const [loadingUnlocks, setLoadingUnlocks] = useState(true);
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isDarkUnlocked, setIsDarkUnlocked] = useState(false);
+  const [loadingAlignment, setLoadingAlignment] = useState(true);
 
   useEffect(() => {
     fetch("/api/couple/unlocks")
@@ -22,6 +40,14 @@ export default function ConfiguracoesPage() {
         if (data.unlocks) setUnlocks(data.unlocks);
       })
       .finally(() => setLoadingUnlocks(false));
+
+    fetch("/api/alignment/status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.participants) setParticipants(data.participants);
+        setIsDarkUnlocked(!!data.is_dark_unlocked);
+      })
+      .finally(() => setLoadingAlignment(false));
   }, []);
 
   const toggleUnlock = async (groupKey: string, currentEnabled: boolean) => {
@@ -43,6 +69,10 @@ export default function ConfiguracoesPage() {
       setUnlocks((prev) =>
         prev.map((u) => (u.key === groupKey ? { ...u, is_enabled: !currentEnabled } : u))
       );
+      // If toggling DARK_THIRD_IMAGINATION, update the alignment state as well
+      if (groupKey === "DARK_THIRD_IMAGINATION") {
+        setIsDarkUnlocked(!currentEnabled);
+      }
     } else {
       alert("Erro ao atualizar a configuração.");
     }
@@ -55,23 +85,49 @@ export default function ConfiguracoesPage() {
         <p className="text-[var(--color-text-secondary)] text-sm font-light">Ajustes e limites da experiência.</p>
       </div>
 
-      {/* Conta e Alinhamento */}
-      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
-        <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest">Alinhamento e Conta</h3>
-        <div className="space-y-4 text-sm">
-          <p className="text-[var(--color-text-secondary)] font-light leading-relaxed">As sessões são sincronizadas de forma segura e apenas vocês têm acesso ao histórico.</p>
-          <div className="pt-4 border-t border-white/5">
-            <Link 
-              href="/app/alinhamento" 
-              className="text-[#d4a373] hover:text-white transition-colors block font-medium"
-            >
-              Revisar limites (Formulário privado)
-            </Link>
-            <p className="text-xs text-[var(--color-text-secondary)] font-light mt-2 leading-relaxed">
-              Responda novamente se os limites mudarem. Novas respostas atualizam a jornada sem apagar o histórico de vocês.
-            </p>
-          </div>
+      {/* Alinhamento Privado */}
+      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-6">
+        <div>
+          <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest mb-2">Alinhamento privado</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed mb-4">
+            Respondam quando quiserem ajustar melhor limites, preferências e interesses. As respostas são individuais e não ficam visíveis para o parceiro ou parceira.
+          </p>
         </div>
+
+        {loadingAlignment ? (
+          <div className="text-sm text-[var(--color-text-secondary)] animate-pulse">Carregando formulários...</div>
+        ) : (
+          <div className="space-y-4">
+            {participants.map(p => {
+              const label = p.role === "WOMAN" ? "Responder alinhamento dela" : "Responder alinhamento dele";
+              return (
+                <button
+                  key={p.id + '-std'}
+                  onClick={() => router.push(`/app/alinhamento/${p.id}?type=standard`)}
+                  className="w-full flex items-center justify-between p-4 bg-[#0d0806] border border-white/10 hover:border-[#d4a373]/50 transition-colors rounded-xl text-left"
+                >
+                  <div>
+                    <div className="font-medium text-white text-sm tracking-wide">{p.name}</div>
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+                      {p.standard?.has_responded ? "Respondido" : label}
+                    </div>
+                  </div>
+                  <div>
+                    {p.standard?.has_responded ? (
+                      <span className="text-xs bg-[#B9825A]/20 text-[#d4a373] px-3 py-1.5 rounded-full border border-[#B9825A]/30">
+                        Responder novamente
+                      </span>
+                    ) : (
+                      <span className="text-xs border border-white/20 text-white/50 px-3 py-1.5 rounded-full">
+                        Pendente
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Conteúdos Avançados */}
@@ -115,22 +171,59 @@ export default function ConfiguracoesPage() {
                     />
                   </button>
                 </div>
-
-                {u.is_enabled && u.key === "DARK_THIRD_IMAGINATION" && (
-                  <div className="mt-4 pt-4 border-t border-white/10 text-sm space-y-3">
-                    <p className="text-white/50 text-xs font-light">
-                      Recomendamos preencher o formulário de limites antes de iniciar.
-                    </p>
-                    <Link
-                      href="/app/alinhamento"
-                      className="inline-block text-[#d4a373] text-xs hover:text-white transition-colors tracking-wide"
-                    >
-                      Formulário de limites →
-                    </Link>
-                  </div>
-                )}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* Alinhamento Avançado (Dark Deck) */}
+      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
+        <div>
+          <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest mb-1">
+            Alinhamento avançado — Tons mais escuros
+          </h3>
+          {!isDarkUnlocked ? (
+            <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+              Disponível após liberar esse conteúdo nas configurações.
+            </p>
+          ) : (
+            <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+              Esse alinhamento trata apenas de fantasia, imaginação e limites mais avançados. Responder é opcional.
+            </p>
+          )}
+        </div>
+
+        {isDarkUnlocked && !loadingAlignment && (
+          <div className="space-y-4 mt-4">
+            {participants.map(p => {
+              const label = p.role === "WOMAN" ? "Responder alinhamento dela" : "Responder alinhamento dele";
+              return (
+                <button
+                  key={p.id + '-dark'}
+                  onClick={() => router.push(`/app/alinhamento/${p.id}?type=dark`)}
+                  className="w-full flex items-center justify-between p-4 bg-[#0d0806] border border-white/10 hover:border-[#d4a373]/50 transition-colors rounded-xl text-left"
+                >
+                  <div>
+                    <div className="font-medium text-white text-sm tracking-wide">{p.name}</div>
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+                      {p.dark?.has_responded ? "Respondido" : label}
+                    </div>
+                  </div>
+                  <div>
+                    {p.dark?.has_responded ? (
+                      <span className="text-xs bg-[#B9825A]/20 text-[#d4a373] px-3 py-1.5 rounded-full border border-[#B9825A]/30">
+                        Responder novamente
+                      </span>
+                    ) : (
+                      <span className="text-xs border border-white/20 text-white/50 px-3 py-1.5 rounded-full">
+                        Pendente
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

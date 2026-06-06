@@ -53,7 +53,7 @@ export default function DecksPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto px-4 pb-12 pt-6">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-serif text-[#d4a373] italic mb-2">Coleção</h2>
-        <p className="text-[var(--color-text-secondary)] text-sm font-light">As opções disponíveis para a noite.</p>
+        <p className="text-[var(--color-text-secondary)] text-sm font-light">As opções disponíveis para o jogo de hoje.</p>
       </div>
       
       <section>
@@ -101,8 +101,8 @@ export default function DecksPage() {
                     </p>
                   )}
                   {deck.requires_couple_unlock && (
-                    <div className="mt-4 text-[10px] text-white/40 italic">
-                      Desbloquear em configurações
+                    <div className="mt-4 text-[10px] text-white/40 italic leading-snug">
+                      Trancado. Só aparece quando vocês decidem abrir esse clima.
                     </div>
                   )}
                 </div>

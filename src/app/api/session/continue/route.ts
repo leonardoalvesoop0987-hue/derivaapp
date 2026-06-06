@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { SessionMode, SessionLength, CardIntensity } from "@prisma/client";
+import { CardIntensity } from "@prisma/client";
 import { generateSessionSequence } from "@/lib/deriva/session-engine";
 
 const INTENSITIES: CardIntensity[] = ["LEVE", "QUENTE", "INTENSO", "PICO"];

@@ -27,7 +27,7 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
         if (data.participants) {
           const p = data.participants.find((p: { id: string; role: "WOMAN" | "MAN" }) => p.id === participantId);
           if (p) setRole(p.role);
-          else router.push("/app/alinhamento");
+          else router.push("/app/configuracoes");
         }
         setLoading(false);
       })
@@ -93,7 +93,7 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
             Agora você pode fechar esta tela ou entregar o aparelho para a outra pessoa responder o formulário dela.
           </p>
           <button
-            onClick={() => router.push("/app/alinhamento")}
+            onClick={() => router.push("/app/configuracoes")}
             className="w-full py-4 bg-[var(--color-wine)] hover:bg-[var(--color-red-deep)] transition-colors rounded-xl font-medium"
           >
             Concluir

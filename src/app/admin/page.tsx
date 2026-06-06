@@ -17,6 +17,10 @@ export default function AdminPage() {
           <h2 className="font-medium mb-1">Músicas</h2>
           <p className="text-sm text-[var(--color-text-secondary)]">Gerenciar trilhas da sessão.</p>
         </Link>
+        <Link href="/admin/settings/voice" className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-copper)]/50 transition-colors">
+          <h2 className="font-medium mb-1">Voz & Narração</h2>
+          <p className="text-sm text-[var(--color-text-secondary)]">Gerenciar TTS, testes e áudios gerados.</p>
+        </Link>
       </div>
     </div>
   );

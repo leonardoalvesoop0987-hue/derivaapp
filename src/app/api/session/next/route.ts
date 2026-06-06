@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { getNextCard } from "@/lib/deriva/session-engine";
+
 
 export async function POST(req: Request) {
   try {
@@ -33,6 +33,9 @@ export async function POST(req: Request) {
       if (session.inversions_used >= 2) return NextResponse.json({ error: "Limite de inversões atingido" }, { status: 400 });
       
       const meta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
+      const newReceiver = meta.current_receiver === "MAN" ? "WOMAN" : meta.current_receiver === "WOMAN" ? "MAN" : "ANY";
+      
+      const { applyPronounRegex } = await import("@/lib/deriva/session-engine");
       
       currentCardState = await prisma.sessionCard.update({
         where: { id: currentCardState.id },
@@ -40,7 +43,8 @@ export async function POST(req: Request) {
           was_inverted: !currentCardState.was_inverted,
           metadata_json: JSON.stringify({
              ...meta,
-             current_receiver: meta.current_receiver === "MAN" ? "WOMAN" : meta.current_receiver === "WOMAN" ? "MAN" : "ANY"
+             current_receiver: newReceiver,
+             rendered_body: meta.original_body ? applyPronounRegex(meta.original_body, newReceiver) : meta.rendered_body
           })
         }
       });
@@ -61,13 +65,16 @@ export async function POST(req: Request) {
       });
       await prisma.session.update({
         where: { id: sessionId },
-        data: { skips_used: { increment: 1 }, target_card_count: { increment: 1 } } // Increment target so we play one more
+        data: { skips_used: { increment: 1 } }
       });
 
       // Draw a new substitute card and queue it at the end
       const lastCard = session.cards[session.cards.length - 1];
       const nextPos = lastCard ? lastCard.position + 1 : session.current_position + 1;
       
+      const skippedMeta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
+      const skippedStage = skippedMeta.intended_stage;
+
       const { generateSessionSequence } = await import("@/lib/deriva/session-engine");
       const substitute = await generateSessionSequence({
         userId: session.user_id,
@@ -76,11 +83,12 @@ export async function POST(req: Request) {
         mode: session.mode,
         length: session.length,
         maxIntensity: session.max_intensity,
-        videosEnabled: true,
+        videosEnabled: session.videos_enabled,
         targetCardCount: 1, // Draw just 1
         fullTargetCardCount: session.target_card_count,
         shownCardIds: session.cards.map(c => c.card_id),
-        currentPosition: nextPos
+        currentPosition: nextPos,
+        forceStage: skippedStage
       } as Record<string, unknown>);
 
       if (substitute.length > 0) {

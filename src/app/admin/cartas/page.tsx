@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
 import { AdminCardModal, AdminCard } from "@/components/AdminCardModal";
-import { Search, Eye, PowerOff, Power, PlayCircle, Lock } from "lucide-react";
+import Link from "next/link";
+import { Search, Eye, PowerOff, Power, PlayCircle, Lock, Edit3 } from "lucide-react";
 
 const CATEGORIES = ["TODAS", "AZUL", "DERIVA", "ROSA", "ROXO", "VERMELHO", "PRETO"];
 
@@ -74,7 +76,7 @@ export default function AdminCartasPage() {
       });
       const data = await res.json();
       setSimulationResult(data.sequence);
-    } catch (e) {
+    } catch (_e) {
       alert("Erro na simulação.");
     } finally {
       setSimulating(false);
@@ -92,14 +94,23 @@ export default function AdminCartasPage() {
             Gerencie o deck base, ajuste textos, categorias, intensidade e disponibilidade das {cards.length} cartas totais do sistema.
           </p>
         </div>
-        <button
-          onClick={handleSimulate}
-          disabled={simulating}
-          className="flex items-center gap-2 bg-[var(--color-copper)]/10 text-[var(--color-copper)] border border-[var(--color-copper)]/30 hover:bg-[var(--color-copper)]/20 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-        >
-          <PlayCircle className="w-4 h-4" />
-          {simulating ? "Simulando..." : "Testar Sequência"}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 items-end">
+          <Link
+            href="/admin/cartas/editorial"
+            className="flex items-center gap-2 bg-[var(--color-background-secondary)] text-white border border-[var(--color-border)] hover:border-[var(--color-text-secondary)] px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            <Edit3 className="w-4 h-4" />
+            Visão Editorial
+          </Link>
+          <button
+            onClick={handleSimulate}
+            disabled={simulating}
+            className="flex items-center gap-2 bg-[var(--color-copper)]/10 text-[var(--color-copper)] border border-[var(--color-copper)]/30 hover:bg-[var(--color-copper)]/20 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            <PlayCircle className="w-4 h-4" />
+            {simulating ? "Simulando..." : "Testar Sequência"}
+          </button>
+        </div>
       </div>
 
       {/* Categorias / Dashboard */}

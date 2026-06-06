@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { generateSessionSequence } from "@/lib/deriva/session-engine";
 import { prisma } from "@/lib/db";

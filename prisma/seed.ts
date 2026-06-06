@@ -665,45 +665,6 @@ async function main() {
     });
   }
 
-  for (const card of cards) {
-    await prisma.card.upsert({
-      where: { system_key: card.system_key },
-      update: {
-        title: card.title,
-        body: card.body,
-        category: card.category as CardCategory,
-        intensity: card.intensity as CardIntensity,
-        position: card.position,
-        is_invertible: card.is_invertible,
-        requires_video: card.requires_video,
-        receiver_rule: card.receiver_rule as ReceiverRule,
-        // Fallback or explicit set
-        primary_tag: (card as Record<string, unknown>).primary_tag,
-        stage: (card as Record<string, unknown>).stage,
-        erotic_function: (card as Record<string, unknown>).erotic_function,
-        progression_role: (card as Record<string, unknown>).progression_role,
-      },
-      create: {
-        deck_id: deck.id,
-        system_key: card.system_key,
-        title: card.title,
-        body: card.body,
-        category: card.category as CardCategory,
-        intensity: card.intensity as CardIntensity,
-        position: card.position,
-        is_invertible: card.is_invertible,
-        requires_video: card.requires_video,
-        receiver_rule: card.receiver_rule as ReceiverRule,
-        primary_tag: (card as Record<string, unknown>).primary_tag,
-        stage: (card as Record<string, unknown>).stage,
-        erotic_function: (card as Record<string, unknown>).erotic_function,
-        progression_role: (card as Record<string, unknown>).progression_role,
-        requires_couple_unlock: card.system_key === "deriva-v1-card-041" ? true : false,
-        unlock_group_key: card.system_key === "deriva-v1-card-041" ? "DARK_THIRD_IMAGINATION" : null,
-      }
-    });
-  }
-
   // Ensure Unlock Group exists
   let darkGroup = await prisma.unlockGroup.findUnique({ where: { key: 'DARK_THIRD_IMAGINATION' } });
   if (!darkGroup) {
@@ -732,6 +693,56 @@ async function main() {
       }
     });
   }
+
+  for (const card of cards) {
+    const isDark = card.system_key === "deriva-v1-card-041";
+    await prisma.card.upsert({
+      where: { system_key: card.system_key },
+      update: {
+        deck_id: isDark ? darkDeck.id : deck.id,
+        title: card.title,
+        body: card.body,
+        category: card.category as CardCategory,
+        intensity: card.intensity as CardIntensity,
+        position: card.position,
+        is_invertible: card.is_invertible,
+        requires_video: card.requires_video,
+        receiver_rule: card.receiver_rule as ReceiverRule,
+        primary_tag: (card as Record<string, unknown>).primary_tag,
+        stage: (card as Record<string, unknown>).stage,
+        erotic_function: (card as Record<string, unknown>).erotic_function,
+        progression_role: (card as Record<string, unknown>).progression_role,
+        requires_couple_unlock: isDark,
+        unlock_group_key: isDark ? "DARK_THIRD_IMAGINATION" : null,
+        is_available_in_default: !isDark,
+        is_available_in_estreia: !isDark,
+        is_available_in_custom_selection: !isDark,
+      },
+      create: {
+        deck_id: isDark ? darkDeck.id : deck.id,
+        system_key: card.system_key,
+        title: card.title,
+        body: card.body,
+        category: card.category as CardCategory,
+        intensity: card.intensity as CardIntensity,
+        position: card.position,
+        is_invertible: card.is_invertible,
+        requires_video: card.requires_video,
+        receiver_rule: card.receiver_rule as ReceiverRule,
+        primary_tag: (card as Record<string, unknown>).primary_tag,
+        stage: (card as Record<string, unknown>).stage,
+        erotic_function: (card as Record<string, unknown>).erotic_function,
+        progression_role: (card as Record<string, unknown>).progression_role,
+        requires_couple_unlock: isDark,
+        unlock_group_key: isDark ? "DARK_THIRD_IMAGINATION" : null,
+        is_available_in_default: !isDark,
+        is_available_in_estreia: !isDark,
+        is_available_in_custom_selection: !isDark,
+      }
+    });
+  }
+
+
   
   console.log('Seed completed successfully.');
 }

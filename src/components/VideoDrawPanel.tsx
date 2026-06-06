@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { SkipForward, Check, X, Maximize, Volume2, VolumeX } from "lucide-react";
+import { SkipForward, Check, Maximize, Volume2, VolumeX } from "lucide-react";
 import Hls from "hls.js";
 
 interface VideoAsset {

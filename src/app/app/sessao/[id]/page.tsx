@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { SkipForward, Repeat, Check, X, Flame, ShieldAlert, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2, Wind } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CardType, SessionCardType, SessionType } from "@/types";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -54,9 +54,19 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
   const [showFullTextModal, setShowFullTextModal] = useState(false);
+  const [isChangingPace, setIsChangingPace] = useState(false);
+  const [isInsertingPause, setIsInsertingPause] = useState(false);
   
   const [audioState, setAudioState] = useState<"IDLE" | "LOADING" | "PLAYING" | "ERROR">("IDLE");
+  const [voiceSettings, setVoiceSettings] = useState<{enabled: boolean, playbackMode: string} | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    fetch("/api/session/voice-settings")
+      .then(res => res.json())
+      .then(data => setVoiceSettings(data))
+      .catch(console.error);
+  }, []);
 
   const fetchNext = useCallback(async (action: string) => {
     setLoading(true);
@@ -104,16 +114,35 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
     router.push(`/app/sessao/${resolvedParams.id}/feedback`);
   }
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAudioState("IDLE");
+  }, [card?.id]);
+
   function renderCardBody(body: string) {
     return body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
   }
 
+  useEffect(() => {
+    if (isFlipped && voiceSettings?.enabled && voiceSettings?.playbackMode === "automatic" && audioState === "IDLE") {
+      const t = setTimeout(() => {
+        handlePlayVoice().catch(console.error);
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFlipped, voiceSettings, audioState, card?.id]);
+
   if (loading && !card) {
     return (
       <div className="flex h-[70vh] items-center justify-center">
-        <div className="text-[var(--color-copper)] flex flex-col items-center gap-4 animate-pulse">
+        <div className="text-[#B9825A] flex flex-col items-center gap-4 animate-pulse">
           <Flame className="w-8 h-8" />
-          <span className="text-sm font-medium tracking-widest uppercase">Preparando o clima...</span>
+          <span className="text-sm font-medium tracking-widest uppercase">Preparando a carta...</span>
         </div>
       </div>
     );
@@ -137,16 +166,38 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+  async function handlePaceChoice(choice: "SLOWER" | "SAME" | "FASTER") {
+    setIsChangingPace(true);
+    try {
+      const res = await fetch("/api/session/pace", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: resolvedParams.id, choice })
+      });
+      if (!res.ok) throw new Error();
+    } catch(err) {
+      console.error(err);
     }
-    setAudioState("IDLE");
-  }, [card?.id]);
+    setIsChangingPace(false);
+  }
 
-  async function handlePlayVoice(e: React.MouseEvent) {
-    e.stopPropagation();
+  async function handleHotPause() {
+    setIsInsertingPause(true);
+    try {
+      const res = await fetch("/api/session/pause", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: resolvedParams.id })
+      });
+      if (!res.ok) throw new Error();
+    } catch(err) {
+      console.error(err);
+    }
+    setIsInsertingPause(false);
+  }
+
+  async function handlePlayVoice(e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
     if (audioState === "PLAYING") {
       if (audioRef.current) audioRef.current.pause();
       setAudioState("IDLE");
@@ -156,8 +207,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
     setAudioState("LOADING");
     try {
-      const metaLocal = state?.metadata_json ? JSON.parse(state.metadata_json) : {};
-      const textToRead = card?.session_short_text || metaLocal.rendered_body || renderCardBody(card?.body || "");
+      const textToRead = card?.session_short_text?.trim();
       
       if (!textToRead) {
         setAudioState("ERROR");
@@ -191,39 +241,41 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+
+
   if (completed) {
     return (
       <div className="flex flex-col min-h-[100dvh] pt-12 pb-[calc(1.5rem+env(safe-area-inset-bottom))] px-6 items-center justify-center animate-in fade-in zoom-in duration-700">
         <div className="w-20 h-20 bg-[var(--color-wine)]/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(153,27,27,0.3)]">
           <Flame className="w-10 h-10 text-[var(--color-copper)] animate-pulse" />
         </div>
-        <h2 className="text-3xl font-bold mb-4">Quer continuar?</h2>
+        <h2 className="text-3xl font-serif text-[#d4a373] italic mb-4">Querem continuar?</h2>
         <p className="text-[var(--color-text-secondary)] text-base mb-10 max-w-[280px] mx-auto text-center leading-relaxed">
-          Se o clima ainda está bom, vocês podem puxar uma nova sequência sem cortar o ritmo.
+          O clima já está alto. Vocês decidem o que acontece a seguir.
         </p>
         
         <div className="w-full max-w-sm flex flex-col gap-3">
           <button
             onClick={() => handleContinue("SAME")}
-            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-[var(--color-copper)] transition-colors text-left flex justify-between items-center"
+            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-[#d4a373] transition-colors text-left flex justify-between items-center"
           >
-            <span>Continuar no mesmo ritmo</span>
-            <Flame className="w-4 h-4 text-[var(--color-copper)]" />
+            <span>Manter a intensidade</span>
+            <Flame className="w-4 h-4 text-[#d4a373]" />
           </button>
           
           <button
             onClick={() => handleContinue("LIGHTER")}
             className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-blue-400/50 transition-colors text-left flex justify-between items-center"
           >
-            <span>Desacelerar um pouco</span>
-            <span className="text-sm opacity-50">Respiro</span>
+            <span>Diminuir o ritmo</span>
+            <span className="text-sm opacity-50">Provocações suaves</span>
           </button>
           
           <button
             onClick={() => handleContinue("HEAVIER")}
             className="w-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] border border-transparent px-6 py-4 rounded-2xl text-white font-medium hover:brightness-110 transition-colors text-left flex justify-between items-center shadow-lg"
           >
-            <span>Esquentar mais</span>
+            <span>Esquentar mais o jogo</span>
             <Flame className="w-5 h-5 text-white" />
           </button>
           
@@ -231,9 +283,9 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
           
           <button
             onClick={() => router.push(`/app/sessao/${resolvedParams.id}/feedback`)}
-            className="w-full bg-transparent px-6 py-4 rounded-2xl text-[var(--color-text-secondary)] font-medium hover:text-white transition-colors text-center"
+            className="w-full bg-transparent px-6 py-4 rounded-2xl text-[var(--color-text-secondary)] font-medium hover:text-white transition-colors text-center uppercase tracking-widest text-xs"
           >
-            Encerrar por aqui
+            Encerrar o jogo
           </button>
         </div>
       </div>
@@ -261,13 +313,13 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="bg-[var(--color-card)] border border-[var(--color-border)] p-6 rounded-3xl max-w-sm w-full text-center shadow-2xl"
             >
-              <h3 className="text-xl font-medium mb-3">Deseja mesmo parar?</h3>
+              <h3 className="text-2xl font-serif text-[#d4a373] italic mb-3">Pausar o jogo?</h3>
               <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-                O clima será interrompido e você irá para a tela de feedback.
+                O clima será interrompido e a sessão atual encerrada.
               </p>
               <div className="flex gap-3">
-                <button onClick={() => setShowAbortConfirm(false)} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium">Continuar</button>
-                <button onClick={handleAbort} className="flex-1 py-3 rounded-xl bg-[var(--color-wine)] text-white text-sm font-medium">Encerrar</button>
+                <button onClick={() => setShowAbortConfirm(false)} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-sm font-medium hover:bg-white/5 transition-colors">Voltar</button>
+                <button onClick={handleAbort} className="flex-1 py-3 rounded-xl bg-[#8C5D3D] text-white text-sm font-medium hover:brightness-110 transition-colors">Encerrar</button>
               </div>
             </motion.div>
           </motion.div>
@@ -335,23 +387,25 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             >
               {/* FRONT (Capa) */}
               <div 
-                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl border border-white/10`}
+                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl shadow-black/50 border border-white/5 relative overflow-hidden`}
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                 <span className="text-xs opacity-60 mb-6 tracking-widest uppercase font-medium">
-                   {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-base">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
+                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
+                 <span className="text-xs text-white/50 mb-6 tracking-widest uppercase font-medium z-10">
+                   {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-base opacity-70">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
                  </span>
-                 <p className="text-3xl font-serif italic text-[#d4a373] leading-snug drop-shadow-md">
-                   {meta.front_text || "O clima vai subir."}
+                 <p className="text-4xl font-serif italic text-[#d4a373] leading-snug drop-shadow-xl z-10 px-4">
+                   {meta.front_text || "A tensão sobe agora."}
                  </p>
-                 <p className="absolute bottom-8 text-[10px] opacity-40 uppercase tracking-[0.2em] animate-pulse">Toque para virar</p>
+                 <p className="absolute bottom-8 text-[10px] text-white/30 uppercase tracking-[0.2em] animate-pulse z-10">Toque para revelar</p>
               </div>
 
               {/* BACK (Verso) */}
               <div 
-                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl border border-white/10 overflow-y-auto custom-scrollbar`}
+                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 overflow-y-auto custom-scrollbar relative`}
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
+                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none" />
                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
                  
                  <div className="flex items-center justify-between mb-8 z-10">
@@ -388,20 +442,22 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                        </button>
                      )}
                      
-                     <button
-                       onClick={handlePlayVoice}
-                       disabled={audioState === "LOADING"}
-                       className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors ml-auto"
-                       title="Ouvir narração"
-                     >
-                       {audioState === "LOADING" && <Loader2 className="w-4 h-4 animate-spin" />}
-                       {audioState === "PLAYING" && <Volume2 className="w-4 h-4 text-[var(--color-copper)]" />}
-                       {audioState === "IDLE" && <Volume2 className="w-4 h-4" />}
-                       {audioState === "ERROR" && <VolumeX className="w-4 h-4 text-red-400" />}
-                       <span className={audioState === "PLAYING" ? "text-[var(--color-copper)]" : ""}>
-                         {audioState === "PLAYING" ? "Parar narração" : audioState === "ERROR" ? "Não disponível" : "Ouvir carta"}
-                       </span>
-                     </button>
+                     {card.session_short_text?.trim() && (
+                       <button
+                          onClick={handlePlayVoice}
+                          disabled={audioState === "LOADING"}
+                          className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors ml-auto"
+                          title={audioState === "ERROR" ? "Áudio indisponível" : "Ouvir narração"}
+                        >
+                          {audioState === "LOADING" && <Loader2 className="w-4 h-4 animate-spin" />}
+                         {audioState === "PLAYING" && <Volume2 className="w-4 h-4 text-[var(--color-copper)]" />}
+                         {audioState === "IDLE" && <Volume2 className="w-4 h-4" />}
+                         {audioState === "ERROR" && <VolumeX className="w-4 h-4 text-red-400" />}
+                         <span className={audioState === "PLAYING" ? "text-[var(--color-copper)]" : ""}>
+                           {audioState === "PLAYING" ? "Parar narração" : audioState === "ERROR" ? "Não disponível" : "Ouvir carta"}
+                         </span>
+                       </button>
+                     )}
                    </div>
                  </div>
 
@@ -434,8 +490,19 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         )}
       </div>
 
+      {/* Pace Dial */}
+      {session && session.current_position > 3 && isFlipped && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-xs mx-auto mb-2 flex justify-center items-center bg-[#130c0a]/80 backdrop-blur-md border border-white/5 p-1 rounded-full relative z-20 shadow-lg">
+          <button disabled={isChangingPace} onClick={() => handlePaceChoice("SLOWER")} className="flex-1 text-[11px] font-medium tracking-wide uppercase py-2 px-3 rounded-full text-white/50 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50">Devagar</button>
+          <div className="w-px h-4 bg-white/10 mx-1" />
+          <button disabled={isChangingPace} onClick={() => handlePaceChoice("SAME")} className="flex-1 text-[11px] font-medium tracking-wide uppercase py-2 px-3 rounded-full text-white/50 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50">Assim</button>
+          <div className="w-px h-4 bg-white/10 mx-1" />
+          <button disabled={isChangingPace} onClick={() => handlePaceChoice("FASTER")} className="flex-1 text-[11px] font-medium tracking-wide uppercase py-2 px-3 rounded-full text-white/50 hover:bg-white/5 hover:text-[#d4a373] transition-colors disabled:opacity-50">Acelerar</button>
+        </motion.div>
+      )}
+
       {/* Actions (Floating bottom) */}
-      <div className="flex justify-center items-center gap-6 pt-10 pb-6 relative z-20 max-w-sm mx-auto">
+      <div className="flex justify-center items-center gap-4 md:gap-6 pt-4 pb-6 relative z-20 max-w-sm mx-auto">
         {card.is_invertible && session.inversions_used < 2 && (
           <button
             onClick={() => fetchNext("INVERT")}
@@ -449,10 +516,19 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
         <button
           onClick={() => setShowAbortConfirm(true)}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-transparent hover:bg-white/5 transition-colors"
-          title="Encerrar por aqui"
+          className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-transparent hover:bg-white/5 transition-colors group"
+          title="Encerrar o jogo"
         >
-          <X className="w-6 h-6 text-white/40 hover:text-white/70" />
+          <X className="w-6 h-6 text-white/40 group-hover:text-red-400 transition-colors" />
+        </button>
+
+        <button
+          onClick={handleHotPause}
+          disabled={loading || !isFlipped || isInsertingPause}
+          className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"} group`}
+          title="Pausa Quente"
+        >
+          {isInsertingPause ? <Loader2 className="w-5 h-5 text-white/60 animate-spin" /> : <Wind className="w-5 h-5 text-white/60 group-hover:text-[#d4a373] transition-colors" />}
         </button>
 
         {session.skips_used < 2 && (
