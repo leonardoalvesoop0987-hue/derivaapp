@@ -94,7 +94,7 @@ export default function AdminVideosPage() {
       setShowUpload(false);
       setForm({ internal_label: "", video_category: "LESBICO", content_type: "COMPLETE", visual_tags: [], file: null });
       load();
-    } catch (err) {
+    } catch {
       alert("Erro no upload.");
     } finally {
       setUploading(false);
@@ -121,7 +121,7 @@ export default function AdminVideosPage() {
       if (!res.ok) throw new Error();
       setShowEdit(null);
       load();
-    } catch (_err) {
+    } catch {
       alert("Erro ao remover.");
     }
   };

@@ -62,7 +62,7 @@ async function getVideoHeight(filePath: string): Promise<number> {
   try {
     const { stdout } = await execAsync(`ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=s=x:p=0 "${filePath}"`);
     return parseInt(stdout.trim(), 10) || 720;
-  } catch (_err) {
+  } catch {
     return 720;
   }
 }
@@ -71,7 +71,7 @@ async function getVideoDuration(filePath: string): Promise<number> {
   try {
     const { stdout } = await execAsync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`);
     return parseFloat(stdout.trim()) || 0;
-  } catch (_err) {
+  } catch {
     return 0;
   }
 }

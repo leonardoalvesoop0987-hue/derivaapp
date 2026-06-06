@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { generateCardAudio } from "@/services/server/voiceService";
 
-export async function POST(req: Request) {
+export async function POST() {
   const session = await getSession();
   if (!session || !session.isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -76,7 +76,7 @@ export default function AdminCartasPage() {
       });
       const data = await res.json();
       setSimulationResult(data.sequence);
-    } catch (_e) {
+    } catch {
       alert("Erro na simulação.");
     } finally {
       setSimulating(false);

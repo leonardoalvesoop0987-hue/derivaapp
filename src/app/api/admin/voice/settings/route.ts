@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const settings = await getVoiceSettings();
     return NextResponse.json(settings);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

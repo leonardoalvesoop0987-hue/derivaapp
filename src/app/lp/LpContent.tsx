@@ -9,6 +9,7 @@ import { WhyItWorksSection } from "@/components/lp/WhyItWorksSection";
 import { ForHerForHimSection } from "@/components/lp/ForHerForHimSection";
 import { AppAndPhysicalSection } from "@/components/lp/AppAndPhysicalSection";
 import { DeckStructureSection } from "@/components/lp/DeckStructureSection";
+import { GuidedSessionHighlightsSection } from "@/components/lp/GuidedSessionHighlightsSection";
 import { SmartRandomSection } from "@/components/lp/SmartRandomSection";
 import { IdealMomentsSection } from "@/components/lp/IdealMomentsSection";
 import { MediaAndMusicSection } from "@/components/lp/MediaAndMusicSection";
@@ -42,6 +43,7 @@ export function LpContent() {
       <ForHerForHimSection />
       <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={false} />
       <DeckStructureSection />
+      <GuidedSessionHighlightsSection />
       <AtmosphereCarouselSection />
       <SmartRandomSection />
       <IdealMomentsSection />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Play, RefreshCw, Trash2 } from "lucide-react";
+import { Loader2, Play, Trash2 } from "lucide-react";
 
 export default function VoiceSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ export default function VoiceSettingsPage() {
         body: JSON.stringify(settings)
       });
       alert("Configurações salvas.");
-    } catch (e) {
+    } catch {
       alert("Erro ao salvar.");
     } finally {
       setSaving(false);
@@ -76,7 +76,7 @@ export default function VoiceSettingsPage() {
       } else {
         alert("Falha no teste: " + (data.reason || "Erro desconhecido"));
       }
-    } catch (e) {
+    } catch {
       alert("Erro no teste.");
     } finally {
       setTesting(false);
@@ -88,7 +88,7 @@ export default function VoiceSettingsPage() {
     try {
       await fetch("/api/admin/voice/cache", { method: "DELETE" });
       fetchData();
-    } catch (e) {
+    } catch {
       alert("Erro ao limpar cache.");
     }
   }

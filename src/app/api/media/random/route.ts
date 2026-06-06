@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const userSession = await getSession();
     if (!userSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
