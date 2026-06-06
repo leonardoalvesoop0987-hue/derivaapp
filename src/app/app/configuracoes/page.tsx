@@ -49,56 +49,63 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto">
-      <h2 className="text-xl font-light">Configurações</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto pb-12 pt-6 px-4">
+      <div className="text-center mb-10">
+        <h2 className="text-3xl font-serif text-[#d4a373] italic mb-2">Configurações</h2>
+        <p className="text-[var(--color-text-secondary)] text-sm font-light">Ajustes e limites da experiência.</p>
+      </div>
 
-      <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
-        <h3 className="font-medium text-sm text-[var(--color-text-secondary)] uppercase tracking-wide">Conta</h3>
+      {/* Conta e Alinhamento */}
+      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
+        <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest">Alinhamento e Conta</h3>
         <div className="space-y-4 text-sm">
-          <p className="text-[var(--color-text-secondary)]">Sessões são salvas localmente e sincronizadas ao banco.</p>
-          <div className="pt-2 border-t border-[var(--color-border)]">
+          <p className="text-[var(--color-text-secondary)] font-light leading-relaxed">As sessões são sincronizadas de forma segura e apenas vocês têm acesso ao histórico.</p>
+          <div className="pt-4 border-t border-white/5">
             <Link 
               href="/app/alinhamento" 
-              className="text-[var(--color-copper)] hover:text-white transition-colors block"
+              className="text-[#d4a373] hover:text-white transition-colors block font-medium"
             >
-              Responder formulário privado novamente
+              Revisar limites (Formulário privado)
             </Link>
-            <p className="text-xs text-[var(--color-text-secondary)] mt-2 leading-relaxed">
-              Você pode responder novamente a qualquer momento. A nova resposta não apaga as anteriores; ela cria uma nova versão para acompanhamento administrativo.
+            <p className="text-xs text-[var(--color-text-secondary)] font-light mt-2 leading-relaxed">
+              Responda novamente se os limites mudarem. Novas respostas atualizam a jornada sem apagar o histórico de vocês.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
-        <h3 className="font-medium text-sm text-[var(--color-text-secondary)] uppercase tracking-wide flex items-center gap-2">
-          <AlertTriangle size={16} className="text-yellow-500" />
+      {/* Conteúdos Avançados */}
+      <div className="bg-gradient-to-br from-[#2a0a0f]/30 to-transparent p-6 rounded-2xl border border-[#d4a373]/20 space-y-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#A21A2B]/10 blur-[40px] mix-blend-screen pointer-events-none" />
+        
+        <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest flex items-center gap-2 relative z-10">
+          <AlertTriangle size={14} className="text-[#d4a373]" />
           Conteúdos Avançados
         </h3>
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          Decida se desejam incluir fantasias mais intensas na sessão de vocês. O desbloqueio deve ser um acordo mútuo do casal.
+        <p className="text-sm text-white/70 font-light leading-relaxed relative z-10">
+          Acessem fantasias mais intensas. O desbloqueio deve ser um acordo mútuo antes da sessão começar.
         </p>
 
         {loadingUnlocks ? (
-          <div className="text-sm text-[var(--color-text-secondary)]">Carregando permissões...</div>
+          <div className="text-sm text-[var(--color-text-secondary)] animate-pulse relative z-10">Carregando permissões...</div>
         ) : (
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2 relative z-10">
             {unlocks.map((u) => (
-              <div key={u.key} className="flex flex-col p-4 bg-[var(--color-background-secondary)] rounded-xl border border-[var(--color-border)]">
+              <div key={u.key} className="flex flex-col p-5 bg-[#0d0806]/80 backdrop-blur-sm rounded-xl border border-white/10 transition-colors hover:border-white/20">
                 <div className="flex items-center justify-between">
                   <div className="pr-4">
-                    <div className="font-medium flex items-center gap-2">
-                      {u.is_enabled ? <Unlock size={16} className="text-[var(--color-copper)]" /> : <Lock size={16} className="text-[var(--color-text-secondary)]" />}
+                    <div className="font-medium text-white flex items-center gap-2 mb-1 tracking-wide">
+                      {u.is_enabled ? <Unlock size={14} className="text-[#d4a373]" /> : <Lock size={14} className="text-white/40" />}
                       {u.title}
                     </div>
-                    <div className="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed">
+                    <div className="text-xs text-white/60 font-light leading-relaxed">
                       {u.description}
                     </div>
                   </div>
                   <button
                     onClick={() => toggleUnlock(u.key, u.is_enabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                      u.is_enabled ? "bg-[var(--color-copper)]" : "bg-[var(--color-background-secondary)] border border-[var(--color-border)]"
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none flex-shrink-0 border ${
+                      u.is_enabled ? "bg-[#B9825A] border-transparent" : "bg-[#0d0806] border-white/20"
                     }`}
                   >
                     <span
@@ -110,15 +117,15 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 {u.is_enabled && u.key === "DARK_THIRD_IMAGINATION" && (
-                  <div className="mt-4 pt-4 border-t border-[var(--color-border)] text-sm space-y-3">
-                    <p className="text-[var(--color-text-secondary)]">
-                      Antes de usar esse conteúdo, recomendamos que os dois respondam o Alinhamento avançado.
+                  <div className="mt-4 pt-4 border-t border-white/10 text-sm space-y-3">
+                    <p className="text-white/50 text-xs font-light">
+                      Recomendamos preencher o formulário de limites antes de iniciar.
                     </p>
                     <Link
                       href="/app/alinhamento"
-                      className="inline-block text-[var(--color-copper)] hover:text-white transition-colors"
+                      className="inline-block text-[#d4a373] text-xs hover:text-white transition-colors tracking-wide"
                     >
-                      Responder alinhamento avançado →
+                      Formulário de limites →
                     </Link>
                   </div>
                 )}
@@ -128,30 +135,31 @@ export default function ConfiguracoesPage() {
         )}
       </div>
 
-      <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
-        <h3 className="font-medium text-sm text-[var(--color-text-secondary)] uppercase tracking-wide">Sobre</h3>
-        <div className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-          <p>Deriva é um guia de sessão para casais adultos.</p>
-          <p>Versão 1.0 — MVP</p>
+      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
+
+      {/* Consentimento */}
+      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
+        <h3 className="font-medium text-xs text-white/50 uppercase tracking-widest">O Acordo</h3>
+        <div className="space-y-4 text-sm text-[var(--color-text-secondary)] font-light">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+            <span><strong className="text-white font-medium">Verde</strong> — continuem no fluxo</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
+            <span><strong className="text-white font-medium">Amarelo</strong> — reduzam o ritmo</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+            <span><strong className="text-white font-medium">Vermelho</strong> — parem imediatamente</span>
+          </div>
         </div>
       </div>
 
-      <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] space-y-4">
-        <h3 className="font-medium text-sm text-[var(--color-text-secondary)] uppercase tracking-wide">Consentimento</h3>
-        <div className="space-y-3 text-sm text-[var(--color-text-secondary)]">
-          <div className="flex items-start gap-3">
-            <div className="w-3 h-3 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
-            <span><strong className="text-white">Verde</strong> — continua</span>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-3 h-3 rounded-full bg-yellow-400 mt-0.5 flex-shrink-0" />
-            <span><strong className="text-white">Amarelo</strong> — diminui a intensidade</span>
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="w-3 h-3 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
-            <span><strong className="text-white">Vermelho</strong> — para imediatamente</span>
-          </div>
-        </div>
+      {/* Sobre */}
+      <div className="px-4 text-center space-y-1 pt-4 pb-8">
+        <div className="text-xs text-white/30 tracking-widest uppercase font-medium">Deriva</div>
+        <div className="text-[10px] text-white/20 font-light">Para casais adultos. Versão 1.0</div>
       </div>
     </div>
   );

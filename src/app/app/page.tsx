@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Play, PlayCircle, Flame, ShieldAlert, Sparkles } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 
@@ -18,75 +18,102 @@ export default async function AppPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto">
       
       {/* Hero / Start */}
-      <div className="bg-gradient-to-br from-[var(--color-wine)] to-[var(--color-red-deep)] p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Flame className="w-32 h-32" />
-        </div>
+      <div className="bg-gradient-to-br from-[#2a0a0f] to-[#1a0508] p-8 rounded-[2rem] shadow-2xl relative overflow-hidden border border-white/5 text-center">
+        <div className="absolute top-[-30%] right-[-20%] w-64 h-64 bg-[#B9825A]/10 blur-[60px] rounded-full mix-blend-screen pointer-events-none" />
         
-        {!activeSessionId ? (
-          <>
-            <h2 className="text-2xl font-light mb-2">Pronto para começar?</h2>
-            <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[80%] leading-relaxed">
-              Escolha o ritmo da noite e deixe o Deriva conduzir o clima carta por carta.
-            </p>
-            <Link 
-              href="/app/sessao/nova" 
-              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              Iniciar sessão
-            </Link>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-light mb-2">Sessão em andamento</h2>
-            <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[80%] leading-relaxed">
-              O clima já começou. Continue de onde parou.
-            </p>
-            <Link 
-              href={`/app/sessao/${activeSessionId}`}
-              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              <PlayCircle className="w-5 h-5 fill-current" />
-              Continuar sessão
-            </Link>
-          </>
-        )}
-      </div>
-
-      {/* Como funciona */}
-      <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-5 h-5 text-[var(--color-copper)]" />
-          <h3 className="font-medium text-[var(--color-text-primary)]">Como funciona</h3>
+        <div className="relative z-10 flex flex-col items-center">
+          {!activeSessionId ? (
+            <>
+              <h2 className="text-3xl font-light mb-4 leading-tight tracking-wide">
+                A noite começa <br />
+                <span className="font-serif text-[#d4a373] italic">devagar</span>.
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[260px] leading-relaxed font-light">
+                Escolham o ritmo e deixem o Deriva conduzir carta por carta — sem pressa, sem cobrança, no tempo de vocês.
+              </p>
+              <Link 
+                href="/app/sessao/nova" 
+                className="w-full bg-[#B9825A] text-white py-4 rounded-2xl font-medium tracking-wide shadow-lg shadow-[#B9825A]/20 hover:brightness-110 transition-all text-center"
+              >
+                Começar a noite
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="text-3xl font-light mb-4 leading-tight tracking-wide">
+                A noite ainda não <br />
+                <span className="font-serif text-[#d4a373] italic">acabou</span>.
+              </h2>
+              <p className="text-[var(--color-text-secondary)] mb-8 text-sm max-w-[260px] leading-relaxed font-light">
+                O clima já começou. Continuem de onde pararam ou encerrem quando quiserem.
+              </p>
+              <Link 
+                href={`/app/sessao/${activeSessionId}`}
+                className="w-full bg-gradient-to-r from-[#4A1118] to-[#6A1922] text-white py-4 rounded-2xl font-medium tracking-wide shadow-lg shadow-[#4A1118]/30 hover:brightness-110 transition-all text-center flex justify-center items-center gap-2"
+              >
+                <PlayCircle className="w-5 h-5 fill-current opacity-80" />
+                Continuar a noite
+              </Link>
+            </>
+          )}
         </div>
-        <ol className="text-sm text-[var(--color-text-secondary)] space-y-2 ml-4 list-decimal marker:text-[var(--color-copper)]">
-          <li>Escolha o modo e a intensidade.</li>
-          <li>O Deriva sorteia as cartas em progressão.</li>
-          <li>Vocês podem pular, inverter ou encerrar quando quiserem.</li>
-        </ol>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Segurança */}
-        <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <ShieldAlert className="w-5 h-5 text-[var(--color-copper)]" />
-            <h3 className="font-medium text-[var(--color-text-primary)]">Combinado simples</h3>
+      {/* Como funciona (Editorial) */}
+      <div className="px-2">
+        <h3 className="font-serif italic text-xl text-[#d4a373] mb-6">Como funciona</h3>
+        
+        <div className="space-y-6">
+          <div className="flex gap-4">
+            <span className="font-serif text-2xl text-white/20">01</span>
+            <div>
+              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Escolham o clima</h4>
+              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+                Leve, quente ou mais intenso. O ponto de partida é de vocês.
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-            Verde continua. Amarelo diminui. Vermelho para. Nenhuma carta precisa ser explicada ou justificada.
+          
+          <div className="flex gap-4">
+            <span className="font-serif text-2xl text-white/20">02</span>
+            <div>
+              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Revelem uma carta</h4>
+              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+                A surpresa faz parte do jogo. Vocês só precisam seguir até onde fizer sentido.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <span className="font-serif text-2xl text-white/20">03</span>
+            <div>
+              <h4 className="font-medium text-white mb-1 tracking-wide text-sm">Sigam no ritmo dos dois</h4>
+              <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+                Pular, diminuir ou parar também faz parte da experiência.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
+
+      {/* Dicas e Combinado */}
+      <div className="px-2 space-y-8 pb-4">
+        <div>
+          <h3 className="text-sm font-medium text-white tracking-widest uppercase mb-2">Combinado simples</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+            <span className="text-green-400 font-medium">Verde</span> continua. <span className="text-yellow-400 font-medium">Amarelo</span> diminui. <span className="text-red-400 font-medium">Vermelho</span> para. Não precisa justificar na hora. O combinado existe para proteger o clima dos dois.
           </p>
         </div>
 
-        {/* Frequência */}
-        <div className="bg-[var(--color-card)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm">
-          <h3 className="font-medium mb-2 text-[var(--color-text-primary)]">Dica</h3>
-          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-            Para manter o desejo alto, use sem pressa: até 2 vezes por semana costuma funcionar melhor.
+        <div>
+          <h3 className="text-sm font-medium text-white tracking-widest uppercase mb-2">Melhor quando existe tempo</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
+            O Deriva funciona melhor sem pressa: uma noite tranquila, o celular no modo silencioso e espaço para vocês entrarem no clima.
           </p>
         </div>
       </div>

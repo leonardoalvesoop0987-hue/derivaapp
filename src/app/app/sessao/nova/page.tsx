@@ -173,8 +173,10 @@ export default function NovaSessaoPage() {
     <>
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto px-4 pb-10">
         <div className="mt-6 mb-8 text-center">
-          <h2 className="text-3xl font-serif text-white mb-3">Como vocês querem hoje?</h2>
-          <p className="text-[var(--color-text-secondary)] text-base font-light">O Deriva organiza a noite. Escolham o ritmo.</p>
+          <h2 className="text-3xl font-light text-white mb-3 tracking-wide">
+            Como vocês querem <span className="font-serif text-[#d4a373] italic">hoje</span>?
+          </h2>
+          <p className="text-[var(--color-text-secondary)] text-sm font-light">O Deriva organiza a noite. Escolham o ritmo.</p>
         </div>
 
         <div className="space-y-4">
@@ -186,17 +188,17 @@ export default function NovaSessaoPage() {
                 if (p.id === "CUSTOM") setShowAdvanced(true);
                 else setShowAdvanced(false);
               }}
-              className={`w-full flex items-start p-5 rounded-2xl transition-all border text-left ${
+              className={`w-full flex items-start p-5 rounded-2xl transition-all text-left border ${
                 selectedPreset === p.id 
-                  ? 'bg-gradient-to-r from-[var(--color-wine)]/20 to-[var(--color-wine)]/5 border-[var(--color-copper)] shadow-[0_0_20px_rgba(153,27,27,0.15)]' 
-                  : 'bg-[var(--color-card)] border-[var(--color-border)] hover:border-white/20'
+                  ? 'bg-gradient-to-r from-[#2a0a0f] to-transparent border-[#d4a373]/30 shadow-lg shadow-[#2a0a0f]/50' 
+                  : 'bg-[#130c0a] border-white/5 hover:border-white/10'
               }`}
             >
-              <div className={`mt-1 mr-4 ${selectedPreset === p.id ? 'text-[var(--color-copper)]' : 'text-[var(--color-text-secondary)]'}`}>
+              <div className={`mt-1 mr-4 transition-colors ${selectedPreset === p.id ? 'text-[#d4a373]' : 'text-white/20'}`}>
                 {p.icon}
               </div>
               <div className="flex-1">
-                <span className={`block text-lg font-medium mb-1 ${selectedPreset === p.id ? 'text-white' : 'text-zinc-300'}`}>
+                <span className={`block text-lg font-medium mb-1 tracking-wide transition-colors ${selectedPreset === p.id ? 'text-white' : 'text-zinc-400'}`}>
                   {p.title}
                 </span>
                 <span className="block text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
@@ -209,16 +211,16 @@ export default function NovaSessaoPage() {
 
         {/* Custom Settings Drawer/Section */}
         {showAdvanced && (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-6 pt-4 border-t border-[var(--color-border)]">
-            <h3 className="text-sm font-medium text-[var(--color-copper)] uppercase tracking-widest text-center mb-6">Ajustes Finos</h3>
+          <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-6 pt-4 border-t border-white/5 mt-4">
+            <h3 className="text-xs font-medium text-[#d4a373] uppercase tracking-widest text-center mb-6">Ajustes Finos</h3>
             
             {/* Modo */}
-            <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)] shadow-sm">
-              <label className="block text-sm font-medium mb-3 text-[var(--color-text-primary)]">Base da Sessão</label>
+            <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
+              <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Base da Sessão</label>
               <select 
                 value={mode} 
                 onChange={e => setMode(e.target.value)}
-                className="w-full bg-[var(--color-background-primary)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[var(--color-copper)] appearance-none"
+                className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
               >
                 <option value="PADRAO">Jornada Padrão</option>
                 <option value="COM_PREFERENCIAS">Com Preferências Focadas</option>
@@ -228,12 +230,12 @@ export default function NovaSessaoPage() {
 
             {/* Duração e Intensidade */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)]">
-                <label className="block text-sm font-medium mb-3 text-[var(--color-text-primary)]">Duração</label>
+              <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Duração</label>
                 <select 
                   value={length} 
                   onChange={e => setLength(e.target.value)}
-                  className="w-full bg-[var(--color-background-primary)] border border-[var(--color-border)] rounded-xl px-3 py-3 text-sm text-white outline-none focus:border-[var(--color-copper)] appearance-none"
+                  className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-3 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
                 >
                   <option value="CURTA">Curta</option>
                   <option value="MEDIA">Média</option>
@@ -241,17 +243,17 @@ export default function NovaSessaoPage() {
                 </select>
               </div>
 
-              <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-border)]">
-                <label className="block text-sm font-medium mb-3 text-[var(--color-text-primary)]">Teto Máximo</label>
+              <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Teto Máximo</label>
                 <select 
                   value={maxIntensity} 
                   onChange={e => setMaxIntensity(e.target.value)}
-                  className="w-full bg-[var(--color-background-primary)] border border-[var(--color-border)] rounded-xl px-3 py-3 text-sm text-white outline-none focus:border-[var(--color-copper)] appearance-none"
+                  className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-3 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
                 >
-                  <option value="LEVE">Leve 🔥</option>
-                  <option value="QUENTE">Quente 🔥🔥</option>
-                  <option value="INTENSO">Intenso 🔥🔥🔥</option>
-                  <option value="PICO">Pico 🔥🔥🔥🔥</option>
+                  <option value="LEVE">Leve</option>
+                  <option value="QUENTE">Quente</option>
+                  <option value="INTENSO">Intenso</option>
+                  <option value="PICO">Pico</option>
                 </select>
               </div>
             </div>

@@ -281,13 +281,13 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                 className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl border border-white/10`}
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                 <span className="text-lg opacity-80 mb-4 tracking-widest uppercase font-medium">
-                   {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-xl">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
+                 <span className="text-xs opacity-60 mb-6 tracking-widest uppercase font-medium">
+                   {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-base">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
                  </span>
-                 <p className="text-2xl font-light leading-snug drop-shadow-md">
+                 <p className="text-3xl font-serif italic text-[#d4a373] leading-snug drop-shadow-md">
                    {meta.front_text || "O clima vai subir."}
                  </p>
-                 <p className="absolute bottom-8 text-sm opacity-50 uppercase tracking-widest animate-pulse">Toque para virar</p>
+                 <p className="absolute bottom-8 text-[10px] opacity-40 uppercase tracking-[0.2em] animate-pulse">Toque para virar</p>
               </div>
 
               {/* BACK (Verso) */}
@@ -298,7 +298,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
                  
                  <div className="flex items-center justify-between mb-8 z-10">
-                   <span className="text-sm font-medium uppercase tracking-widest opacity-80">
+                   <span className="text-xs font-medium uppercase tracking-widest opacity-60">
                      {CATEGORY_NAMES[card.category] || card.category}
                    </span>
                    <span className="text-base" title={card.intensity}>
@@ -307,12 +307,12 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                  </div>
 
                  <div className="flex-1 flex flex-col justify-center z-10">
-                   <h2 className="text-2xl md:text-3xl font-medium mb-4 leading-snug drop-shadow-md">
+                   <h2 className="text-3xl md:text-4xl font-serif italic text-[#d4a373] mb-6 leading-snug drop-shadow-md">
                      {card.title}
                    </h2>
                    
                    {card.session_quick_tip && (
-                     <div className="mb-4 bg-black/20 border border-white/10 p-3 rounded-xl text-sm italic text-white/90">
+                     <div className="mb-6 bg-black/20 border border-white/5 p-4 rounded-xl text-sm font-light italic text-white/70">
                        💡 {card.session_quick_tip}
                      </div>
                    )}
@@ -361,44 +361,44 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Actions (Floating bottom) */}
-      <div className="flex justify-center items-center gap-4 pt-10 pb-6 relative z-20">
+      <div className="flex justify-center items-center gap-6 pt-10 pb-6 relative z-20 max-w-sm mx-auto">
         {card.is_invertible && session.inversions_used < 2 && (
           <button
             onClick={() => fetchNext("INVERT")}
             disabled={loading || !isFlipped}
-            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-colors border backdrop-blur-md ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"}`}
             title={`Inverter (${2 - session.inversions_used} restantes)`}
           >
-            <Repeat className="w-5 h-5 text-[var(--color-copper)]" />
+            <Repeat className="w-5 h-5 text-[#d4a373]" />
           </button>
         )}
 
         <button
           onClick={() => setShowAbortConfirm(true)}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-white/5 hover:bg-[var(--color-red-deep)] hover:border-transparent transition-colors border border-white/10 backdrop-blur-md"
+          className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-transparent hover:bg-white/5 transition-colors"
           title="Encerrar por aqui"
         >
-          <X className="w-5 h-5 text-white/70" />
+          <X className="w-6 h-6 text-white/40 hover:text-white/70" />
         </button>
 
         {session.skips_used < 2 && (
           <button
             onClick={() => fetchNext("SKIP")}
             disabled={loading || !isFlipped}
-            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-colors border backdrop-blur-md ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
+            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"}`}
             title={`Pular (${2 - session.skips_used} restantes)`}
           >
-            <SkipForward className="w-5 h-5 text-white/70" />
+            <SkipForward className="w-5 h-5 text-white/60" />
           </button>
         )}
 
         <button
           onClick={() => fetchNext("NEXT")}
           disabled={loading || !isFlipped}
-          className={`flex flex-col items-center justify-center w-20 h-20 rounded-full transition-transform ${isFlipped ? "bg-gradient-to-br from-[var(--color-wine)] to-[var(--color-red-deep)] hover:scale-105 shadow-[0_0_30px_rgba(153,27,27,0.4)]" : "bg-white/10 opacity-50 cursor-not-allowed"}`}
+          className={`flex flex-col items-center justify-center w-[4.5rem] h-[4.5rem] rounded-full transition-all border ${isFlipped ? "bg-[#B9825A] hover:brightness-110 border-transparent shadow-[0_0_30px_rgba(185,130,90,0.3)] hover:scale-105" : "bg-white/5 opacity-50 cursor-not-allowed border-white/5"}`}
           title="Próxima carta"
         >
-          <Check className="w-8 h-8 text-white" />
+          <Check className="w-7 h-7 text-white" />
         </button>
       </div>
 
