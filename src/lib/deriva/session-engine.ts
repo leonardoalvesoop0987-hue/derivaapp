@@ -286,6 +286,54 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
   const shownCardIds: string[] = [...(input.shownCardIds || [])];
   const sequenceSoFar: Card[] = [];
 
+  if (input.mode === "NOITE_ESPECIAL") {
+    const especialKeys = [
+      "deriva-v2-card-001",
+      "deriva-v2-card-003",
+      "deriva-v2-card-004",
+      "deriva-v2-card-009",
+      "deriva-v2-card-012",
+      "deriva-v2-card-015",
+      "deriva-v2-card-019",
+      "deriva-v2-card-023",
+      "deriva-v2-card-035",
+      "deriva-v2-card-040",
+      "deriva-v2-card-046",
+      "deriva-v2-card-047"
+    ];
+
+    if (input.targetCardCount > 1) {
+      const cards = await prisma.card.findMany({ where: { system_key: { in: especialKeys } } });
+      const cardMap = new Map(cards.map(c => [c.system_key, c]));
+      for (let pos = 0; pos < Math.min(input.targetCardCount, especialKeys.length); pos++) {
+        const key = especialKeys[pos];
+        const card = cardMap.get(key);
+        if (!card) continue;
+        const metadata = buildCardMetadata(card, input.sessionFocus) as Record<string, unknown>;
+        metadata.intended_stage = getExpectedStages(pos, input.targetCardCount)[0];
+        if (card.session_short_text) {
+          metadata.rendered_short_text = applyPronounRegex(card.session_short_text, metadata.current_receiver as string);
+        }
+        sequence.push({ card_id: card.id, random_option_id: null, position: pos, metadata_json: JSON.stringify(metadata) });
+      }
+      return sequence;
+    } else {
+      const cards = await prisma.card.findMany({ where: { system_key: { in: especialKeys } } });
+      const availableCards = especialKeys.map(k => cards.find(c => c?.system_key === k)).filter(c => c && !input.shownCardIds.includes(c.id));
+      const card = availableCards[0] || cards[cards.length - 1];
+      
+      if (card) {
+        const metadata = buildCardMetadata(card, input.sessionFocus) as Record<string, unknown>;
+        metadata.intended_stage = getExpectedStages(input.currentPosition, 12)[0];
+        if (card.session_short_text) {
+          metadata.rendered_short_text = applyPronounRegex(card.session_short_text, metadata.current_receiver as string);
+        }
+        sequence.push({ card_id: card.id, random_option_id: null, position: input.currentPosition, metadata_json: JSON.stringify(metadata) });
+      }
+      return sequence;
+    }
+  }
+
   // Fetch decay history if not provided
   if (!input.decayMap) {
     const lastShownRecords = await prisma.sessionCard.groupBy({

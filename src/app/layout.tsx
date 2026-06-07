@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     title: "Deriva",
   },
   icons: {
-    apple: "/icon-192x192.png",
-    icon: "/icon-192x192.png",
+    apple: "/iconederiva.jpg",
+    icon: "/iconederiva.jpg",
   },
 };
 
@@ -46,7 +46,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/iconederiva.jpg" />
       </head>
       <body className="min-h-[100dvh] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] antialiased overflow-x-hidden selection:bg-[var(--color-wine)] selection:text-white pb-[env(safe-area-inset-bottom)]">
         <GrainOverlay />
