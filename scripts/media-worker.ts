@@ -163,7 +163,10 @@ async function processVideo(asset: unknown) {
     console.error(`Error processing ${asset.id}:`, error);
     await prisma.mediaAsset.update({
       where: { id: asset.id },
-      data: { processing_status: "ERROR" }
+      data: { 
+        processing_status: "ERROR",
+        processing_error: error instanceof Error ? error.message : String(error)
+      }
     });
   } finally {
     // Cleanup

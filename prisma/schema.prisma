@@ -416,6 +416,7 @@ model MediaAsset {
   visual_tags       String[]
   music_mood        MusicMood?
   processing_status MediaProcessingStatus @default(READY)
+  processing_error  String?
   storage_key       String
   hls_master_key    String?
   thumbnail_key     String?

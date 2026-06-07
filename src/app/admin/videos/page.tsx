@@ -12,6 +12,7 @@ export interface MediaAsset {
   content_type: string | null;
   visual_tags: string[];
   processing_status: string;
+  processing_error: string | null;
   is_active: boolean;
   size_bytes: number;
   duration_seconds: number | null;
@@ -153,6 +154,17 @@ export default function AdminVideosPage() {
     }
   };
 
+  const reprocessAsset = async (asset: MediaAsset) => {
+    const res = await fetch(`/api/admin/media/${asset.id}/reprocess`, {
+      method: "POST"
+    });
+    if (res.ok) {
+      load();
+    } else {
+      alert("Erro ao enviar para reprocessamento.");
+    }
+  };
+
   const openEdit = (asset: MediaAsset) => {
     setForm({
       internal_label: asset.internal_label || "",
@@ -228,8 +240,16 @@ export default function AdminVideosPage() {
                 </div>
                 <div className="text-sm font-medium truncate">{asset.internal_label}</div>
                 <div className="text-xs text-[var(--color-text-secondary)]">{(asset.size_bytes / 1024 / 1024).toFixed(1)} MB {asset.duration_seconds ? `· ${asset.duration_seconds}s` : ""}</div>
+                {asset.processing_status === 'ERROR' && (
+                  <div className="text-xs text-red-400 mt-1 line-clamp-2">
+                    Erro: {asset.processing_error || "Falha desconhecida no processamento"}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                {asset.processing_status === 'ERROR' && (
+                  <button onClick={() => reprocessAsset(asset)} className="text-[10px] px-2 py-1 bg-red-900/40 text-red-300 hover:bg-red-800/60 rounded-md transition-colors" title="Reprocessar vídeo">Reprocessar</button>
+                )}
                 <button onClick={() => openEdit(asset)} className="p-2 hover:bg-[var(--color-background-secondary)] rounded-lg text-[var(--color-text-secondary)] hover:text-white transition-colors" title="Editar Metadados"><Edit2 size={16} /></button>
                 <button onClick={() => toggleActive(asset)} className={`p-2 rounded-lg transition-colors ${asset.is_active ? "hover:bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)] hover:text-red-400" : "hover:bg-green-900/30 text-red-400 hover:text-green-400"}`} title={asset.is_active ? "Desativar" : "Reativar"}>{asset.is_active ? <EyeOff size={16} /> : <PlayCircle size={16} />}</button>
                 <button onClick={() => deleteAsset(asset)} className="p-2 hover:bg-red-900/30 rounded-lg text-[var(--color-text-secondary)] hover:text-red-400 transition-colors" title="Deletar"><Trash2 size={16} /></button>
@@ -260,7 +280,12 @@ export default function AdminVideosPage() {
                   {asset.visual_tags?.map(t => <span key={t} className="text-[9px] bg-blue-900/30 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded">{t}</span>)}
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)] mt-auto">
-                  <button onClick={() => openEdit(asset)} className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1"><Edit2 size={12} /> Editar</button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => openEdit(asset)} className="text-xs text-[var(--color-text-secondary)] hover:text-white flex items-center gap-1"><Edit2 size={12} /> Editar</button>
+                    {asset.processing_status === 'ERROR' && (
+                      <button onClick={() => reprocessAsset(asset)} className="text-[10px] px-1.5 py-0.5 bg-red-900/40 text-red-300 hover:bg-red-800/60 rounded-md transition-colors" title="Reprocessar">↻ Reprocessar</button>
+                    )}
+                  </div>
                   <button onClick={() => deleteAsset(asset)} className="text-xs text-red-400/70 hover:text-red-400"><Trash2 size={14} /></button>
                 </div>
               </div>
