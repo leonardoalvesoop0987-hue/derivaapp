@@ -135,7 +135,7 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error("[Session Create Error]:", error);
 
-    const err = error as any;
+    const err = error as { code?: string };
     // Identificar erro de constraint (P2003 = foreign key falhou, ex: usuário inválido)
     if (err?.code === 'P2003') {
       return NextResponse.json({ error: "Usuário inválido ou sessão expirada. Por favor, faça login novamente." }, { status: 401 });
