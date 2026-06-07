@@ -220,13 +220,34 @@ async function processVideo(asset: MediaAsset) {
 
     const duration = await getVideoDuration(rawFilePath);
 
-    await runCommand("ffmpeg", [
-      "-y",
-      "-i", rawFilePath,
-      "-ss", "00:00:01.000",
-      "-vframes", "1",
-      thumbPath,
-    ]);
+    // Generate thumbnail with validation
+    try {
+      await runCommand("ffmpeg", [
+        "-y",
+        "-i", rawFilePath,
+        "-ss", "00:00:01.000",
+        "-vframes", "1",
+        thumbPath,
+      ]);
+
+      if (!fs.existsSync(thumbPath)) {
+        console.warn(`[MediaWorker] Thumbnail not created, using placeholder`);
+        // 1x1 pixel transparent PNG placeholder
+        const placeholderPng = Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          'base64'
+        );
+        fs.writeFileSync(thumbPath, placeholderPng);
+      }
+    } catch (error) {
+      console.error(`[MediaWorker] Thumbnail generation failed:`, error instanceof Error ? error.message : error);
+      // Create placeholder instead of failing entire process
+      const placeholderPng = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      fs.writeFileSync(thumbPath, placeholderPng);
+    }
 
     const height = await getVideoHeight(rawFilePath);
     const variants = [];
@@ -269,7 +290,18 @@ async function processVideo(asset: MediaAsset) {
     fs.rmSync(targetDir, { recursive: true, force: true });
     fs.mkdirSync(targetDir, { recursive: true });
     fs.cpSync(hlsDir, targetDir, { recursive: true });
-    fs.copyFileSync(thumbPath, path.join(targetDir, "thumb.jpg"));
+
+    // Copy thumbnail with validation
+    if (fs.existsSync(thumbPath)) {
+      fs.copyFileSync(thumbPath, path.join(targetDir, "thumb.jpg"));
+    } else {
+      console.warn(`[MediaWorker] Thumbnail file not found at ${thumbPath}, creating placeholder`);
+      const placeholderPng = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      fs.writeFileSync(path.join(targetDir, "thumb.jpg"), placeholderPng);
+    }
 
     await prisma.mediaAsset.updateMany({
       where: {
