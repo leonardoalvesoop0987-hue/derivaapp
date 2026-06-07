@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Pause, Play, SkipForward, Music } from "lucide-react";
+import { Pause, Play, SkipForward, Music, AlertCircle } from "lucide-react";
 
 interface MediaAsset {
   id: string;
@@ -13,72 +13,96 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [asset, setAsset] = useState<MediaAsset | null>(null);
-  const [blocked, setBlocked] = useState(false);
+  const [error, setError] = useState(false);
 
   const fetchAndPlay = useCallback(async (excludeId?: string) => {
     try {
+      setError(false);
       const url = excludeId
         ? `/api/media?type=MUSIC&exclude=${excludeId}`
         : `/api/media?type=MUSIC`;
+
       const res = await fetch(url);
       const data: { asset: MediaAsset | null } = await res.json();
-      if (!data.asset) return;
+
+      if (!data.asset) {
+        console.warn("[AudioPlayer] Nenhuma música disponível");
+        return;
+      }
 
       setAsset(data.asset);
       let src = data.asset.public_url || `/uploads/${data.asset.storage_key}`;
-      
-      // Fetch signed URL se existir endpoint configurado
+
+      // Fetch signed URL
       try {
         const urlRes = await fetch(`/api/media/${data.asset.id}/url`);
         if (urlRes.ok) {
           const urlData = await urlRes.json();
-          if (urlData.url) src = urlData.url;
+          if (urlData.url) {
+            src = urlData.url;
+            console.log("[AudioPlayer] Usando URL assinada");
+          }
         }
-      } catch {
-        // Fallback para original
+      } catch (err) {
+        console.warn("[AudioPlayer] Fallback para URL direta", err);
       }
 
+      // Enviar src para o elemento <audio> do DOM
       if (audioRef.current) {
         audioRef.current.src = src;
+        console.log("[AudioPlayer] Iniciando reprodução:", src);
+
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
               setPlaying(true);
-              setBlocked(false);
+              setError(false);
+              console.log("[AudioPlayer] Reproduzindo");
             })
-            .catch(() => {
-              setBlocked(true);
+            .catch((err) => {
+              console.error("[AudioPlayer] Erro ao reproduzir:", err);
+              setError(true);
               setPlaying(false);
             });
         }
       }
-    } catch {
-      // Silently handle - sessão não quebra por música
+    } catch (err) {
+      console.error("[AudioPlayer] Erro ao buscar música:", err);
+      setError(true);
     }
   }, []);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const audio = new Audio();
-    audioRef.current = audio;
+    // Garantir que existe um elemento <audio> no DOM
+    if (!audioRef.current) {
+      console.warn("[AudioPlayer] Ref não inicializada!");
+      return;
+    }
 
-    // Note: setVisible was removed - component is always rendered when enabled=true
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchAndPlay().catch(() => {});
+    console.log("[AudioPlayer] Inicializando com enabled=true");
+    fetchAndPlay().catch((err) => console.error("[AudioPlayer] Init error:", err));
 
     return () => {
-      audio.pause();
-      audio.src = "";
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
     };
   }, [enabled, fetchAndPlay]);
 
-  // Register onended after asset changes
+  // Quando a música termina, pegar próxima
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !asset) return;
-    const handleEnded = () => fetchAndPlay(asset.id).catch(() => {});
+
+    const handleEnded = () => {
+      console.log("[AudioPlayer] Música terminou, pulando para próxima");
+      fetchAndPlay(asset.id).catch((err) => console.error("[AudioPlayer] Skip error:", err));
+    };
+
     audio.addEventListener("ended", handleEnded);
     return () => audio.removeEventListener("ended", handleEnded);
   }, [asset, fetchAndPlay]);
@@ -86,7 +110,11 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
   if (!enabled) return null;
 
   function togglePlay() {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      console.warn("[AudioPlayer] Ref não disponível");
+      return;
+    }
+
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
@@ -95,48 +123,64 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
         .play()
         .then(() => {
           setPlaying(true);
-          setBlocked(false);
+          setError(false);
         })
-        .catch(() => setBlocked(true));
+        .catch((err) => {
+          console.error("[AudioPlayer] Erro ao reproduzir:", err);
+          setError(true);
+        });
     }
   }
 
   function skipMusic() {
     if (audioRef.current) audioRef.current.pause();
     setPlaying(false);
-    fetchAndPlay(asset?.id).catch(() => {});
+    fetchAndPlay(asset?.id).catch((err) => console.error("[AudioPlayer] Skip error:", err));
   }
 
   return (
-    <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] right-4 z-20 flex items-center gap-2 bg-[var(--color-background-secondary)]/90 backdrop-blur-sm px-3 py-2 rounded-full border border-[var(--color-border)] shadow-lg">
-      <Music className="w-3.5 h-3.5 text-[var(--color-copper)]" />
-      {blocked ? (
-        <button
-          onClick={togglePlay}
-          className="text-xs text-[var(--color-copper)] hover:underline"
-        >
-          Tocar música
-        </button>
-      ) : (
-        <>
+    <>
+      {/* Elemento <audio> anexado ao DOM */}
+      <audio ref={audioRef} crossOrigin="anonymous" />
+
+      {/* Controles da música */}
+      <div className="flex items-center gap-2 bg-[var(--color-background-secondary)]/90 backdrop-blur-sm px-3 py-2 rounded-full border border-[var(--color-border)] shadow-lg">
+        <Music className="w-3.5 h-3.5 text-[var(--color-copper)]" />
+
+        {error ? (
           <button
-            onClick={togglePlay}
-            className="text-[var(--color-text-secondary)] hover:text-white transition-colors"
+            onClick={() => fetchAndPlay()}
+            className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
+            title="Erro ao carregar música. Clique para tentar novamente."
           >
-            {playing ? (
-              <Pause className="w-3.5 h-3.5" />
-            ) : (
-              <Play className="w-3.5 h-3.5" />
-            )}
+            <AlertCircle className="w-3 h-3" />
+            Erro
           </button>
-          <button
-            onClick={skipMusic}
-            className="text-[var(--color-text-secondary)] hover:text-white transition-colors"
-          >
-            <SkipForward className="w-3.5 h-3.5" />
-          </button>
-        </>
-      )}
-    </div>
+        ) : !asset ? (
+          <span className="text-xs text-white/50 animate-pulse">Carregando...</span>
+        ) : (
+          <>
+            <button
+              onClick={togglePlay}
+              className="text-[var(--color-text-secondary)] hover:text-white transition-colors"
+              title={playing ? "Pausar" : "Reproduzir"}
+            >
+              {playing ? (
+                <Pause className="w-3.5 h-3.5" />
+              ) : (
+                <Play className="w-3.5 h-3.5" />
+              )}
+            </button>
+            <button
+              onClick={skipMusic}
+              className="text-[var(--color-text-secondary)] hover:text-white transition-colors"
+              title="Próxima música"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+            </button>
+          </>
+        )}
+      </div>
+    </>
   );
 }
