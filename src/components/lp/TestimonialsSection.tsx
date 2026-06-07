@@ -7,34 +7,34 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
-    text: "No começo fiquei um pouco tímida, achei que ia travar. Mas a primeira carta não cobrou nada. Só me colocou no clima e foi muito mais quente do que eu esperava.",
-    author: "Camila",
-    location: "Recife/PE, 2024"
+    text: "Eu era BEM tímida. A primeira carta deixou meu rosto vermelho, sério. Achei que ia ficar constrangida a noite toda. Mas a pausa entre elas, o ritmo... eu consegui respirar, me acalmar e entrar no jogo sem pressão. Quando cheguei numa carta mais pesada, meu corpo já estava quente e eu confortável. Meu marido notou uma mudança em mim que ele não via há anos.",
+    author: "Mariana",
+    location: "São Paulo/SP, 2024"
   },
   {
-    text: "A noite ficou com outro clima. Me senti muito mais no centro de tudo, e ele entrou no jogo de um jeito que eu adorei. Safadeza com elegância.",
-    author: "Renata",
-    location: "Curitiba/PR, 2025"
-  },
-  {
-    text: "Nós já estávamos super bem, mas ficou diferente. Ter uma provocação guiada sem saber o que vem a seguir dá um frio na barriga incrível.",
-    author: "Marina",
+    text: "Confessei pro meu marido: 'Essas cartas vermelhas são pesadas demais'. Ele quis parar. Mas ela falou pra gente que dava pra pular ou diminuir a intensidade quando quisesse. Aí mudou TUDO. Porque aí eu entendi que eu tava no controle. Não era para agradar ninguém. Era pro meu prazer. Pela primeira vez em anos de casamento, fui eu quem quis mais, sabe?",
+    author: "Fernanda",
     location: "Belo Horizonte/MG, 2025"
   },
   {
-    text: "Sempre deixei ele conduzir mais. Quando li a minha primeira carta vermelha em voz alta para ele, me senti poderosa, sabe? Mudou a dinâmica pra melhor.",
-    author: "Beatriz",
+    text: "Acordei pro meu marido: 'Não aguento mais a rotina, acho que a gente perdeu a faísca'. Ele sugeriu fazer isso com o aplicativo e eu pensei 'só mais uma coisa forçada que ele quer fazer comigo'. Comecei constrangida, vermelha de vergonha. Mas essa mulher no áudio tem uma voz tão segura que você acredita que tudo é normal. E é. A semana inteira depois, ele procurava meu olhar diferente, mais atento. E eu também.",
+    author: "Ana Carolina",
+    location: "Brasília/DF, 2024"
+  },
+  {
+    text: "Meu marido sugeriu, eu recusava. Achava que era coisa de pornô, sabe? Que ia ser meio grotesco. Quando entrei e vi a primeira carta falando sobre 'deixar seu corpo acordar devagar', entendi que era diferente. Que alguém que entendia de mulher tinha desenhado aquilo. Fiz. E foi um alívio, tipo 'finalmente posso explorar isso sem parecer uma pessoa ruim'. Meu marido nunca me viu tão presente.",
+    author: "Isabella",
     location: "Rio de Janeiro/RJ, 2024"
   },
   {
-    text: "Jogamos num final de semana. Desligamos as notificações, abrimos um vinho e o app fez o resto. Foi a nossa noite mais quente do ano, sem dúvida.",
-    author: "Larissa",
-    location: "Brasília/DF, 2025"
+    text: "Tinha certeza que ia ficar vermelha a noite toda de vergonha. Ficou? Sim. Mas era aquele tipo de vergonha que esquenta, sabe? Tipo, por volta da carta 15, 16, eu não conseguia nem olhar pro meu marido de tanta adrenalina. Passei de 'por que isso existe' para 'por que demorou tanto para fazer isso'. Casamento novo.",
+    author: "Sophia",
+    location: "Curitiba/PR, 2025"
   },
   {
-    text: "Eu achava que ia ser só um jogo de perguntas. Mas a música, as pausas... é tudo muito elegante. Não força a barra, só te puxa pro momento de verdade.",
-    author: "Patrícia",
-    location: "Salvador/BA, 2026"
+    text: "Sempre fomos bem tradicionais, e eu sentia que com o tempo a gente estava muito na mesmice. Eu nunca teria coragem de 'pedir algo diferente'. Mas com as cartas como mediador, ficou fácil. Tipo, é a carta pedindo, não é você pedindo. Isso tirou uma pressão que eu não sabia que tinha. Agora a gente fala sobre coisas que antes ficavam guardadas.",
+    author: "Patricia",
+    location: "Salvador/BA, 2024"
   }
 ];
 

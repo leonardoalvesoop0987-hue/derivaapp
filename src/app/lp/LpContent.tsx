@@ -22,6 +22,9 @@ import { OfferSection } from "@/components/lp/OfferSection";
 import { LpFooter } from "@/components/lp/LpFooter";
 import { FounderAuthoritySection } from "@/components/lp/FounderAuthoritySection";
 import { PurchaseLeadModal } from "@/components/lp/PurchaseLeadModal";
+import { FearIsNormalSection } from "@/components/lp/FearIsNormalSection";
+import { VideosForYouSection } from "@/components/lp/VideosForYouSection";
+import { MusicAndProofSection } from "@/components/lp/MusicAndProofSection";
 
 export function LpContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,6 +44,7 @@ export function LpContent() {
       <InteractiveSampleCardSection />
       <WhyItWorksSection />
       <ForHerForHimSection />
+      <FearIsNormalSection />
       <AppAndPhysicalSection onBuyClick={handleBuyClick} isLoading={false} />
       <DeckStructureSection />
       <GuidedSessionHighlightsSection />
@@ -48,9 +52,11 @@ export function LpContent() {
       <SmartRandomSection />
       <IdealMomentsSection />
       <MediaAndMusicSection />
+      <VideosForYouSection />
       <RelationshipSection />
       <FounderAuthoritySection />
       <TestimonialsSection />
+      <MusicAndProofSection />
       <FaqSection />
       <AtmosphericClosingSection />
       <OfferSection onBuyClick={handleBuyClick} isLoading={false} />

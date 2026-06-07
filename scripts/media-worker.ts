@@ -259,12 +259,18 @@ async function processVideo(asset: MediaAsset) {
     variants.forEach(v => fs.mkdirSync(path.join(hlsDir, v.name), { recursive: true }));
 
     const filterComplex = variants.map((v, i) => `[0:v]scale=-2:${v.height}[v${i}]`).join(";");
-    const args = ["-y", "-i", rawFilePath, "-filter_complex", filterComplex];
+    const args = [
+      "-y",
+      "-i", rawFilePath,
+      "-filter_complex", filterComplex,
+      "-threads", "1", // Optimize for single-core systems
+    ];
     variants.forEach((v, i) => {
       args.push(
         "-map", `[v${i}]`,
         "-map", "0:a?",
         `-c:v:${i}`, "libx264",
+        `-preset:v:${i}`, "ultrafast", // Maximum speed for 1-core CPUs (tradeoff: quality)
         `-b:v:${i}`, v.bitrate,
         `-c:a:${i}`, "aac",
         `-b:a:${i}`, "128k",
@@ -280,7 +286,7 @@ async function processVideo(asset: MediaAsset) {
       path.join(hlsDir, "%v", "index.m3u8"),
     );
 
-    console.log(`[MediaWorker] Encoding HLS (${variants.length} variants): ${variants.map(v => v.name).join(", ")}`);
+    console.log(`[MediaWorker] Encoding HLS (${variants.length} variants): ${variants.map(v => v.name).join(", ")} [ultrafast preset for single-core]`);
     const encodeStart = Date.now();
     await runCommand("ffmpeg", args);
     console.log(`[MediaWorker] Encoding complete in ${((Date.now() - encodeStart) / 1000).toFixed(1)}s`);
