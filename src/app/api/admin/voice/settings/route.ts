@@ -10,7 +10,11 @@ export async function GET() {
 
   try {
     const settings = await getVoiceSettings();
-    return NextResponse.json(settings);
+    const maskedSettings = {
+      ...settings,
+      apiKey: settings.apiKey ? "••••••••••••••••••••" : ""
+    };
+    return NextResponse.json(maskedSettings);
   } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -52,7 +56,7 @@ export async function PATCH(req: Request) {
     await upsertSetting("VOICE_PLAYBACK_MODE", playbackMode);
     await upsertSetting("VOICE_ELEVENLABS_VOICE_ID", voiceId);
     
-    if (apiKey) {
+    if (apiKey && apiKey !== "••••••••••••••••••••") {
       await upsertSetting("VOICE_ELEVENLABS_API_KEY", apiKey, true);
     }
 
