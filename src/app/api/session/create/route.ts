@@ -98,7 +98,9 @@ export async function POST(req: Request) {
       preferencesJson: session.preferences_json,
       temperature,
       categoryBias: actualCategoryBias,
-      disableDarkPenalty
+      disableDarkPenalty,
+      currentPosition: 0,
+      shownCardIds: []
     });
 
     if (!sequence || sequence.length === 0) {
