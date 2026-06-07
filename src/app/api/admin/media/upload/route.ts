@@ -42,18 +42,13 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
       const storageKey = `${Date.now()}_${crypto.randomUUID()}_${sanitizedName}`;
-      let publicUrl: string | null = null;
-      let bucket: string | null = null;
+      // LOCAL STORAGE: Always save locally for faster uploads and processing
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+      await writeFile(path.join(uploadDir, storageKey), buffer);
 
-      if (r2Client) {
-        bucket = type === "MUSIC" ? MUSICS_BUCKET : VIDEOS_BUCKET;
-        await uploadToR2(buffer, bucket, storageKey, file.type);
-      } else {
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
-        await mkdir(uploadDir, { recursive: true });
-        await writeFile(path.join(uploadDir, storageKey), buffer);
-        publicUrl = `/uploads/${storageKey}`;
-      }
+      const publicUrl = `/uploads/${storageKey}`;
+      const bucket: string | null = null; // Not using R2
 
       const asset = await prisma.mediaAsset.create({
         data: {

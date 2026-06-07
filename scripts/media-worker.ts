@@ -211,15 +211,12 @@ async function processVideo(asset: MediaAsset) {
   try {
     fs.mkdirSync(hlsDir, { recursive: true });
 
-    if (asset.bucket && r2Client) {
-      await downloadFromR2(asset.bucket, asset.storage_key, rawFilePath);
-    } else {
-      const localPath = path.join(process.cwd(), "public", "uploads", asset.storage_key);
-      if (!fs.existsSync(localPath)) {
-        throw new Error(`Arquivo original nÃ£o encontrado: ${localPath}`);
-      }
-      fs.copyFileSync(localPath, rawFilePath);
+    // LOCAL STORAGE: Skip R2, load from local disk (much faster)
+    const localPath = path.join(process.cwd(), "public", "uploads", asset.storage_key);
+    if (!fs.existsSync(localPath)) {
+      throw new Error(`Original file not found: ${localPath}`);
     }
+    fs.copyFileSync(localPath, rawFilePath);
 
     const duration = await getVideoDuration(rawFilePath);
 
@@ -267,16 +264,12 @@ async function processVideo(asset: MediaAsset) {
     await runCommand("ffmpeg", args);
     console.log(`[MediaWorker] Encoding complete in ${((Date.now() - encodeStart) / 1000).toFixed(1)}s`);
 
-    if (r2Client) {
-      await uploadDirToR2(hlsDir, VIDEOS_BUCKET, baseKey);
-      await uploadFileToR2(thumbPath, VIDEOS_BUCKET, `${baseKey}/thumb.jpg`, "image/jpeg");
-    } else {
-      const targetDir = path.join(process.cwd(), "public", "uploads", baseKey);
-      fs.rmSync(targetDir, { recursive: true, force: true });
-      fs.mkdirSync(targetDir, { recursive: true });
-      fs.cpSync(hlsDir, targetDir, { recursive: true });
-      fs.copyFileSync(thumbPath, path.join(targetDir, "thumb.jpg"));
-    }
+    // LOCAL STORAGE: Save HLS output locally (skip R2 upload for speed)
+    const targetDir = path.join(process.cwd(), "public", "uploads", baseKey);
+    fs.rmSync(targetDir, { recursive: true, force: true });
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.cpSync(hlsDir, targetDir, { recursive: true });
+    fs.copyFileSync(thumbPath, path.join(targetDir, "thumb.jpg"));
 
     await prisma.mediaAsset.updateMany({
       where: {
