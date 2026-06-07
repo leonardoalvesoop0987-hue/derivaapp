@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { Settings, LogOut } from "lucide-react";
 import { GrainOverlay } from "@/components/lp/GrainOverlay";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-[var(--color-background-primary)] selection:bg-[var(--color-wine)] selection:text-white">
+      <PWAInstallPrompt />
       {/* Background Atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[var(--color-wine)] opacity-15 blur-[120px] rounded-full mix-blend-screen" />
@@ -47,7 +49,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 w-full z-20 pb-[env(safe-area-inset-bottom)]">
+      <nav className={`fixed bottom-0 w-full z-20 pb-[env(safe-area-inset-bottom)] ${isSession ? 'landscape:hidden' : ''}`}>
         <div className="absolute inset-0 bg-[#0d0806]/80 backdrop-blur-xl border-t border-white/5" />
         <div className="relative flex justify-around items-center px-4 py-4 max-w-md mx-auto">
           <Link href="/app" className="flex flex-col items-center group w-16">

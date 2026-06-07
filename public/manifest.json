@@ -2,6 +2,7 @@
   "name": "Deriva",
   "short_name": "Deriva",
   "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0E0A0A",
   "theme_color": "#0E0A0A",

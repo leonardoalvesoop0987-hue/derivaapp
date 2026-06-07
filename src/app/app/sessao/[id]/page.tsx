@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2, Wind } from "lucide-react";
+import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CardType, SessionCardType, SessionType } from "@/types";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -300,7 +300,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const meta = state.metadata_json ? JSON.parse(state.metadata_json) : {};
 
   return (
-    <div className="flex flex-col min-h-[100dvh] pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+    <div className="flex flex-col min-h-[100dvh] pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] landscape:pt-2 landscape:pb-0 landscape:h-[100dvh] landscape:overflow-hidden">
       
       {/* Abort Modal */}
       <AnimatePresence>
@@ -359,7 +359,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Header */}
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex justify-end items-center mb-6 landscape:mb-2 landscape:absolute landscape:top-4 landscape:right-4 z-30">
         <div className="flex items-center gap-3">
           <span className="text-xs font-medium text-[var(--color-text-secondary)] bg-black/20 px-3 py-1 rounded-full border border-white/5 shadow-inner">
             Carta {session.current_position + 1} de {session.target_card_count}
@@ -368,7 +368,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Card physical container */}
-      <div className="flex-1 flex flex-col justify-center max-w-sm md:max-w-md lg:max-w-xl mx-auto w-full relative perspective-[1000px] my-2">
+      <div className="flex-1 flex flex-col justify-center max-w-sm md:max-w-md lg:max-w-xl mx-auto w-full relative perspective-[1000px] my-2 landscape:max-w-[65vw] landscape:my-0 landscape:h-[65vh] landscape:max-h-[600px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={state.id}
@@ -381,13 +381,13 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             <motion.div
               animate={{ rotateY: isFlipped ? 180 : 0 }}
               transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-              className="w-full relative cursor-pointer grid"
+              className="w-full relative cursor-pointer grid landscape:h-full"
               style={{ transformStyle: 'preserve-3d' }}
               onClick={() => !isFlipped && setIsFlipped(true)}
             >
               {/* FRONT (Capa) */}
               <div 
-                className={`col-start-1 row-start-1 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl shadow-black/50 border border-white/5 relative overflow-hidden min-h-[250px] md:min-h-[300px]`}
+                className={`col-start-1 row-start-1 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl shadow-black/50 border border-white/5 relative overflow-hidden min-h-[250px] md:min-h-[300px] landscape:min-h-0 landscape:h-full`}
                 style={{ backfaceVisibility: 'hidden' }}
               >
                  <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
@@ -402,7 +402,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
               {/* BACK (Verso) */}
               <div 
-                className={`col-start-1 row-start-1 p-6 md:p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 relative min-h-[250px] md:min-h-[300px]`}
+                className={`col-start-1 row-start-1 p-6 md:p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 relative min-h-[250px] md:min-h-[300px] landscape:min-h-0 landscape:h-full overflow-y-auto custom-scrollbar`}
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
                  <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none rounded-[2rem]" />
@@ -504,7 +504,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Actions (Floating bottom) */}
-      <div className="flex justify-center items-end gap-3 md:gap-5 pt-4 pb-6 relative z-20 max-w-sm mx-auto w-full px-2">
+      <div className="flex justify-center items-end gap-3 md:gap-5 pt-4 pb-6 relative z-20 max-w-sm mx-auto w-full px-2 landscape:pt-2 landscape:pb-2">
         
         {card.is_invertible && session.inversions_used < 2 && (
           <div className="flex flex-col items-center gap-1.5 flex-1">
