@@ -201,13 +201,13 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
   if (!input.decayMap) {
     const lastShownRecords = await prisma.sessionCard.groupBy({
       by: ['card_id'],
-      _max: { updated_at: true },
+      _max: { completed_at: true },
       where: {
         status: "COMPLETED",
         session: { user_id: input.userId }
       }
     });
-    input.decayMap = new Map(lastShownRecords.map(r => [r.card_id, r._max.updated_at?.getTime() || 0]));
+    input.decayMap = new Map(lastShownRecords.map(r => [r.card_id, r._max.completed_at?.getTime() || 0]));
   }
 
   for (let pos = 0; pos < input.targetCardCount; pos++) {
