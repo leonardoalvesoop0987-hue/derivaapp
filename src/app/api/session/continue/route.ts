@@ -58,6 +58,7 @@ export async function POST(req: Request) {
         target_card_count: previousSession.target_card_count,
         current_position: 0,
         session_group_id: session_group_id,
+        session_focus: previousSession.session_focus,
         preferences_json: previousSession.preferences_json
       }
     });
@@ -72,7 +73,9 @@ export async function POST(req: Request) {
       maxIntensity: session.max_intensity,
       videosEnabled: session.videos_enabled,
       targetCardCount: session.target_card_count,
+      currentPosition: 0,
       shownCardIds: Array.from(new Set(shownCardIds)), // Pass to engine
+      sessionFocus: session.session_focus,
       preferencesJson: session.preferences_json // Pass custom preferences
     });
 
@@ -81,6 +84,7 @@ export async function POST(req: Request) {
         data: sequence.map((seq, index) => ({
           session_id: session.id,
           card_id: seq.card_id,
+          random_option_id: seq.random_option_id ?? null,
           position: seq.position,
           status: index === 0 ? "SHOWN" : "QUEUED",
           metadata_json: seq.metadata_json,

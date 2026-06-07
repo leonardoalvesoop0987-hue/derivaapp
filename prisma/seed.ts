@@ -1,4 +1,4 @@
-import { PrismaClient, CardCategory, CardIntensity, ReceiverRule } from '@prisma/client';
+import { PrismaClient, CardCategory, CardIntensity, CardTag, EroticFunction, ProgressionRole, ReceiverRule, SessionStage } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { config } from 'dotenv';
@@ -28,7 +28,10 @@ const cards = [
     "stage": "OPENING",
     "erotic_function": "PREPARO",
     "progression_role": "ABRIR",
-    "body": "A sessão começa com uma escolha sorteada:\n\n1. massagem livre no corpo inteiro;\n2. massagem como profissional e cliente;\n3. massagem profissional com pequenos deslizes provocantes.\n\nQuem recebe apenas relaxa e guia o ritmo com poucas palavras."
+    "body": "Começa com uma massagem livre e gostosa no corpo inteiro. Ela só relaxa e guia o ritmo com pouca palavra ou gemido.",
+    "session_short_text": "Faz uma massagem gostosa no corpo inteiro. Ela relaxa e curte.",
+    "random_options_enabled": true,
+    "persist_random_option": true
   },
   {
     "position": 2,
@@ -43,7 +46,10 @@ const cards = [
     "stage": "OPENING",
     "erotic_function": "PREPARO",
     "progression_role": "ABRIR",
-    "body": "Quem conduz deve tocar o corpo inteiro da outra pessoa lentamente, sem ir direto às partes íntimas.\n\nA intenção é acordar o corpo antes de aumentar a intensidade.\n\nTempo sugerido: até 5 minutos."
+    "body": "Toca o corpo inteiro dela bem devagar, sem pressa e sem ir direto pras partes íntimas. Acorda cada pedacinho da pele antes de aumentar a intensidade.",
+    "session_short_text": "Toca o corpo inteiro dela bem devagar, sem pressa nenhuma. Acorda a pele toda.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 3,
@@ -58,7 +64,10 @@ const cards = [
     "stage": "WARMUP",
     "erotic_function": "PROVOCACAO",
     "progression_role": "AQUECER",
-    "body": "Quem recebe escolhe três partes do corpo para receber atenção.\n\nQuem conduz deve alternar mãos, boca e respiração, sem pressa."
+    "body": "Ela escolhe três partes do corpo. Alterna entre mãos, boca e respiração quente, explorando sem pressa cada uma delas.",
+    "session_short_text": "Ela escolhe três partes do corpo. Explora elas com mãos, boca e respiração.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 4,
@@ -73,7 +82,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "Durante esta carta, quem conduz pode beijar, encostar e provocar, mas não pode ir direto para o ato principal.\n\nQuem recebe pode pedir mais intensidade, mas o limite da carta é manter o desejo crescendo.\n\nTempo máximo: 4 minutos."
+    "body": "Beija, encosta e provoca bastante, mas não avança pro ato principal. Deixa o desejo crescer forte.",
+    "session_short_text": "Beija, encosta e provoca bastante, mas não avança pro principal. Deixa a vontade subir.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 5,
@@ -88,7 +100,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "Sorteiem quem será profissional e quem será cliente.\n\nA cena deve começar como uma massagem séria, mas aos poucos o toque passa a ficar mais íntimo e ambíguo.\n\nNada precisa ser exagerado. O clima está no deslize."
+    "body": "Você é o profissional. Começa com uma massagem séria e técnica. Aos poucos deixa o toque ficar mais íntimo, quente e provocante.",
+    "session_short_text": "Começa a massagem bem sério. Deixa o toque escorregar devagar pro íntimo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 6,
@@ -103,7 +118,10 @@ const cards = [
     "stage": "WARMUP",
     "erotic_function": "PREPARO",
     "progression_role": "AQUECER",
-    "body": "Por alguns minutos, ninguém explica nada.\n\nSó toque, respiração, beijo e olhar.\n\nQuem conduz deve perceber o corpo da outra pessoa sem perguntar demais."
+    "body": "Fica em silêncio. Só toca, respira, beija e olha. Percebe o corpo dela com calma e atenção.",
+    "session_short_text": "Silêncio total. Só toque, respiração, beijo e olhar profundo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 7,
@@ -118,7 +136,10 @@ const cards = [
     "stage": "COOLDOWN",
     "erotic_function": "RESPIRO",
     "progression_role": "RESPIRAR",
-    "body": "Pausa breve.\n\nTomem um gole, se aproximem e fiquem alguns segundos apenas se olhando.\n\nDepois, quem quiser pode dizer uma frase curta sobre o que está com vontade de fazer."
+    "body": "Toma um gole, chega bem perto e fica olhando nos olhos por uns segundos. Depois fala o que está com mais vontade agora.",
+    "session_short_text": "Toma um gole, olha bem no fundo dos olhos e fala o que quer fazer.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 8,
@@ -133,7 +154,10 @@ const cards = [
     "stage": "WARMUP",
     "erotic_function": "PREPARO",
     "progression_role": "AQUECER",
-    "body": "Comecem com beijo na boca.\n\nDepois, o beijo deve descer lentamente pelo pescoço, colo, barriga ou costas, sem pressa.\n\nTempo sugerido: até 3 minutos."
+    "body": "Começa beijando na boca e vai descendo bem devagar pelo pescoço, colo, barriga ou costas, sentindo cada reação.",
+    "session_short_text": "Começa com beijo na boca e desce lentamente pelo corpo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 9,
@@ -148,7 +172,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "Cada um deve dizer uma frase curta começando com:\n\n“Agora eu queria…”\n\nNão precisa explicar demais.\n\nA frase deve provocar, não virar conversa longa."
+    "body": "Fala baixinho no ouvido dela: “Agora eu quero...”. Seja direto e safado.",
+    "session_short_text": "Fala bem baixinho no ouvido: “Agora eu quero...”.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 10,
@@ -163,7 +190,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "Quem recebeu a carta escolhe uma regra temporária para a próxima carta:\n\n- sem usar as mãos;\n- sem beijo na boca;\n- sem tirar a roupa que ainda resta;\n- sem tocar nas partes íntimas até o final da próxima carta.\n\nA regra deve provocar, não travar o jogo."
+    "body": "Escolhe uma regra pra próxima carta e sussurra pra ela: sem mãos, sem beijo na boca, sem tirar a roupa que sobrou ou sem tocar nas partes íntimas ainda.",
+    "session_short_text": "Escolhe uma regra provocante pra próxima carta.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 11,
@@ -178,12 +208,15 @@ const cards = [
     "stage": "COOLDOWN",
     "erotic_function": "RESPIRO",
     "progression_role": "RESPIRAR",
-    "body": "Fiquem bem próximos, com o corpo encostado, sem pressa para avançar.\n\nQuem quiser pode guiar a mão da outra pessoa para onde deseja receber carinho."
+    "body": "Fica bem coladinho, corpo com corpo, sem pressa pra avançar. Guia a mão dela pra onde quiser ser tocada.",
+    "session_short_text": "Fica bem grudado, curtindo o corpo encostado sem pressa.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 12,
     "system_key": "deriva-v1-card-012",
-    "title": "O app provocou",
+    "title": "Provocação merecida",
     "category": "DERIVA",
     "intensity": "QUENTE",
     "is_invertible": false,
@@ -193,7 +226,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "Quem pulou alguma carta nesta sessão deve receber uma provocação leve agora.\n\nA outra pessoa escolhe entre:\n\n1. beijo demorado;\n2. toque por cima da roupa;\n3. frase safada no ouvido;\n4. ficar sem tocar por 1 minuto enquanto apenas olha.\n\nSe ninguém pulou carta, sorteiem uma das quatro opções mesmo assim."
+    "body": "Quando alguém pula uma carta, entra uma provocação leve. Se ninguém pulou, a provocação vem só pelo prazer de brincar.",
+    "session_short_text": "Uma provocação leve entra na cena.",
+    "random_options_enabled": true,
+    "persist_random_option": true
   },
   {
     "position": 13,
@@ -208,7 +244,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "A mulher recebe atenção íntima com boca, mãos ou ambos.\n\nEla pode guiar ritmo, pressão e posição, sem precisar justificar.\n\nTempo máximo: 6 minutos."
+    "body": "Dá pra ela o prazer com boca e mãos. Ela guia o ritmo, a pressão e a posição como quiser, sem explicar nada.",
+    "session_short_text": "Dá prazer nela com boca e mãos. Ela guia tudo do jeito que gosta.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 14,
@@ -223,7 +262,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "A mulher escolhe a posição em que quer receber prazer.\n\nQuem conduz deve obedecer ao ritmo dela e só mudar se ela permitir."
+    "body": "Ela escolhe a posição que quer receber prazer e marca o ritmo. Você só obedece e acompanha.",
+    "session_short_text": "Ela escolhe a posição e controla o ritmo inteiro.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 15,
@@ -238,7 +280,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "Quem conduz deve alternar prazer oral e pausas curtas de provocação.\n\nA pausa serve para aumentar a vontade, não para quebrar o clima.\n\nTempo máximo: 5 minutos."
+    "body": "Alterna entre chupar bem gostoso e fazer pausas provocantes. Deixa ela louca de vontade entre uma e outra.",
+    "session_short_text": "Alterna boca intensa com pausas bem safadas.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 16,
@@ -253,7 +298,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_CASAL",
     "progression_role": "SUSTENTAR",
-    "body": "A mulher fica no controle do ritmo.\n\nPode usar beijo, mãos, quadril, voz ou silêncio.\n\nA outra pessoa deve acompanhar sem tentar dominar a cena."
+    "body": "Ela fica por cima e assume o controle total. Ritmo, profundidade, velocidade — tudo no tempo dela.",
+    "session_short_text": "Ela fica por cima e domina o ritmo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 17,
@@ -268,7 +316,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "SUSTENTAR",
-    "body": "Durante esta carta, o foco é exclusivamente o prazer dela.\n\nSem cobrança de chegar ao orgasmo.\n\nA meta é aumentar excitação, resposta do corpo e entrega.\n\nTempo máximo: 7 minutos."
+    "body": "O foco é só o prazer dela. Dedica todo o tempo pra deixar ela cada vez mais excitada e entregue, sem cobrança de orgasmo.",
+    "session_short_text": "Tudo pelo prazer dela. Entrega total.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 18,
@@ -283,7 +334,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "A mulher deve guiar com frases simples:\n\n- “mais devagar”;\n- “continua”;\n- “mais forte”;\n- “aí”;\n- “não muda”.\n\nQuem conduz deve seguir sem discutir."
+    "body": "Ela guia você com comandos curtos: “mais devagar”, “continua”, “mais forte”, “aí”, “não muda”. Obedece na hora.",
+    "session_short_text": "Ela comanda com frases curtas e você obedece imediatamente.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 19,
@@ -298,7 +352,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "A mulher posiciona as mãos da outra pessoa onde quiser.\n\nA outra pessoa só pode mudar o toque se ela permitir.\n\nTempo sugerido: até 4 minutos."
+    "body": "Ela posiciona suas mãos exatamente onde quer e você só move quando ela mandar.",
+    "session_short_text": "Ela coloca suas mãos onde deseja e você obedece.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 20,
@@ -313,7 +370,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "A mulher escolhe a ordem:\n\n1. beijo;\n2. mãos;\n3. oral;\n4. posição de controle.\n\nA carta termina quando ela decidir avançar ou trocar de categoria."
+    "body": "Ela decide a ordem: começa pela boca, depois mãos, oral ou posição de controle. Ela manda quando quer avançar ou trocar.",
+    "session_short_text": "Ela decide a sequência e dita o ritmo de tudo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 21,
@@ -328,7 +388,10 @@ const cards = [
     "stage": "TEASING",
     "erotic_function": "PROVOCACAO",
     "progression_role": "PROVOCAR",
-    "body": "A mulher completa a frase:\n\n“Hoje eu quero que você…”\n\nEla pode ser direta, vaga ou apenas apontar com o corpo.\n\nQuem ouve deve executar dentro do limite combinado."
+    "body": "Ela completa: “Hoje eu quero que você...”. Realiza exatamente o que ela pedir.",
+    "session_short_text": "Ela fala o que quer e você realiza.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 22,
@@ -343,7 +406,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "VIDEO_ESTIMULO",
     "progression_role": "SUSTENTAR",
-    "body": "Sorteie um vídeo conforme a regra do deck.\n\nA mulher assiste enquanto recebe oral, mãos, vibrador ou masturbação.\n\nDistribuição recomendada do vídeo:\n\n- 70% lésbico;\n- 20% FFM;\n- 10% MMF.\n\nEla pode pedir para trocar até o limite de pulos de vídeo."
+    "body": "Sorteia um vídeo picante pra ela. Ela assiste enquanto recebe prazer do jeito que mais gosta.",
+    "session_short_text": "Sorteia um vídeo focado nela enquanto você dá prazer.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 23,
@@ -358,7 +424,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "VIDEO_ESTIMULO",
     "progression_role": "SUSTENTAR",
-    "body": "Sorteie um vídeo conforme a regra do deck.\n\nO homem assiste enquanto recebe oral, mãos ou masturbação.\n\nDistribuição recomendada do vídeo:\n\n- 70% FFM;\n- 10% face FM;\n- 20% lésbico."
+    "body": "Sorteia um vídeo mais forte pro gosto dele. Ele assiste enquanto recebe atenção intensa.",
+    "session_short_text": "Sorteia um vídeo forte enquanto você cuida dele.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 24,
@@ -373,7 +442,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "Sem vídeo nesta carta.\n\nQuem receber deve apenas relaxar e guiar o ritmo.\n\nQuem conduz deve usar boca e mãos, alternando intensidade.\n\nO receptor pode inverter o destino da carta."
+    "body": "Sem vídeo. Relaxa e guia enquanto recebe boca e mãos alternando intensidade.",
+    "session_short_text": "Sem tela. Só boca e mãos variando as sensações.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 25,
@@ -388,7 +460,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "VIDEO_ESTIMULO",
     "progression_role": "SUSTENTAR",
-    "body": "O sistema sorteia até 3 vídeos.\n\nO casal pode pular os dois primeiros e, no terceiro, escolher entre os sorteados.\n\nQuem recebe assiste.\n\nQuem conduz executa com mãos, boca ou vibrador."
+    "body": "Sorteia vídeos até encontrar um que agrade. Ela assiste relaxando enquanto você executa com mãos, boca ou vibrador.",
+    "session_short_text": "Sorteia um vídeo e executa enquanto ela assiste.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 26,
@@ -403,7 +478,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_CASAL",
     "progression_role": "SUSTENTAR",
-    "body": "Sorteiem um vídeo curto.\n\nA regra não é copiar a cena inteira, mas copiar a energia: ritmo, provocação, posição do corpo ou atitude.\n\nNão usar esta carta durante penetração."
+    "body": "Sorteia um vídeo curto. Não copia tudo, mas traz a mesma energia, ritmo e atitude da cena.",
+    "session_short_text": "Sorteia um vídeo e copia a energia dele.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 27,
@@ -418,7 +496,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PROVOCACAO",
     "progression_role": "SUSTENTAR",
-    "body": "Quem conduz começa oral ou masturbação, mas deve interromper brevemente sempre que quem recebe parecer perto demais do pico.\n\nA pausa deve ser provocante, com beijo, olhar ou frase curta.\n\nTempo máximo: 6 minutos."
+    "body": "Chupa e estimula até ela quase gozar, então para de forma safada, beija, olha e provoca antes de voltar.",
+    "session_short_text": "Leva ela quase no limite e interrompe de forma bem provocante.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 28,
@@ -433,7 +514,10 @@ const cards = [
     "stage": "BUILDUP",
     "erotic_function": "PRAZER_NELA",
     "progression_role": "INTENSIFICAR",
-    "body": "Quem recebe escolhe:\n\n1. oral;\n2. mãos;\n3. vibrador;\n4. combinação livre.\n\nQuem conduz não escolhe a técnica, apenas executa e ajusta."
+    "body": "Ela escolhe: oral, mãos, vibrador ou combinação. Você executa exatamente como ela quer.",
+    "session_short_text": "Ela escolhe a técnica e você obedece com vontade.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 29,
@@ -448,7 +532,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_CASAL",
     "progression_role": "INTENSIFICAR",
-    "body": "Comecem em ritmo lento.\n\nA cada minuto, aumentem um pouco a intensidade.\n\nQuem recebe pode dizer “fica” para manter o ritmo atual."
+    "body": "Começa bem lento e vai aumentando a intensidade aos poucos até ficar animal.",
+    "session_short_text": "Começa devagar e vai acelerando até virar fogo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 30,
@@ -463,7 +550,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_CASAL",
     "progression_role": "SUSTENTAR",
-    "body": "A mulher escolhe a posição e o ritmo inicial.\n\nA outra pessoa só pode assumir mais controle se ela permitir."
+    "body": "Ela escolhe a posição e o ritmo inicial. Você acompanha e só toma mais controle se ela permitir.",
+    "session_short_text": "Ela define a posição e o ritmo.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 31,
@@ -478,7 +568,10 @@ const cards = [
     "stage": "PEAK",
     "erotic_function": "PICO",
     "progression_role": "PICO",
-    "body": "A intensidade pode subir, mas deve continuar responsiva.\n\nQuem conduz precisa observar respiração, corpo e reação.\n\nNada de ignorar sinais."
+    "body": "Pode ser forte e fundo, mas fica sempre atento à respiração e às reações dela.",
+    "session_short_text": "Intensidade alta, mas sempre ligado nos sinais dela.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 32,
@@ -493,7 +586,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PRAZER_CASAL",
     "progression_role": "SUSTENTAR",
-    "body": "Escolham uma posição.\n\nDurante até 3 minutos, não podem trocar.\n\nO desafio é variar ritmo, beijo, mãos e pressão sem mudar a base."
+    "body": "Escolhe uma posição e fica nela. Varia o ritmo, a profundidade, o beijo e a pressão sem trocar de posição.",
+    "session_short_text": "Fica na mesma posição e varia intensidade e movimento.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 33,
@@ -508,7 +604,10 @@ const cards = [
     "stage": "PEAK",
     "erotic_function": "PICO",
     "progression_role": "FECHAR",
-    "body": "A mulher decide se esta carta será:\n\n1. mais lenta;\n2. mais forte;\n3. com pausa provocante;\n4. com troca de posição;\n5. com encerramento suave.\n\nA decisão dela guia o restante da carta."
+    "body": "Ela decide como termina esta carta: mais lenta, mais forte, com pausa provocante, trocando de posição ou encerrando suave.",
+    "session_short_text": "Ela decide como termina a carta.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 34,
@@ -523,7 +622,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PROVOCACAO",
     "progression_role": "SUSTENTAR",
-    "body": "Durante esta carta, não pode haver penetração.\n\nSó boca, mãos, corpo, beijo, atrito e provocação.\n\nA graça é aumentar a vontade sem entregar tudo imediatamente.\n\nTempo máximo: 5 minutos."
+    "body": "Nada de penetração agora. Explora só com boca, mãos, corpo, beijo e esfregação pra deixar a vontade explodir.",
+    "session_short_text": "Proibido penetrar. Vale tudo o resto pra provocar.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 35,
@@ -538,7 +640,10 @@ const cards = [
     "stage": "PEAK",
     "erotic_function": "PICO",
     "progression_role": "PICO",
-    "body": "Esta carta só vale se ambos quiserem subir a intensidade.\n\nPode envolver posição mais forte, fantasia corporal ou prática previamente aceita pelo casal.\n\nSe qualquer um hesitar, transforme esta carta em Deriva."
+    "body": "Se ambos estiverem com muita vontade, sobe a intensidade pra algo mais forte e selvagem.",
+    "session_short_text": "Se os dois quiserem, faz bem forte e selvagem.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 36,
@@ -553,7 +658,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "FANTASIA",
     "progression_role": "SUSTENTAR",
-    "body": "Sorteiem personagem e situação.\n\nAmbos devem entrar na cena sem exagerar.\n\nSugestões possíveis:\n\n- massagista e cliente;\n- enfermeira e paciente adulto;\n- dois estranhos em hotel;\n- policial e suspeita adulta;\n- amantes se encontrando escondido;\n- professora/professor e aluno adulto;\n- personagem livre escolhido pelo sistema."
+    "body": "Entra no personagem sorteado e vive a cena com ela intensamente.",
+    "session_short_text": "Entra no fetiche sorteado sem hesitar.",
+    "random_options_enabled": true,
+    "persist_random_option": true
   },
   {
     "position": 37,
@@ -568,7 +676,10 @@ const cards = [
     "stage": "PEAK",
     "erotic_function": "FANTASIA",
     "progression_role": "PICO",
-    "body": "Uma pessoa pode imaginar outra pessoa ou não imaginar ninguém.\n\nNão precisa revelar nada.\n\nA outra pessoa deve apenas seguir a cena como se existisse um segredo no ar.\n\nRegra: ninguém pergunta quem foi, nem depois."
+    "body": "Fecha os olhos e mergulha na sua fantasia mais safada. Ela acompanha a energia sem perguntar nada.",
+    "session_short_text": "Mergulha na sua fantasia secreta enquanto ela acompanha.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 38,
@@ -583,7 +694,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PROVOCACAO",
     "progression_role": "INTENSIFICAR",
-    "body": "Quem recebeu a carta deve sussurrar uma ordem curta.\n\nQuem ouve deve cumprir dentro dos limites combinados.\n\nA ordem deve ser direta, mas não precisa ser extrema."
+    "body": "Sussurra bem baixinho uma ordem safada no ouvido dela. Ela obedece.",
+    "session_short_text": "Sussurra sua vontade bem safada e ela cumpre.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 39,
@@ -598,7 +712,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "FANTASIA",
     "progression_role": "SUSTENTAR",
-    "body": "Vocês são dois adultos que acabaram dividindo o mesmo quarto por acaso.\n\nA atração já está óbvia, mas ninguém quer admitir primeiro.\n\nA cena começa com provocação verbal e aproximação lenta."
+    "body": "Vocês são dois estranhos dividindo o mesmo quarto de hotel. A tensão sexual está no ar. Deixa a vontade falar mais alto.",
+    "session_short_text": "Vocês são dois estranhos num hotel que se desejam muito.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 40,
@@ -613,7 +730,10 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "FANTASIA",
     "progression_role": "SUSTENTAR",
-    "body": "Sorteiem quem será o profissional e quem será o cliente.\n\nA cena começa formal, mas o toque passa do limite de propósito.\n\nQuem recebe decide até onde o deslize continua."
+    "body": "Você é o profissional. Começa formal e vai deixando o toque cada vez mais safado e fora dos limites.",
+    "session_short_text": "Começa como profissional e vai deslizando pro proibido.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 41,
@@ -628,7 +748,10 @@ const cards = [
     "stage": "PEAK",
     "erotic_function": "FANTASIA",
     "progression_role": "PICO",
-    "body": "Imaginem uma terceira pessoa adulta apenas como presença na fantasia.\n\nNinguém precisa dizer rosto, nome ou identidade.\n\nA cena deve focar no casal e na sensação de estar sendo observado ou desejado.\n\nNão vale citar ex."
+    "body": "Imagina que tem mais alguém assistindo vocês com desejo. Sente o tesão de estar sendo observado.",
+    "session_short_text": "Imagina que tem alguém olhando vocês com muita vontade.",
+    "random_options_enabled": false,
+    "persist_random_option": true
   },
   {
     "position": 42,
@@ -643,9 +766,123 @@ const cards = [
     "stage": "INTENSE",
     "erotic_function": "PROVOCACAO",
     "progression_role": "SUSTENTAR",
-    "body": "Durante a próxima carta, uma regra deve ser obedecida:\n\n1. não pode pedir;\n2. não pode tocar com as mãos;\n3. não pode beijar a boca;\n4. não pode mudar de posição;\n5. não pode acelerar.\n\nSorteiem uma opção.\n\nA regra dura apenas uma carta."
+    "body": "Escolhe uma regra e obedece na próxima carta: sem pedir, sem usar as mãos, sem beijo na boca, sem mudar de posição ou sem acelerar.",
+    "session_short_text": "Obedece uma regra proibitiva na próxima carta.",
+    "random_options_enabled": true,
+    "persist_random_option": true
   }
 ];
+
+const randomOptionsBySystemKey: Record<string, Array<{ label: string; instruction_short: string; instruction_full: string; weight?: number }>> = {
+  "deriva-v1-card-001": [
+    {
+      label: "Massagem livre",
+      instruction_short: "Faz uma massagem gostosa no corpo inteiro. Ela relaxa e curte.",
+      instruction_full: "Faz uma massagem gostosa no corpo inteiro. Ela relaxa e guia o ritmo com pouco som e pouca palavra.",
+    },
+    {
+      label: "Profissional e cliente",
+      instruction_short: "Começa como profissional e cliente.",
+      instruction_full: "Entra na cena de profissional e cliente. Começa técnico, sério e atento, deixando o toque ficar íntimo aos poucos.",
+    },
+    {
+      label: "Deslize provocante",
+      instruction_short: "Deixa a massagem profissional escorregar pro íntimo.",
+      instruction_full: "Começa como massagem profissional e deixa pequenos deslizes provocantes aparecerem devagar, sempre percebendo a reação dela.",
+    },
+  ],
+  "deriva-v1-card-012": [
+    {
+      label: "Beijo demorado",
+      instruction_short: "Dá um beijo demorado e cheio de intenção.",
+      instruction_full: "Dá um beijo demorado, aproxima o corpo e deixa a provocação crescer sem pressa.",
+    },
+    {
+      label: "Toque por cima da roupa",
+      instruction_short: "Provoca por cima da roupa.",
+      instruction_full: "Toca por cima da roupa com calma, pressão e malícia, sem entregar tudo de uma vez.",
+    },
+    {
+      label: "Frase safada no ouvido",
+      instruction_short: "Sussurra uma frase safada no ouvido.",
+      instruction_full: "Chega no ouvido e solta uma frase safada, curta e direta, do jeito que deixa o clima mais perigoso.",
+    },
+    {
+      label: "Sem tocar",
+      instruction_short: "Fica sem tocar por um instante e só olha.",
+      instruction_full: "Fica sem tocar por um instante. Só olha, respira perto e deixa a vontade incomodar gostoso.",
+    },
+  ],
+  "deriva-v1-card-036": [
+    {
+      label: "Massagista e cliente",
+      instruction_short: "Entra na cena de massagista e cliente.",
+      instruction_full: "Entra na cena de massagista e cliente. Começa formal e deixa o desejo aparecer no toque.",
+    },
+    {
+      label: "Profissional de saúde e paciente adulto",
+      instruction_short: "Simula profissional de saúde e paciente adulto.",
+      instruction_full: "Simula profissional de saúde e paciente adulto, com cuidado, tensão e consentimento claro.",
+    },
+    {
+      label: "Dois desconhecidos em hotel",
+      instruction_short: "Vocês são dois desconhecidos adultos em um hotel.",
+      instruction_full: "Vocês são dois desconhecidos adultos em um hotel. A atração fica óbvia antes de alguém admitir.",
+    },
+    {
+      label: "Policial e suspeita adulta",
+      instruction_short: "Simula policial e suspeita adulta, sem medo real.",
+      instruction_full: "Simula policial e suspeita adulta, sem violência real. A tensão fica no olhar, na ordem e na aproximação.",
+    },
+    {
+      label: "Amantes escondidos",
+      instruction_short: "Vocês são amantes fictícios se encontrando escondido.",
+      instruction_full: "Vocês são amantes fictícios se encontrando escondido. A pressa e o segredo deixam tudo mais quente.",
+    },
+    {
+      label: "Professor e aluno adulto",
+      instruction_short: "Simula professor e aluno adulto.",
+      instruction_full: "Simula professor e aluno adulto. A cena fica adulta, consensual e provocante, sem exagero teatral.",
+    },
+    {
+      label: "Personal trainer e aluna adulta",
+      instruction_short: "Simula personal trainer e aluna adulta.",
+      instruction_full: "Simula personal trainer e aluna adulta. Usa comando, postura e proximidade pra aumentar a tensão.",
+    },
+    {
+      label: "Personagem livre",
+      instruction_short: "Escolhe um personagem adulto livre.",
+      instruction_full: "Escolhe um personagem adulto livre e entra na cena com naturalidade, mantendo o foco no desejo entre vocês.",
+    },
+  ],
+  "deriva-v1-card-042": [
+    {
+      label: "Sem pedir",
+      instruction_short: "Na próxima carta, não pode pedir.",
+      instruction_full: "Na próxima carta, não pode pedir. O desejo precisa aparecer no corpo, no olhar e na respiração.",
+    },
+    {
+      label: "Sem usar as mãos",
+      instruction_short: "Na próxima carta, não pode usar as mãos.",
+      instruction_full: "Na próxima carta, não pode usar as mãos. Usa boca, corpo, voz e presença pra provocar.",
+    },
+    {
+      label: "Sem beijo na boca",
+      instruction_short: "Na próxima carta, não pode beijar na boca.",
+      instruction_full: "Na próxima carta, não pode beijar na boca. Deixa a vontade crescer em volta do beijo proibido.",
+    },
+    {
+      label: "Sem mudar de posição",
+      instruction_short: "Na próxima carta, não pode mudar de posição.",
+      instruction_full: "Na próxima carta, não pode mudar de posição. Varia ritmo, pressão e intenção sem trocar a base.",
+    },
+    {
+      label: "Sem acelerar",
+      instruction_short: "Na próxima carta, não pode acelerar.",
+      instruction_full: "Na próxima carta, não pode acelerar. Sustenta o ritmo e deixa a tensão trabalhar por vocês.",
+    },
+  ],
+};
 
 async function main() {
   const defaultDeckKey = 'deriva-default-v1';
@@ -708,11 +945,14 @@ async function main() {
         is_invertible: card.is_invertible,
         requires_video: card.requires_video,
         receiver_rule: card.receiver_rule as ReceiverRule,
-        primary_tag: (card as Record<string, unknown>).primary_tag,
-        stage: (card as Record<string, unknown>).stage,
-        erotic_function: (card as Record<string, unknown>).erotic_function,
-        progression_role: (card as Record<string, unknown>).progression_role,
+        session_short_text: (card as Record<string, unknown>).session_short_text as string | null,
+        primary_tag: (card as Record<string, unknown>).primary_tag as CardTag | null,
+        stage: (card as Record<string, unknown>).stage as SessionStage | null,
+        erotic_function: (card as Record<string, unknown>).erotic_function as EroticFunction | null,
+        progression_role: (card as Record<string, unknown>).progression_role as ProgressionRole | null,
         requires_couple_unlock: isDark,
+        random_options_enabled: Boolean((card as Record<string, unknown>).random_options_enabled),
+        persist_random_option: Boolean((card as Record<string, unknown>).persist_random_option ?? true),
         unlock_group_key: isDark ? "DARK_THIRD_IMAGINATION" : null,
         is_available_in_default: !isDark,
         is_available_in_estreia: !isDark,
@@ -729,17 +969,44 @@ async function main() {
         is_invertible: card.is_invertible,
         requires_video: card.requires_video,
         receiver_rule: card.receiver_rule as ReceiverRule,
-        primary_tag: (card as Record<string, unknown>).primary_tag,
-        stage: (card as Record<string, unknown>).stage,
-        erotic_function: (card as Record<string, unknown>).erotic_function,
-        progression_role: (card as Record<string, unknown>).progression_role,
+        session_short_text: (card as Record<string, unknown>).session_short_text as string | null,
+        primary_tag: (card as Record<string, unknown>).primary_tag as CardTag | null,
+        stage: (card as Record<string, unknown>).stage as SessionStage | null,
+        erotic_function: (card as Record<string, unknown>).erotic_function as EroticFunction | null,
+        progression_role: (card as Record<string, unknown>).progression_role as ProgressionRole | null,
         requires_couple_unlock: isDark,
+        random_options_enabled: Boolean((card as Record<string, unknown>).random_options_enabled),
+        persist_random_option: Boolean((card as Record<string, unknown>).persist_random_option ?? true),
         unlock_group_key: isDark ? "DARK_THIRD_IMAGINATION" : null,
         is_available_in_default: !isDark,
         is_available_in_estreia: !isDark,
         is_available_in_custom_selection: !isDark,
       }
     });
+  }
+
+  for (const [systemKey, options] of Object.entries(randomOptionsBySystemKey)) {
+    const optionCard = await prisma.card.findUnique({
+      where: { system_key: systemKey },
+      select: { id: true },
+    });
+    if (!optionCard) continue;
+
+    await prisma.cardRandomOption.deleteMany({ where: { card_id: optionCard.id } });
+
+    for (const [index, option] of options.entries()) {
+      await prisma.cardRandomOption.create({
+        data: {
+          id: `${systemKey}-option-${String(index + 1).padStart(2, "0")}`,
+          card_id: optionCard.id,
+          label: option.label,
+          instruction_short: option.instruction_short,
+          instruction_full: option.instruction_full,
+          weight: option.weight ?? 1,
+          is_active: true,
+        },
+      });
+    }
   }
 
 

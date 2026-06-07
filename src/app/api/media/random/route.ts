@@ -11,7 +11,11 @@ export async function GET() {
       where: {
         type: "VIDEO",
         is_active: true,
-        processing_status: "READY"
+        processing_status: "READY",
+        classification_status: "CLASSIFIED",
+        hls_master_key: { not: null },
+        video_category: { not: null },
+        content_type: { not: null },
       }
     });
 

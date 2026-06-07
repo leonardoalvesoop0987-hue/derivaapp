@@ -21,7 +21,7 @@ export async function PATCH(req: Request) {
     is_active: z.boolean().optional(),
     internal_label: z.string().optional(),
     weight: z.number().int().min(1).max(10).optional(),
-    video_category: z.enum(["LESBICO","FFM","MMF","MF","ORAL_MULHER","FACE_FM","OUTRO"]).optional().nullable(),
+    video_category: z.enum(["LESBICO","FFM","MMF","MF"]).optional().nullable(),
     content_type: z.enum(["ORAL_ONLY","PENETRATION_ONLY","COMPLETE"]).optional().nullable(),
     visual_tags: z.array(z.string()).optional(),
     music_mood: z.enum(["RELAXANTE","SENSUAL","INTENSA"]).optional().nullable(),
@@ -29,7 +29,26 @@ export async function PATCH(req: Request) {
 
   try {
     const { id, ...data } = schema.parse(await req.json());
-    const asset = await prisma.mediaAsset.update({ where: { id }, data: data as Record<string, unknown> });
+    const existing = await prisma.mediaAsset.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ error: "Midia nao encontrada" }, { status: 404 });
+
+    const nextVideoCategory = data.video_category !== undefined ? data.video_category : existing.video_category;
+    const nextContentType = data.content_type !== undefined ? data.content_type : existing.content_type;
+    const classification_status =
+      existing.type === "VIDEO" && (!nextVideoCategory || !nextContentType)
+        ? "PENDING_CLASSIFICATION"
+        : "CLASSIFIED";
+
+    const updateData: Record<string, unknown> = {
+      ...data,
+      ...(existing.type === "VIDEO" ? { classification_status } : {}),
+    };
+
+    if (existing.type === "VIDEO" && data.is_active === true && classification_status !== "CLASSIFIED") {
+      return NextResponse.json({ error: "Classifique o video antes de ativar." }, { status: 400 });
+    }
+
+    const asset = await prisma.mediaAsset.update({ where: { id }, data: updateData });
     return NextResponse.json({ asset });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: error.issues[0].message }, { status: 400 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use, useCallback, useRef } from "react";
+import { useState, useEffect, use, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,6 +64,29 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const touchStartRef = useRef<{x: number, y: number} | null>(null);
+
+  const meta = useMemo<Record<string, unknown>>(() => {
+    if (!state?.metadata_json) return {};
+    try {
+      return JSON.parse(state.metadata_json) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  }, [state?.metadata_json]);
+
+  const resolvedShortText =
+    typeof meta.rendered_short_text === "string" && meta.rendered_short_text.trim()
+      ? meta.rendered_short_text.trim()
+      : card?.session_short_text?.trim() ?? "";
+
+  const resolvedBodyText =
+    typeof meta.rendered_body === "string" && meta.rendered_body.trim()
+      ? meta.rendered_body
+      : card
+        ? renderCardBody(card.body)
+        : "";
+  const frontText = typeof meta.front_text === "string" ? meta.front_text : "A tensão sobe agora.";
+  const currentReceiver = typeof meta.current_receiver === "string" ? meta.current_receiver : null;
   const touchDeltaRef = useRef<{x: number, y: number} | null>(null);
 
   useEffect(() => {
@@ -135,16 +158,16 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
   // Poll voice status
   useEffect(() => {
-    if (!isFlipped || !card?.session_short_text?.trim() || !voiceSettings?.enabled) return;
+    if (!isFlipped || !card?.id || !resolvedShortText || !voiceSettings?.enabled) return;
 
+    const cardId = card.id;
     let pollInterval: NodeJS.Timeout | null = null;
     let isPolling = true;
 
     async function checkStatus() {
       if (!isPolling) return;
       try {
-        const textToRead = card!.session_short_text!.trim();
-        const res = await fetch(`/api/session/${resolvedParams.id}/voice-status?cardId=${card!.id}&text=${encodeURIComponent(textToRead)}`);
+        const res = await fetch(`/api/session/${resolvedParams.id}/voice-status?cardId=${cardId}&text=${encodeURIComponent(resolvedShortText)}`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         
@@ -163,7 +186,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
           setAudioState("ERROR");
           if (pollInterval) clearInterval(pollInterval);
         }
-      } catch (err) {
+      } catch {
         if (!isPolling) return;
         setAudioState("ERROR");
         if (pollInterval) clearInterval(pollInterval);
@@ -177,8 +200,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       isPolling = false;
       if (pollInterval) clearInterval(pollInterval);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFlipped, card?.id, card?.session_short_text, voiceSettings?.enabled, resolvedParams.id]);
+  }, [isFlipped, card?.id, resolvedShortText, voiceSettings?.enabled, resolvedParams.id]);
 
   // Autoplay if automatic
   useEffect(() => {
@@ -362,8 +384,6 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const bgStyle = CATEGORY_STYLES[card.category] ?? CATEGORY_STYLES["PRETO"];
   const progress = ((session.current_position + 1) / session.target_card_count) * 100;
   
-  const meta = state.metadata_json ? JSON.parse(state.metadata_json) : {};
-
   return (
     <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-[var(--color-background-primary)]">
 
@@ -393,7 +413,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
       {/* Full Text Modal */}
       <AnimatePresence>
-        {showFullTextModal && card.session_short_text && (
+        {showFullTextModal && resolvedShortText && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setShowFullTextModal(false)}
@@ -410,7 +430,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
               <h3 className="text-xl md:text-2xl font-medium mb-4 pr-8">{card.title}</h3>
               <div className="overflow-y-auto custom-scrollbar pr-2">
                 <div className="text-base md:text-lg opacity-90 leading-relaxed whitespace-pre-wrap font-light">
-                  {meta.rendered_body || renderCardBody(card.body)}
+                  {resolvedBodyText}
                 </div>
               </div>
             </motion.div>
@@ -474,7 +494,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                  </span>
                  <p className="font-serif italic text-[#d4a373] leading-snug drop-shadow-xl z-10 px-2 flex-1 flex items-center justify-center text-center w-full"
                     style={{ fontSize: 'clamp(1.75rem, 6vw, 3.5rem)' }}>
-                   {meta.front_text || "A tensão sobe agora."}
+                   {frontText}
                  </p>
                  <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] animate-pulse z-10 mt-4 landscape:text-xs">Toque para revelar</p>
               </div>
@@ -510,12 +530,12 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
                    <div className="opacity-90 leading-relaxed whitespace-pre-wrap font-light overflow-y-auto custom-scrollbar flex-1 pr-2"
                         style={{ fontSize: 'clamp(1.05rem, 4vw, 1.4rem)' }}>
-                     {card.session_short_text ? card.session_short_text : (meta.rendered_body || renderCardBody(card.body))}
+                     {resolvedShortText || resolvedBodyText}
                    </div>
 
                    <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/10 flex-shrink-0">
 
-                     {card.session_short_text && (
+                     {resolvedShortText && (
                        <button
                          onClick={(e) => { e.stopPropagation(); setShowFullTextModal(true); }}
                          className="text-xs text-white/50 hover:text-white/70 pb-1 transition-colors text-center"
@@ -553,7 +573,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             </div>
           </motion.div>
         )}
-      </div>
+        </div>
       </div>
 
       {/* Pace Dial - Above actions */}
@@ -596,7 +616,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             </button>
           )}
 
-          {card.session_short_text?.trim() && audioState !== "MISSING" && (
+          {resolvedShortText && audioState !== "MISSING" && (
             <button
               onClick={handlePlayVoice}
               disabled={!isFlipped || audioState === "LOADING" || audioState === "ERROR"}
@@ -637,7 +657,12 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <AudioPlayer enabled={session.music_enabled} />
+      {/* Audio Player - Integrated into bottom bar */}
+      {session.music_enabled && (
+        <div className="flex-shrink-0 flex justify-center px-4 py-2 border-t border-white/5">
+          <AudioPlayer enabled={session.music_enabled} />
+        </div>
+      )}
     </div>
   );
 }

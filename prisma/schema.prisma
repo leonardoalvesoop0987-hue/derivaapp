@@ -183,11 +183,17 @@ enum VideoContentType {
 }
 
 enum MediaProcessingStatus {
+  QUEUED
   UPLOADED
   PROCESSING
   READY
   ERROR
   DISABLED
+}
+
+enum MediaClassificationStatus {
+  PENDING_CLASSIFICATION
+  CLASSIFIED
 }
 
 enum MusicMood {
@@ -258,21 +264,23 @@ model Deck {
 }
 
 model Card {
-  id                 String        @id @default(cuid())
-  deck_id            String
-  system_key         String?       @unique
-  category           CardCategory
-  title              String
-  body               String
-  intensity          CardIntensity
-  position           Int
-  is_active          Boolean       @default(true)
-  is_invertible      Boolean       @default(false)
-  requires_video     Boolean       @default(false)
-  receiver_rule      ReceiverRule?
-  metadata_json      String?
-  session_short_text String?
-  session_quick_tip  String?
+  id                     String        @id @default(cuid())
+  deck_id                String
+  system_key             String?       @unique
+  category               CardCategory
+  title                  String
+  body                   String
+  intensity              CardIntensity
+  position               Int
+  is_active              Boolean       @default(true)
+  is_invertible          Boolean       @default(false)
+  requires_video         Boolean       @default(false)
+  receiver_rule          ReceiverRule?
+  metadata_json          String?
+  session_short_text     String?
+  session_quick_tip      String?
+  random_options_enabled Boolean       @default(false)
+  persist_random_option  Boolean       @default(true)
 
   // Classificação Avançada
   primary_tag                CardTag?
@@ -303,14 +311,15 @@ model Card {
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 
-  deck          Deck                 @relation(fields: [deck_id], references: [id], onDelete: Cascade)
-  unlock_group  UnlockGroup?         @relation(fields: [unlock_group_key], references: [key], onDelete: SetNull)
-  session_cards SessionCard[]
-  deck_cards    DeckCard[]
-  feedbacks     CardFeedback[]
-  preferences   UserCardPreference[]
-  video_options SessionVideoOption[]
-  voice_audios  CardVoiceAudio[]
+  deck           Deck                 @relation(fields: [deck_id], references: [id], onDelete: Cascade)
+  unlock_group   UnlockGroup?         @relation(fields: [unlock_group_key], references: [key], onDelete: SetNull)
+  session_cards  SessionCard[]
+  deck_cards     DeckCard[]
+  feedbacks      CardFeedback[]
+  preferences    UserCardPreference[]
+  video_options  SessionVideoOption[]
+  voice_audios   CardVoiceAudio[]
+  random_options CardRandomOption[]
 
   @@index([deck_id, position])
   @@map("cards")
@@ -351,11 +360,12 @@ model Session {
 }
 
 model SessionCard {
-  id            String            @id @default(cuid())
-  session_id    String
-  card_id       String
-  position      Int
-  status        SessionCardStatus
+  id                            String            @id @default(cuid())
+  session_id                    String
+  card_id                       String
+  random_option_id              String?
+  position                      Int
+  status                        SessionCardStatus
   was_inverted                  Boolean           @default(false)
   is_inserted_pause             Boolean           @default(false)
   does_not_count_towards_target Boolean           @default(false)
@@ -364,11 +374,34 @@ model SessionCard {
   skipped_at                    DateTime?
   metadata_json                 String?
 
-  session Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  card    Card    @relation(fields: [card_id], references: [id])
+  session       Session           @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  card          Card              @relation(fields: [card_id], references: [id])
+  random_option CardRandomOption? @relation(fields: [random_option_id], references: [id], onDelete: SetNull)
 
   @@index([session_id, position])
+  @@index([random_option_id])
   @@map("session_cards")
+}
+
+model CardRandomOption {
+  id                String         @id @default(cuid())
+  card_id           String
+  label             String
+  instruction_short String?
+  instruction_full  String?
+  weight            Int            @default(1)
+  is_active         Boolean        @default(true)
+  min_intensity     CardIntensity?
+  max_intensity     CardIntensity?
+  requires_unlock   Boolean        @default(false)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+
+  card          Card          @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  session_cards SessionCard[]
+
+  @@index([card_id, is_active])
+  @@map("card_random_options")
 }
 
 model CardFeedback {
@@ -409,31 +442,39 @@ model UserCardPreference {
 }
 
 model MediaAsset {
-  id                String                @id @default(cuid())
-  type              MediaType
-  video_category    VideoCategory?
-  content_type      VideoContentType?
-  visual_tags       String[]
-  music_mood        MusicMood?
-  processing_status MediaProcessingStatus @default(READY)
-  processing_error  String?
-  storage_key       String
-  hls_master_key    String?
-  thumbnail_key     String?
-  bucket            String?
-  public_url        String?
-  mime_type         String
-  size_bytes        Int
-  duration_seconds  Int?
-  weight            Int                   @default(1)
-  is_active         Boolean               @default(true)
-  internal_label    String?
-  original_filename String?
-  created_at        DateTime              @default(now())
-  updated_at        DateTime              @updatedAt
+  id                      String                    @id @default(cuid())
+  type                    MediaType
+  video_category          VideoCategory?
+  content_type            VideoContentType?
+  visual_tags             String[]
+  music_mood              MusicMood?
+  processing_status       MediaProcessingStatus     @default(READY)
+  processing_error        String?
+  classification_status   MediaClassificationStatus @default(CLASSIFIED)
+  storage_key             String
+  hls_master_key          String?
+  thumbnail_key           String?
+  bucket                  String?
+  public_url              String?
+  mime_type               String
+  size_bytes              Int
+  duration_seconds        Int?
+  weight                  Int                       @default(1)
+  is_active               Boolean                   @default(true)
+  internal_label          String?
+  original_filename       String?
+  processing_started_at   DateTime?
+  processing_heartbeat_at DateTime?
+  processing_finished_at  DateTime?
+  processing_owner        String?
+  created_at              DateTime                  @default(now())
+  updated_at              DateTime                  @updatedAt
 
   session_videos SessionVideoOption[]
 
+  @@index([type, processing_status, created_at])
+  @@index([type, processing_status, classification_status, is_active])
+  @@index([processing_owner])
   @@map("media_assets")
 }
 
@@ -593,8 +634,8 @@ model SessionPaceEvent {
   pace_choice String
   created_at  DateTime @default(now())
 
-  session     Session  @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  
+  session Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
   @@index([session_id])
   @@map("session_pace_events")
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import type { SessionStage } from "@prisma/client";
 
 
 export async function POST(req: Request) {
@@ -44,7 +45,8 @@ export async function POST(req: Request) {
           metadata_json: JSON.stringify({
              ...meta,
              current_receiver: newReceiver,
-             rendered_body: meta.original_body ? applyPronounRegex(meta.original_body, newReceiver) : meta.rendered_body
+             rendered_body: meta.original_body ? applyPronounRegex(meta.original_body, newReceiver) : meta.rendered_body,
+             rendered_short_text: meta.original_short_text ? applyPronounRegex(meta.original_short_text, newReceiver) : meta.rendered_short_text
           })
         }
       });
@@ -72,8 +74,8 @@ export async function POST(req: Request) {
       const lastCard = session.cards[session.cards.length - 1];
       const nextPos = lastCard ? lastCard.position + 1 : session.current_position + 1;
       
-      const skippedMeta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) : {};
-      const skippedStage = skippedMeta.intended_stage;
+      const skippedMeta = currentCardState.metadata_json ? JSON.parse(currentCardState.metadata_json) as Record<string, unknown> : {};
+      const skippedStage = typeof skippedMeta.intended_stage === "string" ? skippedMeta.intended_stage as SessionStage : undefined;
 
       const { generateSessionSequence } = await import("@/lib/deriva/session-engine");
       const substitute = await generateSessionSequence({
@@ -89,13 +91,14 @@ export async function POST(req: Request) {
         shownCardIds: session.cards.map(c => c.card_id),
         currentPosition: nextPos,
         forceStage: skippedStage
-      } as Record<string, unknown>);
+      });
 
       if (substitute.length > 0) {
         await prisma.sessionCard.create({
           data: {
             session_id: sessionId,
             card_id: substitute[0].card_id,
+            random_option_id: substitute[0].random_option_id ?? null,
             position: nextPos,
             status: "QUEUED",
             metadata_json: substitute[0].metadata_json,

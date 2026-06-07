@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { CardIntensity, SessionMode, SessionLength, SessionStage, Card, SessionFocus } from "@prisma/client";
+import type { CardIntensity, SessionMode, SessionLength, SessionStage, Card, CardRandomOption, SessionFocus } from "@prisma/client";
 
 const INTENSITY_WEIGHTS: Record<CardIntensity, number> = {
   LEVE: 1,
@@ -29,9 +29,47 @@ type NextCardInput = {
 
 export type GeneratedSessionCard = {
   card_id: string;
+  random_option_id?: string | null;
   position: number;
   metadata_json: string;
 };
+
+function pickWeightedOption(options: CardRandomOption[]): CardRandomOption | null {
+  const totalWeight = options.reduce((sum, option) => sum + Math.max(1, option.weight), 0);
+  if (totalWeight <= 0) return options[0] ?? null;
+
+  let random = Math.random() * totalWeight;
+  for (const option of options) {
+    random -= Math.max(1, option.weight);
+    if (random <= 0) return option;
+  }
+
+  return options[options.length - 1] ?? null;
+}
+
+async function drawRandomOption(card: Card): Promise<CardRandomOption | null> {
+  if (!card.random_options_enabled) return null;
+
+  const cardIntensityWeight = INTENSITY_WEIGHTS[card.intensity];
+  const options = await prisma.cardRandomOption.findMany({
+    where: {
+      card_id: card.id,
+      is_active: true,
+      requires_unlock: false,
+    },
+    orderBy: { created_at: "asc" },
+  });
+
+  const eligibleOptions = options.filter((option) => {
+    const minWeight = option.min_intensity ? INTENSITY_WEIGHTS[option.min_intensity] : null;
+    const maxWeight = option.max_intensity ? INTENSITY_WEIGHTS[option.max_intensity] : null;
+    if (minWeight !== null && cardIntensityWeight < minWeight) return false;
+    if (maxWeight !== null && cardIntensityWeight > maxWeight) return false;
+    return true;
+  });
+
+  return pickWeightedOption(eligibleOptions);
+}
 
 function getExpectedStages(position: number, totalCount: number): SessionStage[] {
   const progress = position / Math.max(1, totalCount - 1); // 0.0 to 1.0
@@ -261,9 +299,29 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
 
     const metadata = buildCardMetadata(card, input.sessionFocus) as Record<string, unknown>;
     metadata.intended_stage = expectedStagesForPos[0];
+    if (card.session_short_text) {
+      metadata.rendered_short_text = applyPronounRegex(card.session_short_text, metadata.current_receiver as string);
+    }
+
+    const randomOption = await drawRandomOption(card);
+    if (randomOption) {
+      const optionFullText = randomOption.instruction_full?.trim() || randomOption.instruction_short?.trim() || card.body;
+      const optionShortText = randomOption.instruction_short?.trim() || randomOption.instruction_full?.trim() || card.session_short_text || optionFullText;
+      const receiver = metadata.current_receiver as string;
+
+      metadata.random_option_id = randomOption.id;
+      metadata.random_option_label = randomOption.label;
+      metadata.card_base_body = card.body;
+      metadata.card_base_short_text = card.session_short_text;
+      metadata.original_body = optionFullText;
+      metadata.original_short_text = optionShortText;
+      metadata.rendered_body = applyPronounRegex(optionFullText, receiver);
+      metadata.rendered_short_text = applyPronounRegex(optionShortText, receiver);
+    }
 
     sequence.push({
       card_id: card.id,
+      random_option_id: randomOption?.id ?? null,
       position: actualPos,
       metadata_json: JSON.stringify(metadata),
     });

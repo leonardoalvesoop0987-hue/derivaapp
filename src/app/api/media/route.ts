@@ -27,6 +27,15 @@ export async function GET(req: NextRequest) {
     const where: Record<string, unknown> = {
       type: type as "VIDEO" | "MUSIC",
       is_active: true,
+      ...(type === "VIDEO"
+        ? {
+            processing_status: "READY",
+            classification_status: "CLASSIFIED",
+            hls_master_key: { not: null },
+            video_category: { not: null },
+            content_type: { not: null },
+          }
+        : {}),
       ...(type === "VIDEO" && category ? { video_category: category } : {}),
       ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {})
     };

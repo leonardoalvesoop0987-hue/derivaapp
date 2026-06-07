@@ -268,7 +268,14 @@ export async function preloadSessionAudios(sessionId: string) {
     for (const sc of session.cards) {
       if (sc.card.category === "ROXO" || sc.card.category === "VERMELHO") continue; // Exemplos, ou tenta todas
       
-      const textToRead = sc.card.session_short_text?.trim();
+      let metadata: Record<string, unknown> = {};
+      try {
+        metadata = sc.metadata_json ? JSON.parse(sc.metadata_json) : {};
+      } catch {}
+
+      const textToRead = typeof metadata.rendered_short_text === "string" && metadata.rendered_short_text.trim()
+        ? metadata.rendered_short_text.trim()
+        : sc.card.session_short_text?.trim();
 
       if (textToRead) {
         // Will generate and cache if not exists, skip if exists

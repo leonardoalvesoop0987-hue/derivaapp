@@ -115,6 +115,7 @@ export async function POST(req: Request) {
       data: sequence.map((seq, index) => ({
         session_id: session.id,
         card_id: seq.card_id,
+        random_option_id: seq.random_option_id ?? null,
         position: seq.position,
         status: index === 0 ? "SHOWN" : "QUEUED",
         metadata_json: seq.metadata_json,

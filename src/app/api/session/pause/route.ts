@@ -58,6 +58,7 @@ export async function POST(req: Request) {
         data: {
           session_id: session.id,
           card_id: sequence[0].card_id,
+          random_option_id: sequence[0].random_option_id ?? null,
           position: session.current_position,
           status: "QUEUED",
           metadata_json: sequence[0].metadata_json,
