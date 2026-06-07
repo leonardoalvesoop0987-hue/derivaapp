@@ -132,16 +132,17 @@ export async function POST(req: Request) {
     }).catch(err => console.error("[Preload Import] error:", err));
 
     return NextResponse.json({ sessionId: session.id });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Session Create Error]:", error);
 
+    const err = error as any;
     // Identificar erro de constraint (P2003 = foreign key falhou, ex: usuário inválido)
-    if (error?.code === 'P2003') {
+    if (err?.code === 'P2003') {
       return NextResponse.json({ error: "Usuário inválido ou sessão expirada. Por favor, faça login novamente." }, { status: 401 });
     }
     
     // Identificar erro de coluna faltando (P2022) - caso alguma migration ainda falhe
-    if (error?.code === 'P2022') {
+    if (err?.code === 'P2022') {
       return NextResponse.json({ error: "Erro de sincronização no banco de dados. Contate o suporte." }, { status: 500 });
     }
 
