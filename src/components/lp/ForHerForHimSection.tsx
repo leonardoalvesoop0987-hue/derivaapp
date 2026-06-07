@@ -22,10 +22,10 @@ export function ForHerForHimSection() {
       "Participar de uma experiência mais longa e intensa",
     ],
     casal: [
-      "Redescobrir o desejo um pelo outro",
-      "Sair da rotina do mesmo lugar e mesma hora",
-      "Aumentar a conexão e o olho no olho",
-      "Trazer de volta a sensação do 'começo'",
+      "Uma carta certa muda o clima.",
+      "Ela sente. Ele percebe.",
+      "O jogo esquenta sem perder o controle.",
+      "A noite ganha ritmo, tensão e vontade de continuar."
     ]
   };
 
@@ -86,7 +86,7 @@ export function ForHerForHimSection() {
           >
             <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-copper)]/10 blur-3xl rounded-full" />
             <div className="w-10 h-px bg-[var(--color-copper)] mb-6 group-hover:w-full transition-all duration-700 ease-in-out relative z-10" />
-            <h3 className="text-2xl font-serif mb-8 text-[var(--color-copper)] relative z-10">Para a Relação</h3>
+            <h3 className="text-2xl font-serif mb-8 text-[var(--color-copper)] relative z-10">Quando o desejo pede mais</h3>
             <ul className="space-y-5 relative z-10">
               {lists.casal.map((item, i) => (
                 <li key={i} className="flex items-start gap-4">
