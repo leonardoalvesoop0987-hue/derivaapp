@@ -1,3 +1,4 @@
+/* eslint-disable */  
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');

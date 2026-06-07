@@ -86,6 +86,41 @@ async function uploadAudio(key: string, audioBuffer: Buffer): Promise<string | n
   }
 }
 
+export async function getCardAudioStatus(cardId: string, text: string): Promise<{ enabled: boolean; status: "READY" | "GENERATING" | "ERROR" | "MISSING_SHORT_TEXT"; audioUrl?: string; reason?: string }> {
+  const settings = await getVoiceSettings();
+
+  if (!settings.enabled) return { enabled: false, status: "ERROR", reason: "VOICE_TTS_DISABLED" };
+  if (settings.provider.toLowerCase() !== "elevenlabs") return { enabled: false, status: "ERROR", reason: "UNSUPPORTED_PROVIDER" };
+  if (!settings.apiKey || !settings.voiceId) return { enabled: false, status: "ERROR", reason: "MISSING_CREDENTIALS" };
+
+  const cleanText = text.trim();
+  if (!cleanText) return { enabled: false, status: "MISSING_SHORT_TEXT", reason: "EMPTY_TEXT" };
+
+  const hash = generateHash(cleanText, settings.voiceId, settings.provider);
+
+  const existingRecord = await prisma.cardVoiceAudio.findFirst({
+    where: {
+      provider: settings.provider,
+      voice_id: settings.voiceId,
+      card_id: cardId,
+      text_hash: hash,
+    }
+  });
+
+  if (existingRecord) {
+    if (existingRecord.status === "READY" && existingRecord.audio_url) {
+      return { enabled: true, status: "READY", audioUrl: existingRecord.audio_url };
+    }
+    if (existingRecord.status === "GENERATING" || existingRecord.status === "PENDING") {
+      return { enabled: true, status: "GENERATING" };
+    }
+    return { enabled: true, status: "ERROR", reason: existingRecord.error_message || "UNKNOWN_ERROR" };
+  }
+
+  // Not found in cache = maybe preload hasn't reached it, or it failed to insert
+  return { enabled: true, status: "ERROR", reason: "NOT_FOUND_IN_CACHE" };
+}
+
 export async function generateCardAudio(cardId: string, text: string, sessionCardId?: string): Promise<{ enabled: boolean; audioUrl?: string; reason?: string }> {
   const settings = await getVoiceSettings();
 

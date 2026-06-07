@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { SkipForward, Repeat, Check, X, Flame, Volume2, VolumeX, Loader2, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CardType, SessionCardType, SessionType } from "@/types";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -56,10 +56,15 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
   const [showFullTextModal, setShowFullTextModal] = useState(false);
   const [isChangingPace, setIsChangingPace] = useState(false);
   const [isInsertingPause, setIsInsertingPause] = useState(false);
+  const [showPaceMenu, setShowPaceMenu] = useState(false);
   
-  const [audioState, setAudioState] = useState<"IDLE" | "LOADING" | "PLAYING" | "ERROR">("IDLE");
+  const [audioState, setAudioState] = useState<"IDLE" | "LOADING" | "PLAYING" | "ERROR" | "MISSING">("MISSING");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<{enabled: boolean, playbackMode: string} | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const touchStartRef = useRef<{x: number, y: number} | null>(null);
+  const touchDeltaRef = useRef<{x: number, y: number} | null>(null);
 
   useEffect(() => {
     fetch("/api/session/voice-settings")
@@ -120,22 +125,71 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       audioRef.current = null;
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAudioState("IDLE");
+    setAudioState("MISSING");
+    setAudioUrl(null);
   }, [card?.id]);
 
   function renderCardBody(body: string) {
     return body.replace(/Tempo (máximo|sugerido):.*?(minutos?|segundos?)/gi, "").trim();
   }
 
+  // Poll voice status
   useEffect(() => {
-    if (isFlipped && voiceSettings?.enabled && voiceSettings?.playbackMode === "automatic" && audioState === "IDLE") {
+    if (!isFlipped || !card?.session_short_text?.trim() || !voiceSettings?.enabled) return;
+
+    let pollInterval: NodeJS.Timeout | null = null;
+    let isPolling = true;
+
+    async function checkStatus() {
+      if (!isPolling) return;
+      try {
+        const textToRead = card!.session_short_text!.trim();
+        const res = await fetch(`/api/session/${resolvedParams.id}/voice-status?cardId=${card!.id}&text=${encodeURIComponent(textToRead)}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        
+        if (!isPolling) return;
+        
+        if (data.status === "READY" && data.audioUrl) {
+          setAudioState("IDLE");
+          setAudioUrl(data.audioUrl);
+          if (pollInterval) clearInterval(pollInterval);
+        } else if (data.status === "GENERATING") {
+          setAudioState("LOADING");
+        } else if (data.status === "MISSING_SHORT_TEXT") {
+          setAudioState("MISSING");
+          if (pollInterval) clearInterval(pollInterval);
+        } else {
+          setAudioState("ERROR");
+          if (pollInterval) clearInterval(pollInterval);
+        }
+      } catch (err) {
+        if (!isPolling) return;
+        setAudioState("ERROR");
+        if (pollInterval) clearInterval(pollInterval);
+      }
+    }
+
+    void checkStatus();
+    pollInterval = setInterval(checkStatus, 3000);
+
+    return () => {
+      isPolling = false;
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFlipped, card?.id, card?.session_short_text, voiceSettings?.enabled, resolvedParams.id]);
+
+  // Autoplay if automatic
+  useEffect(() => {
+    if (isFlipped && voiceSettings?.enabled && voiceSettings?.playbackMode === "automatic" && audioState === "IDLE" && audioUrl) {
       const t = setTimeout(() => {
         handlePlayVoice().catch(console.error);
       }, 500);
       return () => clearTimeout(t);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFlipped, voiceSettings, audioState, card?.id]);
+  }, [isFlipped, voiceSettings, audioState, audioUrl, card?.id]);
 
   if (loading && !card) {
     return (
@@ -175,10 +229,42 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
         body: JSON.stringify({ sessionId: resolvedParams.id, choice })
       });
       if (!res.ok) throw new Error();
+      setShowPaceMenu(false);
     } catch(err) {
       console.error(err);
     }
     setIsChangingPace(false);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    if (!isFlipped) return;
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchDeltaRef.current = null;
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!isFlipped || !touchStartRef.current) return;
+    const dx = e.touches[0].clientX - touchStartRef.current.x;
+    const dy = e.touches[0].clientY - touchStartRef.current.y;
+    touchDeltaRef.current = { x: dx, y: dy };
+  }
+
+  function handleTouchEnd() {
+    if (!isFlipped || !touchStartRef.current || !touchDeltaRef.current) return;
+    const { x: dx, y: dy } = touchDeltaRef.current;
+    
+    // Dominant horizontal swipe check to avoid scroll conflict
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < -60) {
+        // Swipe left -> Next
+        fetchNext("NEXT");
+      } else if (dx > 60 && session && session.skips_used < 2) {
+        // Swipe right -> Skip
+        fetchNext("SKIP");
+      }
+    }
+    touchStartRef.current = null;
+    touchDeltaRef.current = null;
   }
 
   async function handleHotPause() {
@@ -203,31 +289,10 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       setAudioState("IDLE");
       return;
     }
-    if (audioState === "LOADING") return;
+    if (audioState === "LOADING" || audioState === "ERROR" || audioState === "MISSING" || !audioUrl) return;
 
-    setAudioState("LOADING");
     try {
-      const textToRead = card?.session_short_text?.trim();
-      
-      if (!textToRead) {
-        setAudioState("ERROR");
-        return;
-      }
-
-      const res = await fetch("/api/session/card-voice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardId: card?.id, text: textToRead }),
-      });
-      
-      const data = await res.json();
-      
-      if (!data.enabled || !data.audioUrl) {
-        setAudioState("ERROR");
-        return;
-      }
-
-      const audio = new Audio(data.audioUrl);
+      const audio = new Audio(audioUrl);
       audioRef.current = audio;
       
       audio.onended = () => setAudioState("IDLE");
@@ -359,7 +424,10 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
           <div className="h-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-copper)] transition-all duration-700 ease-out" style={{ width: `${progress}%` }} />
         </div>
         <div className="flex justify-between items-center px-4 pb-3">
-          <div />
+          <button onClick={() => setShowPaceMenu(!showPaceMenu)} className="text-white/40 hover:text-[#d4a373] transition-colors flex items-center gap-1.5" title="Ajustar ritmo">
+            <Activity className="w-4 h-4" />
+            <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Ritmo</span>
+          </button>
           <span className="text-xs font-medium text-[var(--color-text-secondary)] bg-black/20 px-3 py-1 rounded-full border border-white/5 shadow-inner">
             Carta {session.current_position + 1} de {session.target_card_count}
           </span>
@@ -384,6 +452,9 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             exit={{ x: -100, opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className="w-full relative perspective-[1000px] flex-1 flex flex-col justify-center"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <motion.div
               animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -411,7 +482,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
               {/* BACK (Verso) */}
               <div
                 className={`col-start-1 row-start-1 p-6 sm:p-7 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 relative overflow-y-auto custom-scrollbar`}
-                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', overscrollBehavior: 'contain', touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
               >
                  <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none rounded-[2rem]" />
                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
@@ -486,8 +557,8 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Pace Dial - Above actions */}
-      {session && session.current_position >= 3 && isFlipped && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex-shrink-0 flex justify-center px-4">
+      {showPaceMenu && session && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex-shrink-0 flex justify-center px-4 mb-2">
           <div className="max-w-xs flex justify-center items-center bg-[#130c0a]/80 backdrop-blur-md border border-white/5 p-1 rounded-full relative z-20 shadow-lg">
             <button disabled={isChangingPace} onClick={() => handlePaceChoice("SLOWER")} className="flex-1 text-[11px] font-medium tracking-wide uppercase py-2 px-3 rounded-full text-white/50 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50">Devagar</button>
             <div className="w-px h-4 bg-white/10 mx-1" />
@@ -525,11 +596,11 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             </button>
           )}
 
-          {card.session_short_text?.trim() && (
+          {card.session_short_text?.trim() && audioState !== "MISSING" && (
             <button
               onClick={handlePlayVoice}
-              disabled={!isFlipped || audioState === "LOADING"}
-              className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-3 rounded-lg transition-all border text-sm font-medium ${isFlipped ? "bg-white/5 hover:bg-white/10 border-[var(--color-copper)]/30 text-[var(--color-copper)]" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent text-white/30"}`}
+              disabled={!isFlipped || audioState === "LOADING" || audioState === "ERROR"}
+              className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-3 rounded-lg transition-all border text-sm font-medium ${isFlipped && audioState !== "ERROR" ? "bg-white/5 hover:bg-white/10 border-[var(--color-copper)]/30 text-[var(--color-copper)]" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent text-white/30"}`}
               title={audioState === "ERROR" ? "Áudio indisponível" : "Ouvir narração"}
             >
               {audioState === "LOADING" && <Loader2 className="w-4 h-4 animate-spin text-white/50" />}
