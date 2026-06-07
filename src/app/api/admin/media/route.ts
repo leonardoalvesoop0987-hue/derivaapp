@@ -44,9 +44,9 @@ export async function PATCH(req: Request) {
       ...(existing.type === "VIDEO" ? { classification_status } : {}),
     };
 
-    if (existing.type === "VIDEO" && data.is_active === true && classification_status !== "CLASSIFIED") {
-      return NextResponse.json({ error: "Classifique o video antes de ativar." }, { status: 400 });
-    }
+    // NOTE: Classification is now OPTIONAL - not required to activate a video
+    // Videos are eligible based on: status = READY + active = true + URL valid
+    // Classification is purely organizational metadata for admin filtering/organization
 
     const asset = await prisma.mediaAsset.update({ where: { id }, data: updateData });
     return NextResponse.json({ asset });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import type { NextRequest } from "next/server";
-import { drawVideoAdvanced } from "@/lib/deriva/video-engine";
+import { getRandomPlayableVideo } from "@/lib/deriva/video-engine";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,50 +11,32 @@ export async function GET(req: NextRequest) {
 
     const searchParams = req.nextUrl.searchParams;
     const type = searchParams.get("type");
-    const category = searchParams.get("category");
-    const cardId = searchParams.get("cardId");
     const excludeIds = searchParams.get("exclude") ? searchParams.get("exclude")!.split(",") : [];
 
     if (!type || (type !== "VIDEO" && type !== "MUSIC")) {
       return NextResponse.json({ error: "type deve ser VIDEO ou MUSIC" }, { status: 400 });
     }
 
-    if (type === "VIDEO" && cardId) {
-      const advancedAsset = await drawVideoAdvanced(cardId, excludeIds);
-      return NextResponse.json({ asset: advancedAsset });
+    if (type === "VIDEO") {
+      // VIDEO: Use simplified random draw (no weights, no classification required)
+      const asset = await getRandomPlayableVideo(excludeIds);
+      return NextResponse.json({ asset });
     }
 
-    const where: Record<string, unknown> = {
-      type: type as "VIDEO" | "MUSIC",
-      is_active: true,
-      ...(type === "VIDEO"
-        ? {
-            processing_status: "READY",
-            classification_status: "CLASSIFIED",
-            hls_master_key: { not: null },
-            video_category: { not: null },
-            content_type: { not: null },
-          }
-        : {}),
-      ...(type === "VIDEO" && category ? { video_category: category } : {}),
-      ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {})
-    };
+    // MUSIC: Simple active selection with random pick
+    const musicAssets = await prisma.mediaAsset.findMany({
+      where: {
+        type: "MUSIC",
+        is_active: true,
+        ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {})
+      }
+    });
 
-    const assets = await prisma.mediaAsset.findMany({ where, orderBy: { weight: "desc" } });
-
-    if (assets.length === 0) {
+    if (musicAssets.length === 0) {
       return NextResponse.json({ asset: null });
     }
 
-    // Weighted random selection
-    const totalWeight = assets.reduce((sum, a) => sum + a.weight, 0);
-    let random = Math.random() * totalWeight;
-    let selected = assets[assets.length - 1];
-    for (const asset of assets) {
-      random -= asset.weight;
-      if (random <= 0) { selected = asset; break; }
-    }
-
+    const selected = musicAssets[Math.floor(Math.random() * musicAssets.length)];
     return NextResponse.json({ asset: selected });
   } catch (error) {
     console.error(error);
