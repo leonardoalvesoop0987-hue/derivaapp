@@ -58,7 +58,7 @@ export function GuidedSessionHighlightsSection() {
     {
       icon: <Monitor size={20} strokeWidth={1.5} />,
       title: "Funciona também em tela grande",
-      desc: "Celular, tablet ou projetor: a experiência se adapta para deixar o app menos no centro e o clima mais presente."
+      desc: "Celular, tablet ou Android TV: a experiência se adapta para deixar o app menos no centro e o clima mais presente."
     }
   ];
 
