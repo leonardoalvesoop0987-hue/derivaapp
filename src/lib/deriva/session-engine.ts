@@ -178,6 +178,57 @@ async function getNextCard(input: NextCardInput & { forceStage?: SessionStage },
       if (candidate.receiver_rule === lastCard.receiver_rule && candidate.receiver_rule !== "NONE" && candidate.receiver_rule !== "ANY") score -= 20;
     }
 
+    // Smart progression rules - avoid illogical sequences
+    if (lastCard) {
+      // Rule 1: Avoid ORAL_NELA (card 015) after PENETRACAO
+      // Jumping back to oral without video after penetration is a regression
+      if (lastCard.primary_tag === "PENETRACAO" && candidate.primary_tag === "ORAL_NELA") {
+        score -= 999;
+      }
+
+      // Rule 2: Avoid SEM_PENETRAÇÃO after PENETRAÇÃO has started
+      // Removing penetration after it's already happened doesn't make sense
+      if (lastCard.primary_tag === "PENETRACAO" && candidate.primary_tag === "SEM_PENETRAÇÃO") {
+        score -= 100;
+      }
+
+      // Rule 3: Prefer VIDEO stimulation cards (ROXO) after manual pleasure (ROSA)
+      // Video is more intense and provides visual stimulation escalation
+      if ((lastCard.primary_tag === "COMANDO_DELA" ||
+           lastCard.primary_tag === "CONTROLE_DELA" ||
+           lastCard.primary_tag === "ORAL_NELA") &&
+          candidate.requires_video &&
+          candidate.primary_tag === "VIDEO") {
+        score += 35;
+      }
+
+      // Rule 4: After PENETRAÇÃO, only allow video-based ORAL/pleasure (cards 022-026)
+      // Video-based cards are more intense and serve as escalation, not regression
+      if (lastCard.primary_tag === "PENETRACAO" &&
+          !candidate.requires_video &&
+          (candidate.primary_tag === "COMANDO_DELA" ||
+           candidate.primary_tag === "CONTROLE_DELA" ||
+           candidate.primary_tag === "ORAL_NELA")) {
+        score -= 80;
+      }
+    }
+
+    // Avoid returning to OPENING stage after INTENSE/PEAK has been reached
+    if (input.currentPosition > 3 && lastCard &&
+        (lastCard.stage === "INTENSE" || lastCard.stage === "PEAK") &&
+        candidate.stage === "OPENING") {
+      score -= 70;
+    }
+
+    // Avoid excessive ROLEPLAY repetition (max 1 per 5 cards)
+    const recentRoleplayCount = sequenceSoFar
+      .slice(Math.max(0, sequenceSoFar.length - 5))
+      .filter(c => c.primary_tag === "ROLEPLAY")
+      .length;
+    if (recentRoleplayCount >= 2 && candidate.primary_tag === "ROLEPLAY") {
+      score -= 60;
+    }
+
     // Preferences
     const pref = prefMap.get(candidate.id);
     if (pref) {
