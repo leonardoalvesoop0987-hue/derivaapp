@@ -31,21 +31,10 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
       }
 
       setAsset(data.asset);
-      let src = data.asset.public_url || `/uploads/${data.asset.storage_key}`;
 
-      // Fetch signed URL
-      try {
-        const urlRes = await fetch(`/api/media/${data.asset.id}/url`);
-        if (urlRes.ok) {
-          const urlData = await urlRes.json();
-          if (urlData.url) {
-            src = urlData.url;
-            console.log("[AudioPlayer] Usando URL assinada");
-          }
-        }
-      } catch (err) {
-        console.warn("[AudioPlayer] Fallback para URL direta", err);
-      }
+      // Use the stream endpoint which handles CORS properly
+      let src = `/api/media/${data.asset.id}/stream`;
+      console.log("[AudioPlayer] Usando stream endpoint com CORS:", src);
 
       // Enviar src para o elemento <audio> do DOM
       if (audioRef.current) {

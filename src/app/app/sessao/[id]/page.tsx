@@ -504,19 +504,10 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
                    <div className="opacity-90 leading-relaxed whitespace-pre-wrap font-light overflow-y-auto custom-scrollbar flex-1 pr-2"
                         style={{ fontSize: 'clamp(1.05rem, 4vw, 1.4rem)' }}>
-                     {resolvedShortText || resolvedBodyText}
+                     {resolvedBodyText}
                    </div>
 
                    <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/10 flex-shrink-0">
-
-                     {resolvedShortText && (
-                       <button
-                         onClick={(e) => { e.stopPropagation(); setShowFullTextModal(true); }}
-                         className="text-xs text-white/50 hover:text-white/70 pb-1 transition-colors text-center"
-                       >
-                         Ver texto completo
-                       </button>
-                     )}
                    </div>
                  </div>
 
