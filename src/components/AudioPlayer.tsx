@@ -108,7 +108,7 @@ export default function AudioPlayer({ enabled }: { enabled: boolean }) {
   }
 
   return (
-    <div className="fixed bottom-[5.5rem] right-4 z-20 flex items-center gap-2 bg-[var(--color-background-secondary)]/90 backdrop-blur-sm px-3 py-2 rounded-full border border-[var(--color-border)] shadow-lg">
+    <div className="fixed bottom-[calc(90px+env(safe-area-inset-bottom))] right-4 z-20 flex items-center gap-2 bg-[var(--color-background-secondary)]/90 backdrop-blur-sm px-3 py-2 rounded-full border border-[var(--color-border)] shadow-lg">
       <Music className="w-3.5 h-3.5 text-[var(--color-copper)]" />
       {blocked ? (
         <button

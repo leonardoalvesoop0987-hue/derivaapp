@@ -17,8 +17,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const isHome = pathname === "/app";
-  const isSession = pathname.startsWith("/app/sessao");
+  const isSession = pathname.startsWith("/app/sessao/") && !pathname.endsWith("/feedback");
   const isDecks = pathname.startsWith("/app/decks");
+  const isSessionFeedback = pathname.includes("/sessao/") && pathname.endsWith("/feedback");
 
   return (
     <div className="min-h-screen flex flex-col relative bg-[var(--color-background-primary)] selection:bg-[var(--color-wine)] selection:text-white">
@@ -30,26 +31,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <GrainOverlay opacity={0.03} />
       </div>
 
-      <header className="px-6 py-5 flex items-center justify-between relative z-10">
-        <div className="text-xl font-serif tracking-widest text-[#d4a373] italic">Deriva</div>
-        <div className="flex gap-4">
-          <Link href="/app/configuracoes" className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors">
-            <Settings className="w-5 h-5" />
-          </Link>
-          <button
-            className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </header>
+      {!isSession && (
+        <header className="px-6 py-5 flex items-center justify-between relative z-10">
+          <div className="text-xl font-serif tracking-widest text-[#d4a373] italic">Deriva</div>
+          <div className="flex gap-4">
+            <Link href="/app/configuracoes" className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors">
+              <Settings className="w-5 h-5" />
+            </Link>
+            <button
+              className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </header>
+      )}
 
-      <main className="flex-1 p-6 pb-28 relative z-10">
+      <main className={`flex-1 relative z-10 ${isSession ? 'p-0' : 'p-6 pb-28'}`}>
         {children}
       </main>
 
-      <nav className={`fixed bottom-0 w-full z-20 pb-[env(safe-area-inset-bottom)] ${isSession ? 'landscape:hidden' : ''}`}>
+      <nav className={`fixed bottom-0 w-full z-20 pb-[env(safe-area-inset-bottom)] ${isSession || isSessionFeedback ? 'hidden' : ''}`}>
         <div className="absolute inset-0 bg-[#0d0806]/80 backdrop-blur-xl border-t border-white/5" />
         <div className="relative flex justify-around items-center px-4 py-4 max-w-md mx-auto">
           <Link href="/app" className="flex flex-col items-center group w-16">
