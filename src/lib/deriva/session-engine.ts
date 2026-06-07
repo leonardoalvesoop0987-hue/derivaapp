@@ -188,7 +188,7 @@ async function getNextCard(input: NextCardInput & { forceStage?: SessionStage },
 
       // Rule 2: Avoid SEM_PENETRAÇÃO after PENETRAÇÃO has started
       // Removing penetration after it's already happened doesn't make sense
-      if (lastCard.primary_tag === "PENETRACAO" && candidate.primary_tag === "SEM_PENETRAÇÃO") {
+      if (lastCard.primary_tag === "PENETRACAO" && candidate.primary_tag === "SEM_PENETRACAO") {
         score -= 100;
       }
 
