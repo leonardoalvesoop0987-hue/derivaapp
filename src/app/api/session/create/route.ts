@@ -101,32 +101,48 @@ export async function POST(req: Request) {
       disableDarkPenalty
     });
 
-    if (sequence.length > 0) {
-      // Create session cards with QUEUED status (except first one which is SHOWN)
-      await prisma.sessionCard.createMany({
-        data: sequence.map((seq, index) => ({
-          session_id: session.id,
-          card_id: seq.card_id,
-          position: seq.position,
-          status: index === 0 ? "SHOWN" : "QUEUED",
-          metadata_json: seq.metadata_json,
-        }))
-      });
-
-      await prisma.session.update({
-        where: { id: session.id },
-        data: { last_card_id: sequence[0].card_id }
-      });
-      
-      // Trigger voice preload asynchronously (don't await)
-      import("@/services/server/voiceService").then(({ preloadSessionAudios }) => {
-        preloadSessionAudios(session.id).catch(err => console.error("[Preload] error:", err));
-      }).catch(err => console.error("[Preload Import] error:", err));
+    if (!sequence || sequence.length === 0) {
+      console.warn("[Session Create] Nenhuma carta retornada pela engine para os filtros atuais.");
+      // Soft-delete the empty session
+      await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+      return NextResponse.json({ error: "Não há cartas suficientes para este modo. Tente afrouxar os filtros ou escolha outro modo." }, { status: 400 });
     }
 
+    // Create session cards with QUEUED status (except first one which is SHOWN)
+    await prisma.sessionCard.createMany({
+      data: sequence.map((seq, index) => ({
+        session_id: session.id,
+        card_id: seq.card_id,
+        position: seq.position,
+        status: index === 0 ? "SHOWN" : "QUEUED",
+        metadata_json: seq.metadata_json,
+      }))
+    });
+
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { last_card_id: sequence[0].card_id }
+    });
+    
+    // Trigger voice preload asynchronously (don't await)
+    import("@/services/server/voiceService").then(({ preloadSessionAudios }) => {
+      preloadSessionAudios(session.id).catch(err => console.error("[Preload] error:", err));
+    }).catch(err => console.error("[Preload Import] error:", err));
+
     return NextResponse.json({ sessionId: session.id });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Erro ao criar sessão" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[Session Create Error]:", error);
+
+    // Identificar erro de constraint (P2003 = foreign key falhou, ex: usuário inválido)
+    if (error?.code === 'P2003') {
+      return NextResponse.json({ error: "Usuário inválido ou sessão expirada. Por favor, faça login novamente." }, { status: 401 });
+    }
+    
+    // Identificar erro de coluna faltando (P2022) - caso alguma migration ainda falhe
+    if (error?.code === 'P2022') {
+      return NextResponse.json({ error: "Erro de sincronização no banco de dados. Contate o suporte." }, { status: 500 });
+    }
+
+    return NextResponse.json({ error: "Não foi possível iniciar a sessão agora. Tente novamente." }, { status: 500 });
   }
 }
