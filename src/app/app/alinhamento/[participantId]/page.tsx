@@ -145,7 +145,12 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
                   name={q.id} 
                   value={opt.label} 
                   checked={answers[q.id] === opt.label}
-                  onChange={() => setAnswers(prev => ({ ...prev, [q.id]: opt.label }))}
+                  onChange={() => {
+                    setAnswers(prev => ({ ...prev, [q.id]: opt.label }));
+                    if (currentStep < questions.length - 1) {
+                      setTimeout(() => handleNext(), 350);
+                    }
+                  }}
                   className="mr-3"
                 />
                 <span className="text-sm text-white">{opt.label}</span>
@@ -214,7 +219,7 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-[var(--color-background)] border-t border-[var(--color-border)] flex gap-4 z-10 max-w-md mx-auto right-0">
+      <div className="flex gap-4 mt-8 w-full">
         <button
           onClick={handleBack}
           disabled={currentStep === 0 || submitting}
@@ -225,7 +230,7 @@ export default function AlinhamentoFormPage({ params }: { params: Promise<{ part
         <button
           onClick={handleNext}
           disabled={!isAnswered || submitting}
-          className="flex-[2] py-4 bg-[var(--color-wine)] rounded-xl font-medium hover:bg-[var(--color-red-deep)] disabled:opacity-50 transition-colors"
+          className="flex-[2] py-4 bg-[var(--color-wine)] rounded-xl font-medium hover:bg-[var(--color-red-deep)] disabled:opacity-50 transition-colors shadow-lg"
         >
           {submitting ? "Enviando..." : currentStep === questions.length - 1 ? "Finalizar" : "Avançar"}
         </button>

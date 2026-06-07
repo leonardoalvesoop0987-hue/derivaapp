@@ -368,7 +368,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Card physical container */}
-      <div className="flex-1 flex flex-col justify-center max-w-sm md:max-w-md lg:max-w-xl mx-auto w-full relative perspective-[1000px]">
+      <div className="flex-1 flex flex-col justify-center max-w-sm md:max-w-md lg:max-w-xl mx-auto w-full relative perspective-[1000px] my-2">
         <AnimatePresence mode="wait">
           <motion.div
             key={state.id}
@@ -381,34 +381,34 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
             <motion.div
               animate={{ rotateY: isFlipped ? 180 : 0 }}
               transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-              className="w-full min-h-[400px] md:min-h-[450px] relative cursor-pointer"
+              className="w-full relative cursor-pointer grid"
               style={{ transformStyle: 'preserve-3d' }}
               onClick={() => !isFlipped && setIsFlipped(true)}
             >
               {/* FRONT (Capa) */}
               <div 
-                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl shadow-black/50 border border-white/5 relative overflow-hidden`}
+                className={`col-start-1 row-start-1 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col justify-center items-center text-center shadow-2xl shadow-black/50 border border-white/5 relative overflow-hidden min-h-[250px] md:min-h-[300px]`}
                 style={{ backfaceVisibility: 'hidden' }}
               >
                  <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
                  <span className="text-xs text-white/50 mb-6 tracking-widest uppercase font-medium z-10">
                    {CATEGORY_NAMES[card.category] || card.category} <span className="ml-1 text-base opacity-70">{INTENSITY_FIRE[card.intensity] || "🔥"}</span>
                  </span>
-                 <p className="text-4xl font-serif italic text-[#d4a373] leading-snug drop-shadow-xl z-10 px-4">
+                 <p className="text-3xl md:text-4xl font-serif italic text-[#d4a373] leading-snug drop-shadow-xl z-10 px-4">
                    {meta.front_text || "A tensão sobe agora."}
                  </p>
-                 <p className="absolute bottom-8 text-[10px] text-white/30 uppercase tracking-[0.2em] animate-pulse z-10">Toque para revelar</p>
+                 <p className="absolute bottom-6 text-[10px] text-white/30 uppercase tracking-[0.2em] animate-pulse z-10">Toque para revelar</p>
               </div>
 
               {/* BACK (Verso) */}
               <div 
-                className={`absolute inset-0 p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 overflow-y-auto custom-scrollbar relative`}
+                className={`col-start-1 row-start-1 p-6 md:p-8 rounded-[2rem] bg-gradient-to-br ${bgStyle} flex flex-col shadow-2xl shadow-black/50 border border-white/5 relative min-h-[250px] md:min-h-[300px]`}
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
-                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none" />
+                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none rounded-[2rem]" />
                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none rounded-[2rem]" />
                  
-                 <div className="flex items-center justify-between mb-8 z-10">
+                 <div className="flex items-center justify-between mb-6 z-10">
                    <span className="text-xs font-medium uppercase tracking-widest opacity-60">
                      {CATEGORY_NAMES[card.category] || card.category}
                    </span>
@@ -446,16 +446,18 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
                        <button
                           onClick={handlePlayVoice}
                           disabled={audioState === "LOADING"}
-                          className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors ml-auto"
+                          className="flex items-center justify-center gap-2 w-full mt-6 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-medium backdrop-blur-sm"
                           title={audioState === "ERROR" ? "Áudio indisponível" : "Ouvir narração"}
                         >
-                          {audioState === "LOADING" && <Loader2 className="w-4 h-4 animate-spin" />}
-                         {audioState === "PLAYING" && <Volume2 className="w-4 h-4 text-[var(--color-copper)]" />}
-                         {audioState === "IDLE" && <Volume2 className="w-4 h-4" />}
-                         {audioState === "ERROR" && <VolumeX className="w-4 h-4 text-red-400" />}
-                         <span className={audioState === "PLAYING" ? "text-[var(--color-copper)]" : ""}>
-                           {audioState === "PLAYING" ? "Parar narração" : audioState === "ERROR" ? "Não disponível" : "Ouvir carta"}
-                         </span>
+                          {audioState === "LOADING" && <Loader2 className="w-5 h-5 animate-spin text-white/50" />}
+                          {audioState === "PLAYING" && <Volume2 className="w-5 h-5 text-[#d4a373]" />}
+                          {audioState === "IDLE" && <Volume2 className="w-5 h-5 text-white/70" />}
+                          {audioState === "ERROR" && <VolumeX className="w-5 h-5 text-red-400" />}
+                          <span className={audioState === "PLAYING" ? "text-[#d4a373]" : audioState === "ERROR" ? "text-red-400" : "text-white/90"}>
+                            {audioState === "LOADING" ? "Preparando áudio..." : 
+                             audioState === "PLAYING" ? "Parar narração" : 
+                             audioState === "ERROR" ? "Áudio indisponível" : "Ouvir carta"}
+                          </span>
                        </button>
                      )}
                    </div>
@@ -491,7 +493,7 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* Pace Dial */}
-      {session && session.current_position > 3 && isFlipped && (
+      {session && session.current_position >= 3 && isFlipped && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-xs mx-auto mb-2 flex justify-center items-center bg-[#130c0a]/80 backdrop-blur-md border border-white/5 p-1 rounded-full relative z-20 shadow-lg">
           <button disabled={isChangingPace} onClick={() => handlePaceChoice("SLOWER")} className="flex-1 text-[11px] font-medium tracking-wide uppercase py-2 px-3 rounded-full text-white/50 hover:bg-white/5 hover:text-white transition-colors disabled:opacity-50">Devagar</button>
           <div className="w-px h-4 bg-white/10 mx-1" />
@@ -502,54 +504,67 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
       )}
 
       {/* Actions (Floating bottom) */}
-      <div className="flex justify-center items-center gap-4 md:gap-6 pt-4 pb-6 relative z-20 max-w-sm mx-auto">
+      <div className="flex justify-center items-end gap-3 md:gap-5 pt-4 pb-6 relative z-20 max-w-sm mx-auto w-full px-2">
+        
         {card.is_invertible && session.inversions_used < 2 && (
-          <button
-            onClick={() => fetchNext("INVERT")}
-            disabled={loading || !isFlipped}
-            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"}`}
-            title={`Inverter (${2 - session.inversions_used} restantes)`}
-          >
-            <Repeat className="w-5 h-5 text-[#d4a373]" />
-          </button>
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            <button
+              onClick={() => fetchNext("INVERT")}
+              disabled={loading || !isFlipped}
+              className={`flex items-center justify-center w-12 h-12 rounded-full transition-all border ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
+            >
+              <Repeat className="w-5 h-5 text-[#d4a373]" />
+            </button>
+            <span className="text-[10px] uppercase tracking-wider text-white/50">Inverter</span>
+          </div>
         )}
 
-        <button
-          onClick={() => setShowAbortConfirm(true)}
-          className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-transparent hover:bg-white/5 transition-colors group"
-          title="Encerrar o jogo"
-        >
-          <X className="w-6 h-6 text-white/40 group-hover:text-red-400 transition-colors" />
-        </button>
+        <div className="flex flex-col items-center gap-1.5 flex-1">
+          <button
+            onClick={() => setShowAbortConfirm(true)}
+            className="flex items-center justify-center w-12 h-12 rounded-full bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-colors border border-transparent"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <span className="text-[10px] uppercase tracking-wider text-white/40">Sair</span>
+        </div>
 
-        <button
-          onClick={handleHotPause}
-          disabled={loading || !isFlipped || isInsertingPause}
-          className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"} group`}
-          title="Pausa Quente"
-        >
-          {isInsertingPause ? <Loader2 className="w-5 h-5 text-white/60 animate-spin" /> : <Wind className="w-5 h-5 text-white/60 group-hover:text-[#d4a373] transition-colors" />}
-        </button>
+        {session.current_position >= 2 && (
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            <button
+              onClick={handleHotPause}
+              disabled={loading || !isFlipped || isInsertingPause}
+              className={`flex items-center justify-center w-12 h-12 rounded-full transition-all border ${isFlipped ? "bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 text-orange-400" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
+            >
+              {isInsertingPause ? <Loader2 className="w-5 h-5 animate-spin" /> : <Flame className="w-5 h-5" />}
+            </button>
+            <span className="text-[10px] uppercase tracking-wider text-orange-400/80 text-center leading-[1.1]">Pausa<br/>Quente</span>
+          </div>
+        )}
 
         {session.skips_used < 2 && (
-          <button
-            onClick={() => fetchNext("SKIP")}
-            disabled={loading || !isFlipped}
-            className={`flex flex-col items-center justify-center w-14 h-14 rounded-full transition-all border backdrop-blur-xl ${isFlipped ? "bg-[#1a0f0d]/80 hover:bg-[#2a1815] border-white/5" : "bg-black/20 opacity-30 cursor-not-allowed border-transparent"}`}
-            title={`Pular (${2 - session.skips_used} restantes)`}
-          >
-            <SkipForward className="w-5 h-5 text-white/60" />
-          </button>
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            <button
+              onClick={() => fetchNext("SKIP")}
+              disabled={loading || !isFlipped}
+              className={`flex items-center justify-center w-12 h-12 rounded-full transition-all border ${isFlipped ? "bg-white/5 hover:bg-white/10 border-white/10 text-white/60" : "bg-white/5 opacity-30 cursor-not-allowed border-transparent"}`}
+            >
+              <SkipForward className="w-5 h-5" />
+            </button>
+            <span className="text-[10px] uppercase tracking-wider text-white/50">Pular</span>
+          </div>
         )}
 
-        <button
-          onClick={() => fetchNext("NEXT")}
-          disabled={loading || !isFlipped}
-          className={`flex flex-col items-center justify-center w-[4.5rem] h-[4.5rem] rounded-full transition-all border ${isFlipped ? "bg-[#B9825A] hover:brightness-110 border-transparent shadow-[0_0_30px_rgba(185,130,90,0.3)] hover:scale-105" : "bg-white/5 opacity-50 cursor-not-allowed border-white/5"}`}
-          title="Próxima carta"
-        >
-          <Check className="w-7 h-7 text-white" />
-        </button>
+        <div className="flex flex-col items-center gap-1.5 flex-[1.2]">
+          <button
+            onClick={() => fetchNext("NEXT")}
+            disabled={loading || !isFlipped}
+            className={`flex items-center justify-center w-16 h-16 rounded-[1.25rem] transition-all border ${isFlipped ? "bg-[#B9825A] hover:brightness-110 border-transparent shadow-[0_0_20px_rgba(185,130,90,0.3)] hover:scale-105 text-white" : "bg-white/5 opacity-50 cursor-not-allowed border-white/5"}`}
+          >
+            <Check className="w-8 h-8" />
+          </button>
+          <span className="text-[10px] uppercase tracking-wider text-[#d4a373] font-medium">Próxima</span>
+        </div>
       </div>
 
       <AudioPlayer enabled={session.music_enabled} />
