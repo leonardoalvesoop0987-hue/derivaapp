@@ -330,51 +330,25 @@ export default function SessaoCardPage({ params }: { params: Promise<{ id: strin
 
 
 
+  // Auto-continue session when completed, instead of asking
+  useEffect(() => {
+    if (completed && !loading) {
+      const timer = setTimeout(() => {
+        handleContinue("SAME");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [completed, loading]);
+
   if (completed) {
     return (
-      <div className="flex flex-col min-h-[100dvh] pt-12 pb-[calc(1.5rem+env(safe-area-inset-bottom))] px-6 items-center justify-center animate-in fade-in zoom-in duration-700">
+      <div className="flex flex-col min-h-[100dvh] items-center justify-center animate-in fade-in zoom-in duration-700">
         <div className="w-20 h-20 bg-[var(--color-wine)]/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(153,27,27,0.3)]">
           <Flame className="w-10 h-10 text-[var(--color-copper)] animate-pulse" />
         </div>
-        <h2 className="text-3xl font-serif text-[#d4a373] italic mb-4">Querem continuar?</h2>
-        <p className="text-[var(--color-text-secondary)] text-base mb-10 max-w-[280px] mx-auto text-center leading-relaxed">
-          O clima já está alto. Vocês decidem o que acontece a seguir.
+        <p className="text-[var(--color-text-secondary)] text-base text-center">
+          Preparando próxima rodada...
         </p>
-        
-        <div className="w-full max-w-sm flex flex-col gap-3">
-          <button
-            onClick={() => handleContinue("SAME")}
-            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-[#d4a373] transition-colors text-left flex justify-between items-center"
-          >
-            <span>Manter a intensidade</span>
-            <Flame className="w-4 h-4 text-[#d4a373]" />
-          </button>
-          
-          <button
-            onClick={() => handleContinue("LIGHTER")}
-            className="w-full bg-[var(--color-card)] border border-[var(--color-border)] px-6 py-4 rounded-2xl text-white font-medium hover:border-blue-400/50 transition-colors text-left flex justify-between items-center"
-          >
-            <span>Diminuir o ritmo</span>
-            <span className="text-sm opacity-50">Provocações suaves</span>
-          </button>
-          
-          <button
-            onClick={() => handleContinue("HEAVIER")}
-            className="w-full bg-gradient-to-r from-[var(--color-wine)] to-[var(--color-red-deep)] border border-transparent px-6 py-4 rounded-2xl text-white font-medium hover:brightness-110 transition-colors text-left flex justify-between items-center shadow-lg"
-          >
-            <span>Esquentar mais o jogo</span>
-            <Flame className="w-5 h-5 text-white" />
-          </button>
-          
-          <div className="h-px bg-[var(--color-border)] w-full my-3" />
-          
-          <button
-            onClick={() => router.push(`/app/sessao/${resolvedParams.id}/feedback`)}
-            className="w-full bg-transparent px-6 py-4 rounded-2xl text-[var(--color-text-secondary)] font-medium hover:text-white transition-colors text-center uppercase tracking-widest text-xs"
-          >
-            Encerrar o jogo
-          </button>
-        </div>
       </div>
     );
   }
