@@ -89,6 +89,27 @@ async function getNextCard(input: NextCardInput & { forceStage?: SessionStage },
   const deck = await prisma.deck.findUnique({ where: { id: input.deckId } });
   if (!deck) return null;
 
+  // NOITE_ESPECIAL mode: return cards in fixed sequence (1, 9, 15, 17, 27, 33, 10, 28, 35, 34, 46, 45)
+  if (input.mode === "NOITE_ESPECIAL") {
+    const specialSequence = [1, 9, 15, 17, 27, 33, 10, 28, 35, 34, 46, 45];
+    const nextSequenceIndex = input.currentPosition;
+
+    if (nextSequenceIndex >= specialSequence.length) {
+      return null; // Sequence complete
+    }
+
+    const targetPosition = specialSequence[nextSequenceIndex];
+    const nextCard = await prisma.card.findFirst({
+      where: {
+        deck_id: input.deckId,
+        position: targetPosition,
+        is_active: true,
+      },
+    });
+
+    return nextCard || null;
+  }
+
   let availableCards: Card[] = [];
 
   if (deck.type === "COUPLE_CUSTOM" || deck.type === "CUSTOM") {
@@ -287,19 +308,21 @@ export async function generateSessionSequence(input: NextCardInput & { preferenc
   const sequenceSoFar: Card[] = [];
 
   if (input.mode === "NOITE_ESPECIAL") {
+    // Sequência fixa definida em deck-deriva-50-cartas.md:
+    // Cartas: 1, 9, 15, 17, 27, 33, 10, 28, 35, 34, 46, 45
     const especialKeys = [
-      "deriva-v2-card-001",
-      "deriva-v2-card-003",
-      "deriva-v2-card-004",
-      "deriva-v2-card-009",
-      "deriva-v2-card-012",
-      "deriva-v2-card-015",
-      "deriva-v2-card-019",
-      "deriva-v2-card-023",
-      "deriva-v2-card-035",
-      "deriva-v2-card-040",
-      "deriva-v2-card-046",
-      "deriva-v2-card-047"
+      "deriva-v2-card-001", // 1. Mãos lentas
+      "deriva-v2-card-009", // 2. Beijo que desce
+      "deriva-v2-card-015", // 3. Ela guia
+      "deriva-v2-card-017", // 4. Boca e pausa
+      "deriva-v2-card-027", // 5. Tela para ela (ROXO)
+      "deriva-v2-card-033", // 6. Ela por cima
+      "deriva-v2-card-010", // 7. Pausa grudada
+      "deriva-v2-card-028", // 8. Tela para ele (ROXO)
+      "deriva-v2-card-035", // 9. Ritmo crescente
+      "deriva-v2-card-034", // 10. Posição escolhida por ela
+      "deriva-v2-card-046", // 11. Ela no comando do fim
+      "deriva-v2-card-045", // 12. Ordem sussurrada
     ];
 
     if (input.targetCardCount > 1) {

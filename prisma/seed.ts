@@ -1077,16 +1077,34 @@ async function main() {
     });
   }
 
+  // Ensure Special Night Deck exists (Noite Mais que Especial)
+  let specialNightDeck = await prisma.deck.findUnique({ where: { system_key: 'deriva-noite-especial-v1' } });
+  if (!specialNightDeck) {
+    specialNightDeck = await prisma.deck.create({
+      data: {
+        system_key: 'deriva-noite-especial-v1',
+        name: 'Noite Mais que Especial',
+        description: 'Uma sequência especial de 12 cartas selecionadas para uma noite focada nela.',
+        type: 'SYSTEM',
+        is_default: false,
+      }
+    });
+  }
+
   // Clear old cards to make room for the new set of 50 cards
   console.log("Deletando cartas antigas...");
   await prisma.card.deleteMany({});
 
+  // Special sequence for Noite Mais que Especial (12 cards in exact order)
+  const specialNightSequence = [1, 9, 15, 17, 27, 33, 10, 28, 35, 34, 46, 45];
+
   for (const card of cards) {
     const isDark = card.category === "PRETO";
+    const isSpecialNightCard = specialNightSequence.includes(card.position);
     await prisma.card.upsert({
       where: { system_key: card.system_key },
       update: {
-        deck_id: isDark ? darkDeck.id : deck.id,
+        deck_id: isSpecialNightCard ? specialNightDeck.id : (isDark ? darkDeck.id : deck.id),
         title: card.title,
         body: card.body,
         category: card.category as CardCategory,
@@ -1109,7 +1127,7 @@ async function main() {
         is_available_in_custom_selection: !isDark,
       },
       create: {
-        deck_id: isDark ? darkDeck.id : deck.id,
+        deck_id: isSpecialNightCard ? specialNightDeck.id : (isDark ? darkDeck.id : deck.id),
         system_key: card.system_key,
         title: card.title,
         body: card.body,

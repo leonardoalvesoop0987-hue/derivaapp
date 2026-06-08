@@ -91,6 +91,10 @@ export default function NovaSessaoPage() {
         finalMode = "PADRAO";
         finalLength = "COMPLETA";
         finalMaxIntensity = "PICO";
+      } else if (selectedPreset === "NOITE_ESPECIAL") {
+        finalMode = "NOITE_ESPECIAL";
+        finalLength = "CURTA";
+        finalMaxIntensity = "PICO";
       } else if (selectedPreset === "CUSTOM") {
         // Use the advanced states as-is
       }
@@ -162,27 +166,33 @@ export default function NovaSessaoPage() {
   }
 
   const PRESETS = [
-    { 
-      id: "LEVE", 
-      title: "Leve e Íntimo", 
+    {
+      id: "LEVE",
+      title: "Leve e Íntimo",
       desc: "Uma provocação suave para começar o jogo e subir a tensão aos poucos.",
       icon: <Sparkles className="w-5 h-5" />
     },
-    { 
-      id: "QUENTE", 
-      title: "Quente e Progressivo", 
+    {
+      id: "QUENTE",
+      title: "Quente e Progressivo",
       desc: "A jornada clássica. O clima esquenta a cada carta revelada.",
       icon: <Flame className="w-5 h-5" />
     },
-    { 
-      id: "INTENSO", 
-      title: "Mais Intenso", 
+    {
+      id: "INTENSO",
+      title: "Mais Intenso",
       desc: "Direto ao ponto. Uma exploração mais ousada e provocante.",
       icon: <Zap className="w-5 h-5" />
     },
-    { 
-      id: "CUSTOM", 
-      title: "Personalizar", 
+    {
+      id: "NOITE_ESPECIAL",
+      title: "Noite Mais que Especial",
+      desc: "Uma sequência especial focada nela, com 12 cartas selecionadas.",
+      icon: <Sparkles className="w-5 h-5" />
+    },
+    {
+      id: "CUSTOM",
+      title: "Personalizar",
       desc: "Vocês definem as regras e a estrutura da noite.",
       icon: <Settings2 className="w-5 h-5" />
     }
@@ -293,13 +303,14 @@ export default function NovaSessaoPage() {
             {/* Modo */}
             <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
               <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Estrutura do jogo</label>
-              <select 
-                value={mode} 
+              <select
+                value={mode}
                 onChange={e => setMode(e.target.value)}
                 className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
               >
                 <option value="PADRAO">Jornada Padrão</option>
                 <option value="COM_PREFERENCIAS">Com Preferências Focadas</option>
+                <option value="NOITE_ESPECIAL">Noite Mais que Especial</option>
                 <option value="PERSONALIZADO">Meu Deck Exclusivo (Requer setup)</option>
               </select>
             </div>
