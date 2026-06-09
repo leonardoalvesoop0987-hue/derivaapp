@@ -245,6 +245,17 @@ export default function ConfiguracoesPage() {
         </div>
       </div>
 
+      {/* Logout */}
+      <button
+        onClick={async () => {
+          await fetch("/api/auth/logout", { method: "POST" });
+          window.location.href = "/login";
+        }}
+        className="w-full px-6 py-3 bg-white/5 border border-white/10 rounded-xl font-medium text-[var(--color-text-secondary)] hover:bg-white/10 hover:text-white transition-colors mt-8"
+      >
+        Sair da conta
+      </button>
+
       {/* Sobre */}
       <div className="px-4 text-center space-y-1 pt-4 pb-8">
         <div className="text-xs text-white/30 tracking-widest uppercase font-medium">Deriva</div>

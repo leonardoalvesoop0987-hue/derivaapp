@@ -1,20 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { Settings, LogOut } from "lucide-react";
+import { Settings } from "lucide-react";
 import { GrainOverlay } from "@/components/lp/GrainOverlay";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
-
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
 
   const isHome = pathname === "/app";
   const isSession = pathname.startsWith("/app/sessao/") && !pathname.endsWith("/feedback");
@@ -33,17 +27,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {!isSession && (
         <header className="px-6 py-5 flex items-center justify-between relative z-10">
           <div className="text-xl font-serif tracking-widest text-[#d4a373] italic">Deriva</div>
-          <div className="flex gap-4">
-            <Link href="/app/configuracoes" className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors">
-              <Settings className="w-5 h-5" />
-            </Link>
-            <button
-              className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
+          <Link href="/app/configuracoes" className="text-[var(--color-text-secondary)] hover:text-[#d4a373] transition-colors">
+            <Settings className="w-5 h-5" />
+          </Link>
         </header>
       )}
 
