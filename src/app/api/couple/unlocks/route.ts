@@ -15,7 +15,7 @@ export async function GET() {
     });
 
     const groups = await prisma.unlockGroup.findMany({
-      where: { is_active: true }
+      where: { is_active: true, hidden_from_ui: false }
     });
 
     // Format response: combine active groups with user unlocks

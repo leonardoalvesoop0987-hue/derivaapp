@@ -177,56 +177,52 @@ export default function ConfiguracoesPage() {
         )}
       </div>
 
-      {/* Alinhamento Avançado (Dark Deck) */}
-      <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
-        <div>
-          <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest mb-1">
-            Alinhamento avançado — Tons mais escuros
-          </h3>
-          {!isDarkUnlocked ? (
-            <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
-              Disponível após liberar esse conteúdo nas configurações.
-            </p>
-          ) : (
+      {/* Alinhamento Avançado (Dark Deck) - Hidden from UI */}
+      {isDarkUnlocked && (
+        <div className="bg-[#130c0a] p-6 rounded-2xl border border-white/5 space-y-4">
+          <div>
+            <h3 className="font-medium text-xs text-[#d4a373] uppercase tracking-widest mb-1">
+              Alinhamento avançado
+            </h3>
             <p className="text-sm text-[var(--color-text-secondary)] font-light leading-relaxed">
               Esse alinhamento trata apenas de fantasia, imaginação e limites mais avançados. Responder é opcional.
             </p>
+          </div>
+
+          {!loadingAlignment && (
+            <div className="space-y-4 mt-4">
+              {participants.map(p => {
+                const label = p.role === "WOMAN" ? "Responder alinhamento dela" : "Responder alinhamento dele";
+                return (
+                  <button
+                    key={p.id + '-dark'}
+                    onClick={() => router.push(`/app/alinhamento/${p.id}?type=dark`)}
+                    className="w-full flex items-center justify-between p-4 bg-[#0d0806] border border-white/10 hover:border-[#d4a373]/50 transition-colors rounded-xl text-left"
+                  >
+                    <div>
+                      <div className="font-medium text-white text-sm tracking-wide">{p.name}</div>
+                      <div className="text-xs text-[var(--color-text-secondary)] mt-1">
+                        {p.dark?.has_responded ? "Respondido" : label}
+                      </div>
+                    </div>
+                    <div>
+                      {p.dark?.has_responded ? (
+                        <span className="text-xs bg-[#B9825A]/20 text-[#d4a373] px-3 py-1.5 rounded-full border border-[#B9825A]/30">
+                          Responder novamente
+                        </span>
+                      ) : (
+                        <span className="text-xs border border-white/20 text-white/50 px-3 py-1.5 rounded-full">
+                          Pendente
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
-
-        {isDarkUnlocked && !loadingAlignment && (
-          <div className="space-y-4 mt-4">
-            {participants.map(p => {
-              const label = p.role === "WOMAN" ? "Responder alinhamento dela" : "Responder alinhamento dele";
-              return (
-                <button
-                  key={p.id + '-dark'}
-                  onClick={() => router.push(`/app/alinhamento/${p.id}?type=dark`)}
-                  className="w-full flex items-center justify-between p-4 bg-[#0d0806] border border-white/10 hover:border-[#d4a373]/50 transition-colors rounded-xl text-left"
-                >
-                  <div>
-                    <div className="font-medium text-white text-sm tracking-wide">{p.name}</div>
-                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
-                      {p.dark?.has_responded ? "Respondido" : label}
-                    </div>
-                  </div>
-                  <div>
-                    {p.dark?.has_responded ? (
-                      <span className="text-xs bg-[#B9825A]/20 text-[#d4a373] px-3 py-1.5 rounded-full border border-[#B9825A]/30">
-                        Responder novamente
-                      </span>
-                    ) : (
-                      <span className="text-xs border border-white/20 text-white/50 px-3 py-1.5 rounded-full">
-                        Pendente
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
 
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
 

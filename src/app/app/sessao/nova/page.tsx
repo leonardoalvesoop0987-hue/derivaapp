@@ -15,9 +15,10 @@ export default function NovaSessaoPage() {
   const [sessionFocus, setSessionFocus] = useState("FOR_HER");
   const [queryMode, setQueryMode] = useState<string | null>(null);
   const [categoryBias, setCategoryBias] = useState("ROSA");
+  const [isDarkUnlocked, setIsDarkUnlocked] = useState(false);
 
   // New presets logic
-  const [selectedPreset, setSelectedPreset] = useState("LEVE");
+  const [selectedPreset, setSelectedPreset] = useState("QUENTE");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Advanced settings
@@ -41,6 +42,14 @@ export default function NovaSessaoPage() {
     fetch("/api/session/voice-settings")
       .then(res => res.json())
       .then(data => setVoiceSettings(data))
+      .catch(console.error);
+
+    fetch("/api/couple/unlocks")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        const darkUnlock = data?.unlocks?.find((unlock: { key: string }) => unlock.key === "DARK_THIRD_IMAGINATION");
+        setIsDarkUnlocked(Boolean(darkUnlock?.is_enabled));
+      })
       .catch(console.error);
 
     const params = new URLSearchParams(window.location.search);
@@ -78,12 +87,8 @@ export default function NovaSessaoPage() {
       let finalLength = length;
       let finalMaxIntensity = maxIntensity;
 
-      // Apply presets if not in custom mode
-      if (selectedPreset === "LEVE") {
-        finalMode = "ESTREIA";
-        finalLength = "CURTA";
-        finalMaxIntensity = "QUENTE";
-      } else if (selectedPreset === "QUENTE") {
+      // Apply presets
+      if (selectedPreset === "QUENTE") {
         finalMode = "PADRAO";
         finalLength = "MEDIA";
         finalMaxIntensity = "INTENSO";
@@ -91,12 +96,10 @@ export default function NovaSessaoPage() {
         finalMode = "PADRAO";
         finalLength = "COMPLETA";
         finalMaxIntensity = "PICO";
-      } else if (selectedPreset === "NOITE_ESPECIAL") {
-        finalMode = "NOITE_ESPECIAL";
-        finalLength = "CURTA";
+      } else if (selectedPreset === "REVEALED_CARDS") {
+        finalMode = "REVEALED_CARDS";
+        finalLength = "MEDIA";
         finalMaxIntensity = "PICO";
-      } else if (selectedPreset === "CUSTOM") {
-        // Use the advanced states as-is
       }
 
       if (queryMode) {
@@ -118,9 +121,15 @@ export default function NovaSessaoPage() {
       });
 
       if (!res.ok) throw new Error("Falha ao criar sessão");
-      
-      const { sessionId } = await res.json();
-      router.push(`/app/sessao/${sessionId}`);
+
+      const { sessionId, mode: responseMode } = await res.json();
+
+      // Route to REVEALED_CARDS view if mode is REVEALED_CARDS
+      if (responseMode === "REVEALED_CARDS" || finalMode === "REVEALED_CARDS") {
+        router.push(`/app/sessao/${sessionId}/reveladas`);
+      } else {
+        router.push(`/app/sessao/${sessionId}`);
+      }
     } catch (err) {
       console.error(err);
       setLoading(false);
@@ -167,12 +176,6 @@ export default function NovaSessaoPage() {
 
   const PRESETS = [
     {
-      id: "LEVE",
-      title: "Leve e Íntimo",
-      desc: "Uma provocação suave para começar o jogo e subir a tensão aos poucos.",
-      icon: <Sparkles className="w-5 h-5" />
-    },
-    {
       id: "QUENTE",
       title: "Quente e Progressivo",
       desc: "A jornada clássica. O clima esquenta a cada carta revelada.",
@@ -185,16 +188,10 @@ export default function NovaSessaoPage() {
       icon: <Zap className="w-5 h-5" />
     },
     {
-      id: "NOITE_ESPECIAL",
-      title: "Noite Mais que Especial",
-      desc: "Uma sequência especial focada nela, com 12 cartas selecionadas.",
+      id: "REVEALED_CARDS",
+      title: "Cartas Reveladas",
+      desc: "A sequência sai pronta. Vocês olham uma vez e seguem no ritmo de vocês.",
       icon: <Sparkles className="w-5 h-5" />
-    },
-    {
-      id: "CUSTOM",
-      title: "Personalizar",
-      desc: "Vocês definem as regras e a estrutura da noite.",
-      icon: <Settings2 className="w-5 h-5" />
     }
   ];
 
@@ -203,19 +200,11 @@ export default function NovaSessaoPage() {
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-lg mx-auto px-4 pb-10">
         <div className="mt-6 mb-8 text-center">
           <h2 className="text-3xl font-light text-white mb-3 tracking-wide">
-            {queryMode === "FAISCA" ? "Faísca" :
-             queryMode === "MERGULHO" ? "Mergulho" :
-             queryMode === "NOITE_DELA" ? "Noite Dela" :
-             queryMode === "FOCO_CATEGORIA" ? "Foco em Categoria" :
-             queryMode === "TONS_ESCUROS" ? "Tons mais escuros" :
+            {queryMode === "FOCO_CATEGORIA" ? "Foco em Categoria" :
              <><span className="font-serif text-[#d4a373] italic">Noite</span> Guiada</>}
           </h2>
           <p className="text-[var(--color-text-secondary)] text-sm font-light">
-            {queryMode === "FAISCA" ? "Uma carta surpresa para subir a temperatura agora." :
-             queryMode === "MERGULHO" ? "Esta sessão já começa quente e sem rodeios." :
-             queryMode === "NOITE_DELA" ? "O Deriva puxa o clima para ela desde o início." :
-             queryMode === "FOCO_CATEGORIA" ? "Escolham o tipo de clima da noite." :
-             queryMode === "TONS_ESCUROS" ? "Um território mais provocante, com escolha e saída fácil." :
+            {queryMode === "FOCO_CATEGORIA" ? "Escolham o tipo de clima da noite." :
              "Vocês escolhem o ritmo. O Deriva conduz o jogo."}
           </p>
         </div>
@@ -251,8 +240,7 @@ export default function NovaSessaoPage() {
               key={p.id}
               onClick={() => {
                 setSelectedPreset(p.id);
-                if (p.id === "CUSTOM") setShowAdvanced(true);
-                else setShowAdvanced(false);
+                setShowAdvanced(false);
               }}
               className={`w-full flex items-start p-5 rounded-2xl transition-all text-left border ${
                 selectedPreset === p.id 
@@ -295,58 +283,6 @@ export default function NovaSessaoPage() {
           </div>
         </div>
 
-        {/* Custom Settings Drawer/Section */}
-        {showAdvanced && (
-          <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-6 pt-4 border-t border-white/5 mt-4">
-            <h3 className="text-xs font-medium text-[#d4a373] uppercase tracking-widest text-center mb-6">Ajustes Finos</h3>
-            
-            {/* Modo */}
-            <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
-              <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Estrutura do jogo</label>
-              <select
-                value={mode}
-                onChange={e => setMode(e.target.value)}
-                className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-4 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
-              >
-                <option value="PADRAO">Jornada Padrão</option>
-                <option value="COM_PREFERENCIAS">Com Preferências Focadas</option>
-                <option value="NOITE_ESPECIAL">Noite Mais que Especial</option>
-                <option value="PERSONALIZADO">Meu Deck Exclusivo (Requer setup)</option>
-              </select>
-            </div>
-
-            {/* Duração e Intensidade */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
-                <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Ritmo</label>
-                <select 
-                  value={length} 
-                  onChange={e => setLength(e.target.value)}
-                  className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-3 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
-                >
-                  <option value="CURTA">Curta</option>
-                  <option value="MEDIA">Média</option>
-                  <option value="COMPLETA">Longa</option>
-                </select>
-              </div>
-
-              <div className="bg-[#130c0a] p-4 rounded-2xl border border-white/5 shadow-sm">
-                <label className="block text-xs uppercase tracking-widest text-white/50 mb-3">Até onde ir hoje</label>
-                <select 
-                  value={maxIntensity} 
-                  onChange={e => setMaxIntensity(e.target.value)}
-                  className="w-full bg-[#0d0806] border border-white/10 rounded-xl px-3 py-3 text-sm text-white/90 outline-none focus:border-[#d4a373]/50 appearance-none transition-colors"
-                >
-                  <option value="LEVE">Leve</option>
-                  <option value="QUENTE">Quente</option>
-                  <option value="INTENSO">Intenso</option>
-                  <option value="PICO">Pico</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-        
           </>
         )}
 

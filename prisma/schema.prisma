@@ -42,6 +42,7 @@ enum SessionMode {
   TONS_ESCUROS
   NOITE_ESPECIAL
   CENA_SOLTA
+  REVEALED_CARDS
 }
 
 enum CardTag {
@@ -327,28 +328,30 @@ model Card {
 }
 
 model Session {
-  id                   String        @id @default(cuid())
-  user_id              String
-  deck_id              String
-  mode                 SessionMode
-  length               SessionLength
-  status               SessionStatus
-  max_intensity        CardIntensity
-  videos_enabled       Boolean       @default(true)
-  music_enabled        Boolean       @default(true)
-  target_card_count    Int
-  current_position     Int           @default(0)
-  last_card_id         String?
-  completed_card_count Int           @default(0)
-  skips_used           Int           @default(0)
-  inversions_used      Int           @default(0)
-  started_at           DateTime      @default(now())
-  ended_at             DateTime?
-  session_group_id     String?
-  preferences_json     String?
-  session_focus        SessionFocus  @default(FOR_HER)
-  created_at           DateTime      @default(now())
-  updated_at           DateTime      @updatedAt
+  id                         String        @id @default(cuid())
+  user_id                    String
+  deck_id                    String
+  mode                       SessionMode
+  length                     SessionLength
+  status                     SessionStatus
+  max_intensity              CardIntensity
+  videos_enabled             Boolean       @default(true)
+  music_enabled              Boolean       @default(true)
+  target_card_count          Int
+  current_position           Int           @default(0)
+  last_card_id               String?
+  completed_card_count       Int           @default(0)
+  skips_used                 Int           @default(0)
+  inversions_used            Int           @default(0)
+  started_at                 DateTime      @default(now())
+  ended_at                   DateTime?
+  session_group_id           String?
+  preferences_json           String?
+  session_focus              SessionFocus  @default(FOR_HER)
+  revealed_sequence_json     String?
+  revealed_video_options_json String?
+  created_at                 DateTime      @default(now())
+  updated_at                 DateTime      @updatedAt
 
   user          User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
   deck          Deck                 @relation(fields: [deck_id], references: [id])
@@ -546,13 +549,14 @@ model PrivateAlignmentResponse {
 }
 
 model UnlockGroup {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  title       String
-  description String
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id             String   @id @default(cuid())
+  key            String   @unique
+  title          String
+  description    String
+  is_active      Boolean  @default(true)
+  hidden_from_ui Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   couple_unlocks CoupleUnlock[]
   cards          Card[]
